@@ -38,6 +38,7 @@ class BlueprintCard {
 const card_setup = [
   {name: "Aluminum Factory", tool: "shovel", copies: 2},
   {name: "Obelisk", tool: "hammer", copies: 5},
+  {name: "Beacon", tool: "shovel", copies: 4},
 ]
 
 function buildDeck() {
@@ -60,6 +61,7 @@ app.use(express.static(path.join(__dirname, '../frontend/dist')));
 
 let gameState = {
   deck: buildDeck(),
+  marketplace: [],
   players: {}
 };
 
@@ -72,10 +74,33 @@ io.on('connection', (socket) => {
 
   socket.on('draw-card', () => {
     if (gameState.deck.length) {
+      console.log("Drawing card")
       const card = gameState.deck.pop();
       gameState.players[socket.id].hand.push(card);
       io.emit('game-state', gameState);
     }
+  });
+
+  // Update the marketplace to have 4 cards
+  socket.on('fill-marketplace', () => {
+    console.log("Filling marketplace")
+    while (gameState.deck.length > 0 && gameState.marketplace.length < 4) {
+      const card = gameState.deck.pop();
+      gameState.marketplace.push(card);
+      io.emit('game-state', gameState);
+    }
+  });
+
+
+  socket.on('pickup-from-marketplace', (cardID) => {
+    console.log("Drawing card", cardID);
+    for(let i=0; i<gameState.marketplace.length; i++){
+      if (gameState.marketplace[i].id = cardID) {
+        gameState.players[socket.id].hand.push(...gameState.marketplace.splice(i, 1));
+        break;
+      }
+    }
+    io.emit('game-state', gameState);
   });
 
   socket.on('disconnect', () => {

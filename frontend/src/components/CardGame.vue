@@ -1,38 +1,36 @@
 <template>
   <div class="game">
-    <button @click="drawCard">Draw Card</button>
-    <div class="hand">
-      <h2>Your Hand:</h2>
-      <div v-for="card in hand" :key="card.id" class="card">
-        {{ card.name }}
-        {{ card.tool }}
-      </div>
-    </div>
+    <p>Player ID: {{ gamestate.playerID }}</p>
+    <button @click="gamestate.fillMarketplace">Fill Marketplace</button>
   </div>
 </template>
 
 <script>
-import { io } from "socket.io-client";
+// TODO: utilize this shared game state
+import { gamestate } from './GameState.js'
+// <button @click="gamestate.method()">
+
+// Here's what I am thinking
+// GardGame will manage setting up the socket, initializing the game
+// It will update this in the shared game state.
+// We might even be able to store the game state here vs the separate js file
+// Each box in the layout is its own component that will import the shared game state
+// All methods mutating the game state should be defined in the common file
+// This also means those components don't need to have knowledge of the socket I think
 
 export default {
   data() {
     return {
       socket: null,
       hand: [],
-      gameState: {}
+      marketplace: [],
+      gamestate
     };
   },
   methods: {
-    drawCard() {
-      this.socket.emit('draw-card');
-    }
   },
   mounted() {
-    this.socket = io("http://localhost:3000");
-    this.socket.on('game-state', (state) => {
-      this.gameState = state;
-      this.hand = state.players[this.socket.id]?.hand || [];
-    });
+    gamestate.openSocket();
   }
 };
 </script>
@@ -42,6 +40,14 @@ export default {
   display: flex;
   flex-wrap: wrap;
 }
+</style>
+
+<style>
+.card-area {
+  display: flex;
+  flex-wrap: wrap;
+}
+
 .card {
   margin: 5px;
   padding: 10px;

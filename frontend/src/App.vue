@@ -1,18 +1,24 @@
 <template>
   <header>
-    Fantastic Factories
+    Fantastic Factories Online
   </header>
   <div id="game">
     <CardGame />
+    <Marketplace />
+    <PlayerHand />
   </div>
 </template>
 
 <script>
 import CardGame from './components/CardGame.vue';
+import Marketplace from './components/Marketplace.vue';
+import PlayerHand from './components/PlayerHand.vue';
 
 export default {
   components: {
-    CardGame
+    CardGame,
+    Marketplace,
+    PlayerHand
   }
 };
 </script>
