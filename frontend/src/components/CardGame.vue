@@ -1,29 +1,29 @@
 <template>
-  <div class="game">
-    <p>Player ID: {{ gamestate.playerID }}</p>
-    <button @click="gamestate.fillMarketplace">Fill Marketplace</button>
-  </div>
+  <p>Player ID: {{ gamestate.playerID }}</p>
+  <button @click="gamestate.fillMarketplace">Fill Marketplace</button>
+  <Marketplace />
+  <PlayerHand />
+  <Compound :playerID="gamestate.playerID" />
 </template>
 
 <script>
-// TODO: utilize this shared game state
+// Game state
 import { gamestate } from './GameState.js'
-// <button @click="gamestate.method()">
 
-// Here's what I am thinking
-// GardGame will manage setting up the socket, initializing the game
-// It will update this in the shared game state.
-// We might even be able to store the game state here vs the separate js file
-// Each box in the layout is its own component that will import the shared game state
-// All methods mutating the game state should be defined in the common file
-// This also means those components don't need to have knowledge of the socket I think
+// Components
+import Marketplace from './Marketplace.vue';
+import PlayerHand from './PlayerHand.vue';
+import Compound from './Compound.vue';
 
+// Exports
 export default {
+  components: {
+    Marketplace,
+    PlayerHand,
+    Compound
+  },
   data() {
     return {
-      socket: null,
-      hand: [],
-      marketplace: [],
       gamestate
     };
   },
@@ -36,10 +36,7 @@ export default {
 </script>
 
 <style scoped>
-.hand {
-  display: flex;
-  flex-wrap: wrap;
-}
+
 </style>
 
 <style>

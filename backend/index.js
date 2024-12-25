@@ -1,8 +1,13 @@
+// node modules
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const path = require('path');
 
+// custom modules
+const cards = require('./modules/cards.js');
+
+// Set up server
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -11,67 +16,20 @@ const io = new Server(server, {
   }
 });
 
-/**
- * Class representing a blueprint card
- *
- * There are 74 of these in the deck
- * Attributes
- * - Name
- * - Build Cost
- * -- Tool
- * -- Metal
- * -- Energy
- * - Card Type (production | utility | training | monument | special)
- * - Prestige Value
- * - Recipe
- * - # of Card Copies
- */
-class BlueprintCard {
-  constructor(id, name, tool, copies) {
-      this.id = id; // a unique identifier for us to keep track of it in code
-      this.name = name;
-      this.tool = tool;
-      this.copies = copies;
-  }
-}
-
-const card_setup = [
-  {name: "Aluminum Factory", tool: "shovel", copies: 2},
-  {name: "Obelisk", tool: "hammer", copies: 5},
-  {name: "Beacon", tool: "shovel", copies: 4},
-]
-
-function buildDeck() {
-  deck = []
-  id = 0
-
-  for(let i=0; i<card_setup.length; i++){
-    card_type = card_setup[i]
-    for(let copy=0; copy<card_type.copies; copy++){
-      deck.push(new BlueprintCard(id, card_type.name, card_type.tool, card_type.copies))
-      id++
-    }
-  }
-
-  return deck
-}
 //////////////////////////////////
-
-app.use(express.static(path.join(__dirname, '../frontend/dist')));
-
 let gameState = {
-  deck: buildDeck(),
+  deck: cards.buildDeck(),
   marketplace: [],
-  players: {}
+  // TODO: maybe create a player class to store cards, username, etc
+  players: {},
 };
-
-console.log(gameState)
 
 io.on('connection', (socket) => {
   console.log(`User connected: ${socket.id}`);
 
-  gameState.players[socket.id] = { hand: [] };
+  gameState.players[socket.id] = { hand: [], compound: [] };
 
+  // Move a card from the deck into the player's hand
   socket.on('draw-card', () => {
     if (gameState.deck.length) {
       console.log("Drawing card")
@@ -91,15 +49,17 @@ io.on('connection', (socket) => {
     }
   });
 
-
+  // Move a card from the marketplace to a player's hand
   socket.on('pickup-from-marketplace', (cardID) => {
-    console.log("Drawing card", cardID);
-    for(let i=0; i<gameState.marketplace.length; i++){
-      if (gameState.marketplace[i].id = cardID) {
-        gameState.players[socket.id].hand.push(...gameState.marketplace.splice(i, 1));
-        break;
-      }
-    }
+    console.log('Drawing card', cardID);
+    gameState.players[socket.id].hand.push(...cards.removeCardByID(gameState.marketplace, cardID));
+    io.emit('game-state', gameState);
+  });
+
+  // Move a card from the player's hand to their compound
+  socket.on('add-to-compound', (cardID) => {
+    console.log('Playing card', cardID);
+    gameState.players[socket.id].compound.push(...cards.removeCardByID(gameState.players[socket.id].hand, cardID));
     io.emit('game-state', gameState);
   });
 

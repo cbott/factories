@@ -7,6 +7,7 @@ export const gamestate = reactive({
   socket: null,
   playerID: "null",
   state: {},
+
   //  Methods
   openSocket() {
     // Open a connection to the server
@@ -18,14 +19,30 @@ export const gamestate = reactive({
       this.playerID = this.socket.id;
     });
   },
+
+  // Get this list of cards in the compound for the specified player
+  getPlayerCompound(playerID) {
+    if (this.state.players == null) {
+      return [];
+    }
+    return this.state.players[playerID]?.compound || [];
+  },
+
+  // Fill marketplace with cards
   fillMarketplace() {
-    // Fill marketplace with cards
     this.socket.emit('fill-marketplace');
   },
+
+  // Add the specified card to this player's hand
   pickUpFromMarketplace(cardID) {
-    // Add the specified card to this player's hand
-    console.log("pickup", cardID);
+    console.log('pickup', cardID);
     this.socket.emit('pickup-from-marketplace', cardID);
+  },
+
+  // Move a card from the player's hand into their compound
+  addToCompound(cardID) {
+    console.log('play card', cardID);
+    this.socket.emit('add-to-compound', cardID);
   }
 })
 

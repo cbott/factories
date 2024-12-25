@@ -4,21 +4,15 @@
   </header>
   <div id="game">
     <CardGame />
-    <Marketplace />
-    <PlayerHand />
   </div>
 </template>
 
 <script>
 import CardGame from './components/CardGame.vue';
-import Marketplace from './components/Marketplace.vue';
-import PlayerHand from './components/PlayerHand.vue';
 
 export default {
   components: {
     CardGame,
-    Marketplace,
-    PlayerHand
   }
 };
 </script>
@@ -37,6 +31,7 @@ header {
     background-color: #e8e8e8;
     padding: 1rem;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
 }
