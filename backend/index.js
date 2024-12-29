@@ -6,6 +6,7 @@ const path = require('path');
 
 // custom modules
 const cards = require('./modules/cards.js');
+const player = require('./modules/player.js');
 
 // Set up server
 const app = express();
@@ -17,18 +18,33 @@ const io = new Server(server, {
 });
 
 //////////////////////////////////
+// TODO: should probably move the gamestate to a separate Game file/object, keep all socketio
+// calls in this file but those will just wrap core game functions from the other file
 let gameState = {
   deck: cards.buildDeck(),
   marketplace: [],
-  // TODO: maybe create a player class to store cards, username, etc
-  // For now players will store socket ID => (hand object, compound array)
+  // `players` object maps session IDs to instances of the Player class
   players: {},
+};
+
+// Move a card from the player's hand to the player's compound, and recompute prestige
+function moveToCompound(playerID, cardID) {
+  console.log('Moving card', cardID, 'to compound', playerID);
+  gameState.players[playerID].compound.push(gameState.players[playerID].hand[cardID]);
+  // Card is moved to compound, now remove it from hand
+  delete gameState.players[playerID].hand[cardID];
+  gameState.players[playerID].prestige = cards.calculatePrestige(gameState.players[playerID].compound);
+};
+
+// Remove a card from the player's hand
+function removeFromHand(playerID, cardID) {
+  delete gameState.players[playerID].hand[cardID];
 };
 
 io.on('connection', (socket) => {
   console.log(`User connected: ${socket.id}`);
 
-  gameState.players[socket.id] = { hand: {}, compound: [] };
+  gameState.players[socket.id] = new player.Player();
 
   // Move a card from the deck into the player's hand
   socket.on('draw-card', () => {
@@ -61,27 +77,35 @@ io.on('connection', (socket) => {
 
   // Move a card from the player's hand to their compound
   socket.on('add-to-compound', (cardID) => {
-    console.log('Playing card', cardID);
-    gameState.players[socket.id].compound.push(gameState.players[socket.id].hand[cardID]);
-    delete gameState.players[socket.id].hand[cardID];
+    moveToCompound(socket.id, cardID);
     io.emit('game-state', gameState);
   });
 
-  // Move a card from the player's hand to their compound
+  // Move a card from the player's hand to their compound, discarding an approprate tool card
   socket.on('add-to-compound-wtih-discard', (cardIDToMove, cardIDToDiscard) => {
     console.log('Playing card', cardIDToMove, 'by discarding card', cardIDToDiscard);
     // TODO: this will need a lot more validation
     // Client can send anything they want here so need to check cards are actually in the hand
     if(cardIDToMove != cardIDToDiscard && gameState.players[socket.id].hand[cardIDToMove].tool === gameState.players[socket.id].hand[cardIDToDiscard].tool) {
-      gameState.players[socket.id].compound.push(gameState.players[socket.id].hand[cardIDToMove]);
-      // Card is moved to compound, now remove it from hand
-      delete gameState.players[socket.id].hand[cardIDToMove];
+      moveToCompound(socket.id, cardIDToMove);
       // TODO: implement discard pile
-      delete gameState.players[socket.id].hand[cardIDToDiscard];
+      removeFromHand(socket.id, cardIDToDiscard);
       io.emit('game-state', gameState);
       console.log('Moved Card');
     }
     // TODO: handle else case, return error to client
+  });
+
+  // Roll all of the player's available dice
+  socket.on('roll-dice', () => {
+    const numDice = gameState.players[socket.id].numDice;
+    for(let i=0; i<numDice; i++){
+      // Pick a random number from 1-6
+      const value = Math.ceil(Math.random() * 6);
+      gameState.players[socket.id].dice.push(value)
+    }
+    gameState.players[socket.id].numDice = 0;
+    io.emit('game-state', gameState);
   });
 
   socket.on('disconnect', () => {

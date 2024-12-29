@@ -9,3 +9,8 @@ frontend
 
 backend
 > npm start
+
+
+To Do list
+- Implement server-side logging
+- Consistent style/formatting

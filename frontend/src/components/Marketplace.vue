@@ -3,7 +3,7 @@
     <div class="marketplace">
         <p>Marketplace</p>
         <div class="card-area">
-          <Card v-for="card in gamestate.marketplace" :key="card.id" :card="card" @click="addToHand(card.id)" />
+          <Card v-for="card in gamestate.state.marketplace" :key="card.id" :card="card" @click="addToHand(card.id)" />
         </div>
     </div>
 </template>

@@ -17,15 +17,15 @@ export const gamestate = reactive({
     this.socket = io("http://localhost:3000");
     this.socket.on('game-state', (state) => {
       this.state = state;
-      this.marketplace = state.marketplace;
       if (state.players[this.socket.id]) {
+        // Convert hand to Map object for ease of use later on. We cannot directly send and receive Maps
         this.hand = new Map(Object.entries(state.players[this.socket.id].hand));
       }
       this.playerID = this.socket.id;
     });
   },
 
-  // Get this list of cards in the compound for the specified player
+  // Get the list of cards in the compound for the specified player
   getPlayerCompound(playerID) {
     if (this.state.players == null) {
       return [];
@@ -48,6 +48,12 @@ export const gamestate = reactive({
   addToCompound(cardID) {
     console.log('play card', cardID);
     this.socket.emit('add-to-compound', cardID);
+  },
+
+  // Roll all available dice
+  rollDice() {
+    console.log('Rolling Dice');
+    this.socket.emit('roll-dice');
   },
 
   // Move a card from the player's hand into their compound

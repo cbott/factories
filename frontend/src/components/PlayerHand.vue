@@ -17,6 +17,7 @@ export default {
     Card
   },
   computed: {
+    // The tool of the currently active card
     activeCardTool() {
       if (gamestate.activeCardID !== null) {
         return gamestate.hand.get(gamestate.activeCardID).tool;

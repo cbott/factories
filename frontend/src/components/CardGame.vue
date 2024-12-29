@@ -2,6 +2,7 @@
   <p>Player ID: {{ gamestate.playerID }}</p>
   <button @click="gamestate.fillMarketplace">Fill Marketplace</button>
   <Marketplace />
+  <DiceArea />
   <PlayerHand />
   <Compound :playerID="gamestate.playerID" />
 </template>
@@ -14,13 +15,15 @@ import { gamestate } from './GameState.js'
 import Marketplace from './Marketplace.vue';
 import PlayerHand from './PlayerHand.vue';
 import Compound from './Compound.vue';
+import DiceArea from './DiceArea.vue';
 
 // Exports
 export default {
   components: {
     Marketplace,
     PlayerHand,
-    Compound
+    Compound,
+    DiceArea,
   },
   data() {
     return {
