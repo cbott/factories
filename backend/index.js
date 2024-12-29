@@ -21,20 +21,21 @@ let gameState = {
   deck: cards.buildDeck(),
   marketplace: [],
   // TODO: maybe create a player class to store cards, username, etc
+  // For now players will store socket ID => (hand object, compound array)
   players: {},
 };
 
 io.on('connection', (socket) => {
   console.log(`User connected: ${socket.id}`);
 
-  gameState.players[socket.id] = { hand: [], compound: [] };
+  gameState.players[socket.id] = { hand: {}, compound: [] };
 
   // Move a card from the deck into the player's hand
   socket.on('draw-card', () => {
     if (gameState.deck.length) {
       console.log("Drawing card")
       const card = gameState.deck.pop();
-      gameState.players[socket.id].hand.push(card);
+      gameState.players[socket.id].hand[card.id] = card;
       io.emit('game-state', gameState);
     }
   });
@@ -51,16 +52,36 @@ io.on('connection', (socket) => {
 
   // Move a card from the marketplace to a player's hand
   socket.on('pickup-from-marketplace', (cardID) => {
-    console.log('Drawing card', cardID);
-    gameState.players[socket.id].hand.push(...cards.removeCardByID(gameState.marketplace, cardID));
+    console.log('Picking up from marketplace', cardID);
+    const card = cards.removeCardByID(gameState.marketplace, cardID)[0];
+    gameState.players[socket.id].hand[cardID] = card;
+    console.log('Player hand is now', gameState.players[socket.id].hand);
     io.emit('game-state', gameState);
   });
 
   // Move a card from the player's hand to their compound
   socket.on('add-to-compound', (cardID) => {
     console.log('Playing card', cardID);
-    gameState.players[socket.id].compound.push(...cards.removeCardByID(gameState.players[socket.id].hand, cardID));
+    gameState.players[socket.id].compound.push(gameState.players[socket.id].hand[cardID]);
+    delete gameState.players[socket.id].hand[cardID];
     io.emit('game-state', gameState);
+  });
+
+  // Move a card from the player's hand to their compound
+  socket.on('add-to-compound-wtih-discard', (cardIDToMove, cardIDToDiscard) => {
+    console.log('Playing card', cardIDToMove, 'by discarding card', cardIDToDiscard);
+    // TODO: this will need a lot more validation
+    // Client can send anything they want here so need to check cards are actually in the hand
+    if(cardIDToMove != cardIDToDiscard && gameState.players[socket.id].hand[cardIDToMove].tool === gameState.players[socket.id].hand[cardIDToDiscard].tool) {
+      gameState.players[socket.id].compound.push(gameState.players[socket.id].hand[cardIDToMove]);
+      // Card is moved to compound, now remove it from hand
+      delete gameState.players[socket.id].hand[cardIDToMove];
+      // TODO: implement discard pile
+      delete gameState.players[socket.id].hand[cardIDToDiscard];
+      io.emit('game-state', gameState);
+      console.log('Moved Card');
+    }
+    // TODO: handle else case, return error to client
   });
 
   socket.on('disconnect', () => {

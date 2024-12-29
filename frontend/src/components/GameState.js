@@ -7,6 +7,9 @@ export const gamestate = reactive({
   socket: null,
   playerID: "null",
   state: {},
+  activeAction: "", // This will track what actions are allowed by the player right now
+  activeCardID: null, // This will track what card the player is currently trying to play
+  hand: new Map(), // Initialize hand as an empty Map
 
   //  Methods
   openSocket() {
@@ -15,7 +18,9 @@ export const gamestate = reactive({
     this.socket.on('game-state', (state) => {
       this.state = state;
       this.marketplace = state.marketplace;
-      this.hand = state.players[this.socket.id]?.hand || [];
+      if (state.players[this.socket.id]) {
+        this.hand = new Map(Object.entries(state.players[this.socket.id].hand));
+      }
       this.playerID = this.socket.id;
     });
   },
@@ -43,6 +48,12 @@ export const gamestate = reactive({
   addToCompound(cardID) {
     console.log('play card', cardID);
     this.socket.emit('add-to-compound', cardID);
+  },
+
+  // Move a card from the player's hand into their compound
+  addToCompoundWithDiscard(cardIDToMove, cardIDToDiscard) {
+    console.log('play card', cardIDToMove, 'by discarding', cardIDToDiscard);
+    this.socket.emit('add-to-compound-wtih-discard', cardIDToMove, cardIDToDiscard);
   }
 })
 

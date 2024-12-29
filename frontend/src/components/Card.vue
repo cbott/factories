@@ -1,6 +1,6 @@
 <!-- Component representing a single Fantastic Factories card -->
 <template>
-  <div class="card">
+  <div class="card" :class="{ disabled: isDisabled }">
     {{ card.name }}
     <br/>
     {{ card.tool }}
@@ -15,6 +15,10 @@ export default {
     card: {
       type: Object,
       required: true
+    },
+    isDisabled: {
+      type: Boolean,
+      default: false
     }
   }
 };
@@ -28,5 +32,9 @@ export default {
   border-radius: 4px;
   width: 100px;
   height: 150px;
+}
+
+.disabled {
+  background: gray;
 }
 </style>
