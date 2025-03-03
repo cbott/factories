@@ -108,6 +108,42 @@ io.on('connection', (socket) => {
     io.emit('game-state', gameState);
   });
 
+  // Move a die from the player's dice pool to the headquarters
+  socket.on('place-die-in-headquarters', (dieIndex, floor) => {
+    // Verify that the player actually has this die
+    if(typeof dieIndex !== 'number' || dieIndex > gameState.players[socket.id].dice.length || dieIndex < 0){
+      console.log('Invalid die index', dieIndex, 'requested. Player has', gameState.players[socket.id].dice.length, 'dice');
+      return;
+    }
+
+    // Verify that this is a valid floor
+    if(!(floor in gameState.players[socket.id].headquarters)){
+      console.log('Invalid floor', floor, 'requested');
+      return;
+    }
+
+    // Verify that this floor is not full
+    if(gameState.players[socket.id].headquarters.length >= 3){
+      console.log('Floor', floor, 'is full');
+      return;
+    }
+
+    // Get dice value from index
+    const die = gameState.players[socket.id].dice[dieIndex];
+
+    // Only dice 1-3 can be used for "generate", Only dice 4-6 can be used for "mine"
+    if((floor === "generate" && die > 3) || (floor === "mine" && die < 4)){
+      console.log('Die value', die, 'cannot be placed in', floor);
+      return;
+    }
+
+    // Remove die from player's dice pool and add it to the headquarters
+    console.log('Placing die', die, 'with index', dieIndex, 'in', floor);
+    gameState.players[socket.id].dice.splice(dieIndex, 1);
+    gameState.players[socket.id].headquarters[floor].push(die);
+    io.emit('game-state', gameState);
+  });
+
   socket.on('disconnect', () => {
     console.log(`User disconnected: ${socket.id}`);
     delete gameState.players[socket.id];

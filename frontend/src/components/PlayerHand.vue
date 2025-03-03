@@ -9,7 +9,7 @@
 </template>
 
 <script>
-import { gamestate } from './GameState.js'
+import { gamestate, Actions } from './GameState.js'
 import Card from './Card.vue'
 
 export default {
@@ -19,8 +19,8 @@ export default {
   computed: {
     // The tool of the currently active card
     activeCardTool() {
-      if (gamestate.activeCardID !== null) {
-        return gamestate.hand.get(gamestate.activeCardID).tool;
+      if (gamestate.activeActionTarget !== null) {
+        return gamestate.hand.get(gamestate.activeActionTarget).tool;
       }
       return '';
     }
@@ -35,17 +35,17 @@ export default {
       if(gamestate.activeAction === ''){
         // No active action, this is the first card selected
         // next the player has to select a card with a matching tool
-        gamestate.activeAction = 'selectMatchingTool';
-        gamestate.activeCardID = cardID;
+        gamestate.activeAction = Actions.selectMatchingTool;
+        gamestate.activeActionTarget = cardID;
         console.log('Selected card with tool:', gamestate.hand.get(cardID).tool);
-      } else if(gamestate.activeAction === 'selectMatchingTool'){
+      } else if(gamestate.activeAction === Actions.selectMatchingTool){
         // Check if the card has a matching tool
         console.log('checking for matching tool', this.activeCardTool);
-        if(cardID != gamestate.activeCardID && gamestate.hand.get(cardID).tool === this.activeCardTool){
+        if(cardID != gamestate.activeActionTarget && gamestate.hand.get(cardID).tool === this.activeCardTool){
           // The card has a matching tool, add it to the compound
-          gamestate.addToCompoundWithDiscard(gamestate.activeCardID, cardID);
-          gamestate.activeAction = '';
-          gamestate.activeCardID = null;
+          gamestate.addToCompoundWithDiscard(gamestate.activeActionTarget, cardID);
+          gamestate.activeAction = Actions.none;
+          gamestate.activeActionTarget = null;
           console.log('found matching tool');
         }
       }
@@ -58,7 +58,7 @@ export default {
 <style scoped>
 .hand {
   border: 2px solid blue;
-  width: 500px;
+  width: 800px;
   height: 200px;
 }
 </style>

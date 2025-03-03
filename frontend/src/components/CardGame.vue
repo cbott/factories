@@ -5,6 +5,7 @@
   <DiceArea />
   <PlayerHand />
   <Compound :playerID="gamestate.playerID" />
+  <Headquarters />
 </template>
 
 <script>
@@ -16,6 +17,7 @@ import Marketplace from './Marketplace.vue';
 import PlayerHand from './PlayerHand.vue';
 import Compound from './Compound.vue';
 import DiceArea from './DiceArea.vue';
+import Headquarters from './Headquarters.vue';
 
 // Exports
 export default {
@@ -24,6 +26,7 @@ export default {
     PlayerHand,
     Compound,
     DiceArea,
+    Headquarters,
   },
   data() {
     return {
@@ -55,5 +58,16 @@ export default {
   border-radius: 4px;
   width: 100px;
   height: 150px;
+}
+
+.die {
+  width: 40px;
+  height: 40px;
+  border: 3px solid black;
+  border-radius: 5px;
+  background-color: ivory;
+  text-align: center;
+  margin: 3px;
+  font-size: 20px;
 }
 </style>

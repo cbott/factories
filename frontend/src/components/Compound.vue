@@ -59,7 +59,7 @@ export default {
 .compound {
   border: 2px solid orange;
   border-radius: 10px;
-  width: 500px;
+  width: 800px;
   height: 225px;
   margin: 5px;
 }

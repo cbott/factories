@@ -15,9 +15,15 @@ class Player {
     // Number of dice available to roll, can be increased with contractor cards
     this.numDice = 4;
     // Resources
-    this.energy = 0; // ⚡
-    this.metal = 0; // 🔩
+    this.energy = 2; // ⚡
+    this.metal = 1; // 🔩
     this.prestige = 0; // 🏆
+    // Dice played in the Headquarters
+    this.headquarters = {
+      research: [],
+      generate: [],
+      mine: [],
+    };
   }
 }
 

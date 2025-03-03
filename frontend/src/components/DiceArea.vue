@@ -3,14 +3,14 @@
   <div class="dice-area">
     <p>Your Dice</p>
     <button @click="gamestate.rollDice">Roll Dice</button>
-    <div v-for="diceval in myDice" class="die">
+    <div v-for="(diceval, index) in myDice" class="die" @click="activateDie(index)">
       <p>{{ diceval }}</p>
     </div>
   </div>
 </template>
 
 <script>
-import { gamestate } from './GameState.js'
+import { gamestate, Actions } from './GameState.js'
 
 export default {
   components: {
@@ -30,6 +30,11 @@ export default {
     };
   },
   methods: {
+    activateDie(index){
+      // Selects one of the dice. Player must click on a valid target to complete the action
+      gamestate.activeAction = Actions.selectDieTarget;
+      gamestate.activeActionTarget = index;
+    }
   }
 };
 </script>
@@ -42,16 +47,5 @@ export default {
   height: 50px;
   margin: 10px;
   display: flex;
-}
-
-.die {
-  width: 40px;
-  height: 40px;
-  border: 3px solid black;
-  border-radius: 5px;
-  background-color: ivory;
-  text-align: center;
-  margin: 3px;
-  font-size: 20px;
 }
 </style>

@@ -3,12 +3,22 @@
 import { reactive } from 'vue'
 import { io } from "socket.io-client";
 
+// Track multi-step actions by the player
+export const Actions = Object.freeze({
+  // No active action
+  none: "",
+  // Select a card to discard after selecting a card to play
+  selectMatchingTool: "selectMatchingTool",
+  // Select where to move a die to after selecting the die to move
+  selectDieTarget: "selectDieTarget",
+})
+
 export const gamestate = reactive({
   socket: null,
   playerID: "null",
   state: {},
-  activeAction: "", // This will track what actions are allowed by the player right now
-  activeCardID: null, // This will track what card the player is currently trying to play
+  activeAction: Actions.none, // Current step of a multi-step action
+  activeActionTarget: null, // This will track the dice or card being used in the multi-step action
   hand: new Map(), // Initialize hand as an empty Map
 
   //  Methods
@@ -54,6 +64,13 @@ export const gamestate = reactive({
   rollDice() {
     console.log('Rolling Dice');
     this.socket.emit('roll-dice');
+  },
+
+  // Move one die from the player's dice pool to the specified floor of the headquarters
+  // floor should be one of 'research', 'generate', or 'mine'
+  placeDieInHeadquarters(dieIndex, floor) {
+    console.log('Placing die', dieIndex, 'in', floor);
+    this.socket.emit('place-die-in-headquarters', dieIndex, floor);
   },
 
   // Move a card from the player's hand into their compound
