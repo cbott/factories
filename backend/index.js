@@ -7,6 +7,7 @@ const path = require('path');
 // custom modules
 const cards = require('./modules/cards.js');
 const player = require('./modules/player.js');
+const gamelogic = require('./modules/gamelogic.js');
 
 // Set up server
 const app = express();
@@ -48,12 +49,8 @@ io.on('connection', (socket) => {
 
   // Move a card from the deck into the player's hand
   socket.on('draw-card', () => {
-    if (gameState.deck.length) {
-      console.log("Drawing card")
-      const card = gameState.deck.pop();
-      gameState.players[socket.id].hand[card.id] = card;
-      io.emit('game-state', gameState);
-    }
+    gamelogic.drawCard(gameState.deck, gameState.players[socket.id].hand);
+    io.emit('game-state', gameState);
   });
 
   // Update the marketplace to have 4 cards
@@ -110,6 +107,7 @@ io.on('connection', (socket) => {
 
   // Move a die from the player's dice pool to the headquarters
   socket.on('place-die-in-headquarters', (dieIndex, floor) => {
+    // TODO: probably move this logic out to gamelogic file
     // Verify that the player actually has this die
     if(typeof dieIndex !== 'number' || dieIndex > gameState.players[socket.id].dice.length || dieIndex < 0){
       console.log('Invalid die index', dieIndex, 'requested. Player has', gameState.players[socket.id].dice.length, 'dice');
@@ -140,6 +138,25 @@ io.on('connection', (socket) => {
     // Remove die from player's dice pool and add it to the headquarters
     console.log('Placing die', die, 'with index', dieIndex, 'in', floor);
     gameState.players[socket.id].dice.splice(dieIndex, 1);
+
+    // Match Bonus: gain an extra resource if you have matching dice values
+    // This should cleanly handle X=X->+1 and X=X=X->+2
+    const bonus = gameState.players[socket.id].headquarters[floor].includes(die) ? 1 : 0;
+
+    // Update player resources based on where dice are placed
+    if(floor === 'research'){
+      // Draw a card for each die placed on research
+      for(let i=0; i<1+bonus; i++){
+        gamelogic.drawCard(gameState.deck, gameState.players[socket.id].hand);
+      }
+    } else if(floor === 'generate'){
+      // Gain energy based on value of die
+      gameState.players[socket.id].energy += die + bonus;
+    } else if(floor === 'mine'){
+      // Gain one metal regardless of die value
+      gameState.players[socket.id].metal += 1 + bonus;
+    }
+
     gameState.players[socket.id].headquarters[floor].push(die);
     io.emit('game-state', gameState);
   });
