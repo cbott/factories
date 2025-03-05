@@ -19,28 +19,8 @@ const io = new Server(server, {
 });
 
 //////////////////////////////////
-// TODO: should probably move the gamestate to a separate Game file/object, keep all socketio
-// calls in this file but those will just wrap core game functions from the other file
-let gameState = {
-  deck: cards.buildDeck(),
-  marketplace: [],
-  // `players` object maps session IDs to instances of the Player class
-  players: {},
-};
-
-// Move a card from the player's hand to the player's compound, and recompute prestige
-function moveToCompound(playerID, cardID) {
-  console.log('Moving card', cardID, 'to compound', playerID);
-  gameState.players[playerID].compound.push(gameState.players[playerID].hand[cardID]);
-  // Card is moved to compound, now remove it from hand
-  delete gameState.players[playerID].hand[cardID];
-  gameState.players[playerID].prestige = cards.calculatePrestige(gameState.players[playerID].compound);
-};
-
-// Remove a card from the player's hand
-function removeFromHand(playerID, cardID) {
-  delete gameState.players[playerID].hand[cardID];
-};
+let gameState = new gamelogic.GameState();
+//////////////////////////////////
 
 io.on('connection', (socket) => {
   console.log(`User connected: ${socket.id}`);
@@ -74,7 +54,7 @@ io.on('connection', (socket) => {
 
   // Move a card from the player's hand to their compound
   socket.on('add-to-compound', (cardID) => {
-    moveToCompound(socket.id, cardID);
+    gameState.moveToCompound(socket.id, cardID);
     io.emit('game-state', gameState);
   });
 
@@ -84,9 +64,8 @@ io.on('connection', (socket) => {
     // TODO: this will need a lot more validation
     // Client can send anything they want here so need to check cards are actually in the hand
     if(cardIDToMove != cardIDToDiscard && gameState.players[socket.id].hand[cardIDToMove].tool === gameState.players[socket.id].hand[cardIDToDiscard].tool) {
-      moveToCompound(socket.id, cardIDToMove);
-      // TODO: implement discard pile
-      removeFromHand(socket.id, cardIDToDiscard);
+      gameState.moveToCompound(socket.id, cardIDToMove);
+      gamelogic.removeFromHand(socket.id, cardIDToDiscard);
       io.emit('game-state', gameState);
       console.log('Moved Card');
     }

@@ -12,6 +12,7 @@ backend
 
 
 To Do list
+- Move a lot of game logic into the gamestate class
 - Create a button to switch between market phase and work phase
 - Implement server-side logging
 - Consistent style/formatting

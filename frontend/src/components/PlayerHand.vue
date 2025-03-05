@@ -19,7 +19,7 @@ export default {
   computed: {
     // The tool of the currently active card
     activeCardTool() {
-      if (gamestate.activeActionTarget === Actions.selectMatchingTool) {
+      if (gamestate.activeAction === Actions.selectMatchingTool) {
         return gamestate.hand.get(gamestate.activeActionTarget).tool;
       }
       return '';
