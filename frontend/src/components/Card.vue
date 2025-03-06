@@ -2,9 +2,9 @@
 <template>
   <div class="card" :class="{ disabled: isDisabled }">
     {{ card.name }}
-    <br/>
+    <br />
     {{ card.tool }}
-    <br/>
+    <br />
     {{ card.id }}
   </div>
 </template>
@@ -14,14 +14,14 @@ export default {
   props: {
     card: {
       type: Object,
-      required: true
+      required: true,
     },
     isDisabled: {
       type: Boolean,
-      default: false
-    }
-  }
-};
+      default: false,
+    },
+  },
+}
 </script>
 
 <style scoped>

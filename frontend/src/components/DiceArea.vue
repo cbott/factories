@@ -13,32 +13,30 @@
 import { gamestate, Actions } from './GameState.js'
 
 export default {
-  components: {
-  },
+  components: {},
   computed: {
     // Returns the current player's dice array
     myDice() {
       if (gamestate.state.players == null) {
-        return [];
+        return []
       }
-      return gamestate.state.players[gamestate.playerID]?.dice || [];
-    }
+      return gamestate.state.players[gamestate.playerID]?.dice || []
+    },
   },
   data() {
     return {
-      gamestate
-    };
+      gamestate,
+    }
   },
   methods: {
-    activateDie(index){
+    activateDie(index) {
       // Selects one of the dice. Player must click on a valid target to complete the action
-      gamestate.activeAction = Actions.selectDieTarget;
-      gamestate.activeActionTarget = index;
-    }
-  }
-};
+      gamestate.activeAction = Actions.selectDieTarget
+      gamestate.activeActionTarget = index
+    },
+  },
+}
 </script>
-
 
 <style scoped>
 .dice-area {

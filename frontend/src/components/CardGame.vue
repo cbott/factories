@@ -13,11 +13,11 @@
 import { gamestate } from './GameState.js'
 
 // Components
-import Marketplace from './Marketplace.vue';
-import PlayerHand from './PlayerHand.vue';
-import Compound from './Compound.vue';
-import DiceArea from './DiceArea.vue';
-import Headquarters from './Headquarters.vue';
+import Marketplace from './Marketplace.vue'
+import PlayerHand from './PlayerHand.vue'
+import Compound from './Compound.vue'
+import DiceArea from './DiceArea.vue'
+import Headquarters from './Headquarters.vue'
 
 // Exports
 export default {
@@ -30,20 +30,17 @@ export default {
   },
   data() {
     return {
-      gamestate
-    };
+      gamestate,
+    }
   },
-  methods: {
-  },
+  methods: {},
   mounted() {
-    gamestate.openSocket();
-  }
-};
+    gamestate.openSocket()
+  },
+}
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>
 
 <style>
 .card-area {

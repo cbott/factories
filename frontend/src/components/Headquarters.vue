@@ -3,11 +3,15 @@
   <div class="headquarters-area">
     <p class="header">HEADQUARTERS</p>
 
-    <div v-for="floorname in ['research', 'generate', 'mine']" :class="{
-        'floor': true,
+    <div
+      v-for="floorname in ['research', 'generate', 'mine']"
+      :class="{
+        floor: true,
         'valid-floor': isValidDieTarget(floorname) === true,
-        'invalid-floor': isValidDieTarget(floorname) === false
-      }" @click="placeDie(floorname)">
+        'invalid-floor': isValidDieTarget(floorname) === false,
+      }"
+      @click="placeDie(floorname)"
+    >
       <p>{{ floorname.toUpperCase() }}</p>
       <div class="floor-dice">
         <div v-for="diceval in headquartersContents[floorname]" class="die">
@@ -22,35 +26,34 @@
 import { gamestate, Actions } from './GameState.js'
 
 export default {
-  components: {
-  },
+  components: {},
   computed: {
     // Returns the current player's headquarters map
     headquartersContents() {
       if (gamestate.state.players == null) {
-        return {};
+        return {}
       }
-      return gamestate.state.players[gamestate.playerID]?.headquarters || {};
+      return gamestate.state.players[gamestate.playerID]?.headquarters || {}
     },
   },
   data() {
     return {
-      gamestate
-    };
+      gamestate,
+    }
   },
   methods: {
-    placeDie(floor){
-      if(!this.isValidDieTarget(floor)){
+    placeDie(floor) {
+      if (!this.isValidDieTarget(floor)) {
         // Die cannot be placed here
-        return;
+        return
       }
 
       // If we have selected a die, the actionTarget is the index of the die in the player's dice array
-      gamestate.placeDieInHeadquarters(gamestate.activeActionTarget, floor);
+      gamestate.placeDieInHeadquarters(gamestate.activeActionTarget, floor)
 
       // Reset the active action
-      gamestate.activeAction = Actions.none;
-      gamestate.activeActionTarget = null;
+      gamestate.activeAction = Actions.none
+      gamestate.activeActionTarget = null
     },
 
     /**
@@ -61,41 +64,40 @@ export default {
      *                           false if it is not, and null if the action is not
      *                           currently selecting a die target or if the floor is invalid.
      */
-    isValidDieTarget(floor){
+    isValidDieTarget(floor) {
       // TODO: can this implementation be shared between frontend and backend?
-      if(gamestate.activeAction !== Actions.selectDieTarget){
+      if (gamestate.activeAction !== Actions.selectDieTarget) {
         // Only return validity if we're actively looking for a target to place a die
-        return null;
+        return null
       }
 
-      if(this.headquartersContents[floor]?.length >= 3){
+      if (this.headquartersContents[floor]?.length >= 3) {
         // At most a floor can hold 3 dice
-        return false;
+        return false
       }
 
-      if(floor === "research"){
+      if (floor === 'research') {
         // Any dice value can be placed in research
-        return true;
+        return true
       }
 
       // Get dice value from index
-      const value = gamestate.state.players[gamestate.playerID].dice[gamestate.activeActionTarget];
+      const value = gamestate.state.players[gamestate.playerID].dice[gamestate.activeActionTarget]
 
-      if(floor === "generate"){
-        return value <= 3;
+      if (floor === 'generate') {
+        return value <= 3
       }
 
-      if(floor === "mine"){
-        return value >= 4;
+      if (floor === 'mine') {
+        return value >= 4
       }
 
       // Invalid floor
-      return null;
+      return null
     },
-  }
-};
+  },
+}
 </script>
-
 
 <style scoped>
 .headquarters-area {
