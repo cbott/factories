@@ -2,18 +2,54 @@
  * Core logic for the game
  */
 
-const { BlueprintCard, buildDeck, calculatePrestige } = require('./cards')
+const { BlueprintCard, buildDeck, calculatePrestige, shuffleArray } = require('./cards')
+const player = require('./player')
 
 class GameState {
   constructor() {
     this.deck = buildDeck()
+    this.discard = []
     this.marketplace = []
     // `players` object maps session IDs to instances of the Player class
     this.players = {}
   }
-  // Can we define a getter for the class that would return the serializable object that we want
-  // to send to the front end? This would let us have some backend-only attributes.
-  // May not need to do this but will have to experiment with what socket.io can handle.
+
+  /**
+   * Returns the public state of the game to be sent to clients
+   *
+   * @returns {Object} The public state of the game.
+   */
+  get publicState() {
+    return {
+      marketplace: this.marketplace,
+      players: this.players,
+    }
+  }
+
+  /**
+   * Adds a player to the game and deals them a starting hand.
+   *
+   * @param {string} playerID - The ID of the player to add.
+   */
+  addPlayer(playerID) {
+    this.players[playerID] = new player.Player()
+    for (let i = 0; i < player.STARTING_HAND_SIZE; i++) {
+      this.drawCard(playerID)
+    }
+  }
+
+  /**
+   * Removes a player from the game and discards all of their cards
+   *
+   * @param {string} playerID - The ID of the player to remove.
+   */
+  removePlayer(playerID) {
+    for (const cardID of Object.keys(this.players[playerID].hand)) {
+      this.removeFromHand(playerID, cardID)
+    }
+    delete this.players[playerID]
+    console.log(this.discard)
+  }
 
   /**
    * Moves a card from a player's hand to their compound and updates prestige.
@@ -31,29 +67,47 @@ class GameState {
   }
 
   /**
-   * Removes a card from a player's hand.
+   * Removes a card from a player's hand and adds it to the discard pile.
    *
    * @param {string} playerID - The ID of the player.
    * @param {int} cardID - The ID of the card to be removed.
    */
   removeFromHand(playerID, cardID) {
-    // TODO: implement discard pile
+    this.discard.push(this.players[playerID].hand[cardID])
     delete this.players[playerID].hand[cardID]
   }
-}
 
-/**
- * Draws a card from the deck and adds it to the hand.
- *
- * @param {Array<BlueprintCard>} deck - The deck of cards to draw from.
- * @param {Object} hand - The hand where the drawn card will be added
- */
-function drawCard(deck, hand) {
-  if (deck.length) {
+  /**
+   * Draws a card from the deck and adds it to the player's hand.
+   *
+   * @param {string} playerID - The ID of the player.
+   */
+  drawCard(playerID) {
+    const card = this.getNextCardFromDeck()
+    if (card === null) {
+      console.log('No cards left in deck')
+      return
+    }
     console.log('Drawing card')
-    const card = deck.pop()
-    hand[card.id] = card
+    this.players[playerID].hand[card.id] = card
+  }
+
+  /**
+   * Retrieves the next card from the deck, shuffling the discard pile back into the deck if necessary.
+   *
+   * @returns {BlueprintCard|null} The next card from the deck, or null if no cards are available.
+   */
+  getNextCardFromDeck() {
+    if (this.deck.length === 0) {
+      if (this.discard.length === 0) {
+        // No cards left in the deck or discard pile
+        return null
+      }
+      this.deck = shuffleArray(this.discard)
+      this.discard = []
+    }
+    return this.deck.pop()
   }
 }
 
-module.exports = { GameState, drawCard }
+module.exports = { GameState }

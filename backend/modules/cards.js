@@ -32,35 +32,40 @@ const card_setup = [
   { name: 'Battery Factory', tool: 'wrench', prestige: 1, copies: 2 },
   { name: 'Beacon', tool: 'shovel', prestige: null, copies: 4 },
   { name: 'Biolab', tool: 'gear', prestige: 1, copies: 2 },
-  { name: 'Black Market', tool: 'gear', prestige: 1, copies: 2 },
-  { name: 'Concrete Plant', tool: 'shovel', prestige: 1, copies: 2 },
-  { name: 'Dojo', tool: 'gear', prestige: 0, copies: 2 },
-  { name: 'Fitness Center', tool: 'wrench', prestige: 0, copies: 3 },
-  { name: 'Foundry', tool: 'gear', prestige: 1, copies: 2 },
-  { name: 'Fulfillment Center', tool: 'hammer', prestige: 1, copies: 2 },
-  { name: 'Golem', tool: 'hammer', prestige: 1, copies: 2 },
-  { name: 'Gymnasium', tool: 'shovel', prestige: 0, copies: 3 },
-  { name: 'Harvester', tool: 'hammer', prestige: 1, copies: 2 },
-  { name: 'Incinerator', tool: 'shovel', prestige: 1, copies: 2 },
-  { name: 'Laboratory', tool: 'wrench', prestige: 1, copies: 2 },
-  { name: 'Manufactory', tool: 'wrench', prestige: 1, copies: 2 },
-  { name: 'Mega Factory', tool: 'gear', prestige: 1, copies: 2 },
-  { name: 'Megalith', tool: 'wrench', prestige: 3, copies: 3 },
-  { name: 'Motherlode', tool: 'shovel', prestige: 1, copies: 2 },
-  { name: 'Nuclear Plant', tool: 'wrench', prestige: 1, copies: 2 },
-  { name: 'Obelisk', tool: 'hammer', prestige: 2, copies: 5 },
-  { name: 'Power Plant', tool: 'gear', prestige: 1, copies: 2 },
-  { name: 'Recycling Plant', tool: 'gear', prestige: 1, copies: 3 },
-  { name: 'Refinery', tool: 'wrench', prestige: 1, copies: 2 },
-  { name: 'Replicator', tool: 'shovel', prestige: 1, copies: 2 },
-  { name: 'Robot', tool: 'hammer', prestige: 0, copies: 3 },
-  { name: 'Scrap Yard', tool: 'wrench', prestige: 0, copies: 2 },
-  { name: 'Solar Array', tool: 'gear', prestige: 0, copies: 2 },
-  { name: 'Temp Agency', tool: 'hammer', prestige: 0, copies: 2 },
-  { name: 'Trash Compactor', tool: 'shovel', prestige: 1, copies: 2 },
-  { name: 'Warehouse', tool: 'hammer', prestige: 1, copies: 2 },
+  // { name: 'Black Market', tool: 'gear', prestige: 1, copies: 2 },
+  // { name: 'Concrete Plant', tool: 'shovel', prestige: 1, copies: 2 },
+  // { name: 'Dojo', tool: 'gear', prestige: 0, copies: 2 },
+  // { name: 'Fitness Center', tool: 'wrench', prestige: 0, copies: 3 },
+  // { name: 'Foundry', tool: 'gear', prestige: 1, copies: 2 },
+  // { name: 'Fulfillment Center', tool: 'hammer', prestige: 1, copies: 2 },
+  // { name: 'Golem', tool: 'hammer', prestige: 1, copies: 2 },
+  // { name: 'Gymnasium', tool: 'shovel', prestige: 0, copies: 3 },
+  // { name: 'Harvester', tool: 'hammer', prestige: 1, copies: 2 },
+  // { name: 'Incinerator', tool: 'shovel', prestige: 1, copies: 2 },
+  // { name: 'Laboratory', tool: 'wrench', prestige: 1, copies: 2 },
+  // { name: 'Manufactory', tool: 'wrench', prestige: 1, copies: 2 },
+  // { name: 'Mega Factory', tool: 'gear', prestige: 1, copies: 2 },
+  // { name: 'Megalith', tool: 'wrench', prestige: 3, copies: 3 },
+  // { name: 'Motherlode', tool: 'shovel', prestige: 1, copies: 2 },
+  // { name: 'Nuclear Plant', tool: 'wrench', prestige: 1, copies: 2 },
+  // { name: 'Obelisk', tool: 'hammer', prestige: 2, copies: 5 },
+  // { name: 'Power Plant', tool: 'gear', prestige: 1, copies: 2 },
+  // { name: 'Recycling Plant', tool: 'gear', prestige: 1, copies: 3 },
+  // { name: 'Refinery', tool: 'wrench', prestige: 1, copies: 2 },
+  // { name: 'Replicator', tool: 'shovel', prestige: 1, copies: 2 },
+  // { name: 'Robot', tool: 'hammer', prestige: 0, copies: 3 },
+  // { name: 'Scrap Yard', tool: 'wrench', prestige: 0, copies: 2 },
+  // { name: 'Solar Array', tool: 'gear', prestige: 0, copies: 2 },
+  // { name: 'Temp Agency', tool: 'hammer', prestige: 0, copies: 2 },
+  // { name: 'Trash Compactor', tool: 'shovel', prestige: 1, copies: 2 },
+  // { name: 'Warehouse', tool: 'hammer', prestige: 1, copies: 2 },
 ]
 
+/**
+ * Helper function to initialize all Blueprint cards into a deck
+ *
+ * @returns {Array<BlueprintCard>} An array of BlueprintCard objects representing the shuffled deck.
+ */
 function buildDeck() {
   deck = []
   id = 0
@@ -68,9 +73,7 @@ function buildDeck() {
   for (let i = 0; i < card_setup.length; i++) {
     card_type = card_setup[i]
     for (let copy = 0; copy < card_type.copies; copy++) {
-      deck.push(
-        new BlueprintCard(id, card_type.name, card_type.tool, card_type.prestige, card_type.copies)
-      )
+      deck.push(new BlueprintCard(id, card_type.name, card_type.tool, card_type.prestige, card_type.copies))
       id++
     }
   }
@@ -152,4 +155,4 @@ function removeCardByID(arr, id) {
   return []
 }
 
-module.exports = { BlueprintCard, buildDeck, removeCardByID, calculatePrestige }
+module.exports = { BlueprintCard, buildDeck, removeCardByID, calculatePrestige, shuffleArray }

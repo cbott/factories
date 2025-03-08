@@ -1,3 +1,8 @@
+const STARTING_DICE = 4
+const STARTING_ENERGY = 2
+const STARTING_METAL = 1
+const STARTING_HAND_SIZE = 4
+
 /**
  * Represents a player in the game.
  *
@@ -5,17 +10,17 @@
  */
 class Player {
   constructor() {
-    // Player's hand, indexed by card ID
+    // Player's hand, indexed by card ID {cardID: BlueprintCard}
     this.hand = {}
     // Player's compund
     this.compound = []
     // Rolled dice that have not yet been used
     this.dice = []
     // Number of dice available to roll, can be increased with contractor cards
-    this.numDice = 4
+    this.numDice = STARTING_DICE
     // Resources
-    this.energy = 2 // ⚡
-    this.metal = 1 // 🔩
+    this.energy = STARTING_ENERGY // ⚡
+    this.metal = STARTING_METAL // 🔩
     this.prestige = 0 // 🏆
     // Dice played in the Headquarters
     this.headquarters = {
@@ -26,4 +31,4 @@ class Player {
   }
 }
 
-module.exports = { Player }
+module.exports = { Player, STARTING_DICE, STARTING_HAND_SIZE }

@@ -6,7 +6,6 @@ const path = require('path')
 
 // custom modules
 const cards = require('./modules/cards.js')
-const player = require('./modules/player.js')
 const gamelogic = require('./modules/gamelogic.js')
 
 // Set up server
@@ -22,25 +21,39 @@ const io = new Server(server, {
 let gameState = new gamelogic.GameState()
 //////////////////////////////////
 
+/**
+ * Send the current game state to all connected clients
+ */
+function broadcastGameState() {
+  // TODO: eventually we may want to send different information to different players
+  // with socket.emit('game-state', gameState)
+  io.emit('game-state', gameState.publicState)
+}
+
 io.on('connection', (socket) => {
   console.log(`User connected: ${socket.id}`)
 
-  gameState.players[socket.id] = new player.Player()
+  gameState.addPlayer(socket.id)
 
   // Move a card from the deck into the player's hand
   socket.on('draw-card', () => {
-    gamelogic.drawCard(gameState.deck, gameState.players[socket.id].hand)
-    io.emit('game-state', gameState)
+    gameState.drawCard(socket.id)
+    broadcastGameState()
   })
 
   // Update the marketplace to have 4 cards
   socket.on('fill-marketplace', () => {
     console.log('Filling marketplace')
-    while (gameState.deck.length > 0 && gameState.marketplace.length < 4) {
-      const card = gameState.deck.pop()
+    while (gameState.marketplace.length < 4) {
+      const card = gameState.getNextCardFromDeck()
+      if (card == null) {
+        // Out of cards
+        console.log('No cards left to fill marketplace')
+        break
+      }
       gameState.marketplace.push(card)
-      io.emit('game-state', gameState)
     }
+    broadcastGameState()
   })
 
   // Move a card from the marketplace to a player's hand
@@ -49,13 +62,13 @@ io.on('connection', (socket) => {
     const card = cards.removeCardByID(gameState.marketplace, cardID)[0]
     gameState.players[socket.id].hand[cardID] = card
     console.log('Player hand is now', gameState.players[socket.id].hand)
-    io.emit('game-state', gameState)
+    broadcastGameState()
   })
 
   // Move a card from the player's hand to their compound
   socket.on('add-to-compound', (cardID) => {
     gameState.moveToCompound(socket.id, cardID)
-    io.emit('game-state', gameState)
+    broadcastGameState()
   })
 
   // Move a card from the player's hand to their compound, discarding an approprate tool card
@@ -69,7 +82,7 @@ io.on('connection', (socket) => {
     ) {
       gameState.moveToCompound(socket.id, cardIDToMove)
       gameState.removeFromHand(socket.id, cardIDToDiscard)
-      io.emit('game-state', gameState)
+      broadcastGameState()
       console.log('Moved Card')
     }
     // TODO: handle else case, return error to client
@@ -84,7 +97,7 @@ io.on('connection', (socket) => {
       gameState.players[socket.id].dice.push(value)
     }
     gameState.players[socket.id].numDice = 0
-    io.emit('game-state', gameState)
+    broadcastGameState()
   })
 
   // Move a die from the player's dice pool to the headquarters
@@ -135,7 +148,7 @@ io.on('connection', (socket) => {
     if (floor === 'research') {
       // Draw a card for each die placed on research
       for (let i = 0; i < 1 + bonus; i++) {
-        gamelogic.drawCard(gameState.deck, gameState.players[socket.id].hand)
+        gameState.drawCard(socket.id)
       }
     } else if (floor === 'generate') {
       // Gain energy based on value of die
@@ -146,16 +159,17 @@ io.on('connection', (socket) => {
     }
 
     gameState.players[socket.id].headquarters[floor].push(die)
-    io.emit('game-state', gameState)
+    broadcastGameState()
   })
 
   socket.on('disconnect', () => {
     console.log(`User disconnected: ${socket.id}`)
-    delete gameState.players[socket.id]
-    io.emit('game-state', gameState)
+    gameState.removePlayer(socket.id)
+    broadcastGameState()
   })
 
-  socket.emit('game-state', gameState)
+  // Update all clients when a player joins
+  broadcastGameState()
 })
 
 const PORT = process.env.PORT || 3000

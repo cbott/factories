@@ -19,7 +19,7 @@ export default {
 header {
   text-align: center;
   background-color: #f4f4f4;
-  padding: 1rem;
+  padding: 0.1rem;
   font-size: 1.5rem;
   font-weight: bold;
 }

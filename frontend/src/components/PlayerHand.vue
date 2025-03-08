@@ -47,10 +47,7 @@ export default {
       } else if (gamestate.activeAction === Actions.selectMatchingTool) {
         // Check if the card has a matching tool
         console.log('checking for matching tool', this.activeCardTool)
-        if (
-          cardID != gamestate.activeActionTarget &&
-          gamestate.hand.get(cardID).tool === this.activeCardTool
-        ) {
+        if (cardID != gamestate.activeActionTarget && gamestate.hand.get(cardID).tool === this.activeCardTool) {
           // The card has a matching tool, add it to the compound
           gamestate.addToCompoundWithDiscard(gamestate.activeActionTarget, cardID)
           gamestate.activeAction = Actions.none
