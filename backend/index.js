@@ -1,12 +1,11 @@
 // node modules
-const express = require('express')
-const http = require('http')
-const { Server } = require('socket.io')
-const path = require('path')
+import express from 'express'
+import http from 'http'
+import { Server } from 'socket.io'
 
 // custom modules
-const cards = require('./modules/cards.js')
-const gamelogic = require('./modules/gamelogic.js')
+import * as cards from './modules/cards.js'
+import * as gamelogic from './modules/gamelogic.js'
 
 // Set up server
 const app = express()
@@ -173,4 +172,11 @@ io.on('connection', (socket) => {
 })
 
 const PORT = process.env.PORT || 3000
-server.listen(PORT, () => console.log(`Server listening on port ${PORT}`))
+gameState
+  .init()
+  .then(() => {
+    server.listen(PORT, () => console.log(`Server listening on port ${PORT}`))
+  })
+  .catch((error) => {
+    console.error('Failed to initialize game state:', error)
+  })

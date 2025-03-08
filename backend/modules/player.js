@@ -1,14 +1,14 @@
-const STARTING_DICE = 4
+export const STARTING_DICE = 4
+export const STARTING_HAND_SIZE = 4
 const STARTING_ENERGY = 2
 const STARTING_METAL = 1
-const STARTING_HAND_SIZE = 4
 
 /**
  * Represents a player in the game.
  *
  * Game State will track a mapping of player connections to instances of this class
  */
-class Player {
+export class Player {
   constructor() {
     // Player's hand, indexed by card ID {cardID: BlueprintCard}
     this.hand = {}
@@ -30,5 +30,3 @@ class Player {
     }
   }
 }
-
-module.exports = { Player, STARTING_DICE, STARTING_HAND_SIZE }

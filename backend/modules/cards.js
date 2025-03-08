@@ -1,3 +1,15 @@
+import { promises as fs } from 'fs'
+import { parse } from 'csv-parse'
+import path from 'path'
+import { fileURLToPath } from 'url'
+
+// Get the directory name of the current module
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
+// Path to the CSV file containing the definitions for the blueprint cards
+const BLUEPRINT_DEFINITION_CSV = path.join(__dirname, '..', 'resources', 'blueprintcards.csv')
+
 /**
  * Class representing a blueprint card
  *
@@ -13,7 +25,7 @@
  * - Recipe
  * - # of Card Copies
  */
-class BlueprintCard {
+export class BlueprintCard {
   constructor(id, name, tool, prestige, copies) {
     this.id = id // a unique identifier for us to keep track of it in code
     this.name = name
@@ -25,62 +37,44 @@ class BlueprintCard {
   }
 }
 
-// TODO: we could potentially store all of this in a separate CSV that we load from
-const card_setup = [
-  { name: 'Aluminum Factory', tool: 'shovel', prestige: 1, copies: 2 },
-  { name: 'Assembly Line', tool: 'gear', prestige: 1, copies: 2 },
-  { name: 'Battery Factory', tool: 'wrench', prestige: 1, copies: 2 },
-  { name: 'Beacon', tool: 'shovel', prestige: null, copies: 4 },
-  { name: 'Biolab', tool: 'gear', prestige: 1, copies: 2 },
-  // { name: 'Black Market', tool: 'gear', prestige: 1, copies: 2 },
-  // { name: 'Concrete Plant', tool: 'shovel', prestige: 1, copies: 2 },
-  // { name: 'Dojo', tool: 'gear', prestige: 0, copies: 2 },
-  // { name: 'Fitness Center', tool: 'wrench', prestige: 0, copies: 3 },
-  // { name: 'Foundry', tool: 'gear', prestige: 1, copies: 2 },
-  // { name: 'Fulfillment Center', tool: 'hammer', prestige: 1, copies: 2 },
-  // { name: 'Golem', tool: 'hammer', prestige: 1, copies: 2 },
-  // { name: 'Gymnasium', tool: 'shovel', prestige: 0, copies: 3 },
-  // { name: 'Harvester', tool: 'hammer', prestige: 1, copies: 2 },
-  // { name: 'Incinerator', tool: 'shovel', prestige: 1, copies: 2 },
-  // { name: 'Laboratory', tool: 'wrench', prestige: 1, copies: 2 },
-  // { name: 'Manufactory', tool: 'wrench', prestige: 1, copies: 2 },
-  // { name: 'Mega Factory', tool: 'gear', prestige: 1, copies: 2 },
-  // { name: 'Megalith', tool: 'wrench', prestige: 3, copies: 3 },
-  // { name: 'Motherlode', tool: 'shovel', prestige: 1, copies: 2 },
-  // { name: 'Nuclear Plant', tool: 'wrench', prestige: 1, copies: 2 },
-  // { name: 'Obelisk', tool: 'hammer', prestige: 2, copies: 5 },
-  // { name: 'Power Plant', tool: 'gear', prestige: 1, copies: 2 },
-  // { name: 'Recycling Plant', tool: 'gear', prestige: 1, copies: 3 },
-  // { name: 'Refinery', tool: 'wrench', prestige: 1, copies: 2 },
-  // { name: 'Replicator', tool: 'shovel', prestige: 1, copies: 2 },
-  // { name: 'Robot', tool: 'hammer', prestige: 0, copies: 3 },
-  // { name: 'Scrap Yard', tool: 'wrench', prestige: 0, copies: 2 },
-  // { name: 'Solar Array', tool: 'gear', prestige: 0, copies: 2 },
-  // { name: 'Temp Agency', tool: 'hammer', prestige: 0, copies: 2 },
-  // { name: 'Trash Compactor', tool: 'shovel', prestige: 1, copies: 2 },
-  // { name: 'Warehouse', tool: 'hammer', prestige: 1, copies: 2 },
-]
-
 /**
- * Helper function to initialize all Blueprint cards into a deck
+ * Create a deck of BlueprintCards from a list of card definitions
+ * with format { name: 'Aluminum Factory', tool: 'shovel', prestige: 1, copies: 2 ... }
  *
- * @returns {Array<BlueprintCard>} An array of BlueprintCard objects representing the shuffled deck.
+ * @param {Array<Object>} cardDefinitions
+ * @returns Array<BlueprintCard>
  */
-function buildDeck() {
-  deck = []
-  id = 0
-
-  for (let i = 0; i < card_setup.length; i++) {
-    card_type = card_setup[i]
-    for (let copy = 0; copy < card_type.copies; copy++) {
-      deck.push(new BlueprintCard(id, card_type.name, card_type.tool, card_type.prestige, card_type.copies))
+function buildDeckFromDefinitions(cardDefinitions) {
+  let deck = []
+  let id = 0
+  for (let i = 0; i < cardDefinitions.length; i++) {
+    let cardType = cardDefinitions[i]
+    for (let copy = 0; copy < cardType.copies; copy++) {
+      deck.push(new BlueprintCard(id, cardType.name, cardType.tool, cardType.prestige, cardType.copies))
       id++
     }
   }
+  return shuffleArray(deck)
+}
 
-  deck = shuffleArray(deck)
-
-  return deck
+/**
+ * Create the deck of BlueprintCards from the card definition CSV file
+ *
+ * @returns {Array<BlueprintCard>} An array of BlueprintCard objects representing the shuffled deck.
+ */
+export async function buildDeck() {
+  const data = await fs.readFile(BLUEPRINT_DEFINITION_CSV, 'utf8')
+  return new Promise((resolve, reject) => {
+    parse(data, { columns: true }, (err, cardDefinitions) => {
+      if (err) {
+        console.error('Error parsing the CSV file:', err)
+        reject(err)
+      } else {
+        console.error('Creating deck from file', BLUEPRINT_DEFINITION_CSV)
+        resolve(buildDeckFromDefinitions(cardDefinitions))
+      }
+    })
+  })
 }
 
 /**
@@ -89,7 +83,7 @@ function buildDeck() {
  * @param {Array<BlueprintCard>} arr - The array of cards.
  * @returns {int} The total prestige score
  */
-function calculatePrestige(arr) {
+export function calculatePrestige(arr) {
   let totalPrestige = 0
   let beacons = 0
   arr.forEach((card) => {
@@ -131,7 +125,7 @@ function calculatePrestige(arr) {
  * @param {Array} array - The array to shuffle.
  * @returns {Array} The shuffled array.
  */
-function shuffleArray(array) {
+export function shuffleArray(array) {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1))
     ;[array[i], array[j]] = [array[j], array[i]]
@@ -146,7 +140,7 @@ function shuffleArray(array) {
  * @param {number} id - The ID of the card to remove.
  * @returns {Array<BlueprintCard>} The removed card, or an empty array if not found.
  */
-function removeCardByID(arr, id) {
+export function removeCardByID(arr, id) {
   for (let i = 0; i < arr.length; i++) {
     if (arr[i].id == id) {
       return arr.splice(i, 1)
@@ -154,5 +148,3 @@ function removeCardByID(arr, id) {
   }
   return []
 }
-
-module.exports = { BlueprintCard, buildDeck, removeCardByID, calculatePrestige, shuffleArray }

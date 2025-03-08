@@ -2,16 +2,23 @@
  * Core logic for the game
  */
 
-const { BlueprintCard, buildDeck, calculatePrestige, shuffleArray } = require('./cards')
-const player = require('./player')
+import * as cards from './cards.js'
+import * as player from './player.js'
 
-class GameState {
+export class GameState {
   constructor() {
-    this.deck = buildDeck()
+    this.deck = []
     this.discard = []
     this.marketplace = []
     // `players` object maps session IDs to instances of the Player class
     this.players = {}
+  }
+
+  /**
+   * Initializes the game state
+   */
+  async init() {
+    this.deck = await cards.buildDeck()
   }
 
   /**
@@ -48,7 +55,6 @@ class GameState {
       this.removeFromHand(playerID, cardID)
     }
     delete this.players[playerID]
-    console.log(this.discard)
   }
 
   /**
@@ -103,11 +109,9 @@ class GameState {
         // No cards left in the deck or discard pile
         return null
       }
-      this.deck = shuffleArray(this.discard)
+      this.deck = cards.shuffleArray(this.discard)
       this.discard = []
     }
     return this.deck.pop()
   }
 }
-
-module.exports = { GameState }

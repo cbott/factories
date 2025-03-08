@@ -1,0 +1,33 @@
+name,tool,prestige,copies
+Aluminum Factory,shovel,1,2
+Assembly Line,gear,1,2
+Battery Factory,wrench,1,2
+Beacon,shovel,null,4
+Biolab,gear,1,2
+Black Market,gear,1,2
+Concrete Plant,shovel,1,2
+Dojo,gear,0,2
+Fitness Center,wrench,0,3
+Foundry,gear,1,2
+Fulfillment Center,hammer,1,2
+Golem,hammer,1,2
+Gymnasium,shovel,0,3
+Harvester,hammer,1,2
+Incinerator,shovel,1,2
+Laboratory,wrench,1,2
+Manufactory,wrench,1,2
+Mega Factory,gear,1,2
+Megalith,wrench,3,3
+Motherlode,shovel,1,2
+Nuclear Plant,wrench,1,2
+Obelisk,hammer,2,5
+Power Plant,gear,1,2
+Recycling Plant,gear,1,3
+Refinery,wrench,1,2
+Replicator,shovel,1,2
+Robot,hammer,0,3
+Scrap Yard,wrench,0,2
+Solar Array,gear,0,2
+Temp Agency,hammer,0,2
+Trash Compactor,shovel,1,2
+Warehouse,hammer,1,2
