@@ -25,3 +25,4 @@ To Do list
 - Implement contractor cards (delay for now, can do most of the game without it)
 - Switch to work phase automatically once all players have picked up card (delay for now, enforce manually)
 - Switch to market phase once every player clicks a complete button
+- Add a button to refresh the marketplace for 1 metal or 1 energy

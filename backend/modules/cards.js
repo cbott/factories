@@ -182,13 +182,13 @@ export function shuffleArray(array) {
  *
  * @param {Array<BlueprintCard>} arr - The array of cards.
  * @param {number} id - The ID of the card to remove.
- * @returns {Array<BlueprintCard>} The removed card, or an empty array if not found.
+ * @returns {BlueprintCard|null} The removed card, or null if not found.
  */
 export function removeCardByID(arr, id) {
   for (let i = 0; i < arr.length; i++) {
     if (arr[i].id == id) {
-      return arr.splice(i, 1)
+      return arr.splice(i, 1)[0]
     }
   }
-  return []
+  return null
 }

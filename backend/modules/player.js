@@ -29,4 +29,15 @@ export class Player {
       mine: [],
     }
   }
+
+  /**
+   * Clear the player's hand and headquarters for the start of the next round.
+   */
+  resetRound() {
+    this.dice = []
+    this.headquarters.research = []
+    this.headquarters.generate = []
+    this.headquarters.mine = []
+    this.numDice = STARTING_DICE
+  }
 }

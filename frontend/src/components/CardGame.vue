@@ -1,6 +1,9 @@
 <template>
-  <p>Player ID: {{ gamestate.playerID }}</p>
-  <button @click="gamestate.fillMarketplace">Fill Marketplace</button>
+  <p>{{ gamestate.state.workPhase ? 'Work' : 'Market' }} Phase | Player ID: {{ gamestate.playerID }}</p>
+  <div class="button-container">
+    <button @click="gamestate.fillMarketplace">Fill Marketplace</button>
+    <button @click="gamestate.requestChangePhase">Change Phase</button>
+  </div>
   <Marketplace />
   <DiceArea />
   <PlayerHand />

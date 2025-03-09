@@ -12,6 +12,7 @@ export class GameState {
     this.marketplace = []
     // `players` object maps session IDs to instances of the Player class
     this.players = {}
+    this.workPhase = false
   }
 
   /**
@@ -30,6 +31,7 @@ export class GameState {
     return {
       marketplace: this.marketplace,
       players: this.players,
+      workPhase: this.workPhase,
     }
   }
 
@@ -41,7 +43,7 @@ export class GameState {
   addPlayer(playerID) {
     this.players[playerID] = new player.Player()
     for (let i = 0; i < player.STARTING_HAND_SIZE; i++) {
-      this.drawCard(playerID)
+      this._drawCard(playerID)
     }
   }
 
@@ -52,7 +54,7 @@ export class GameState {
    */
   removePlayer(playerID) {
     for (const cardID of Object.keys(this.players[playerID].hand)) {
-      this.removeFromHand(playerID, cardID)
+      this._removeFromHand(playerID, cardID)
     }
     delete this.players[playerID]
   }
@@ -63,7 +65,7 @@ export class GameState {
    * @param {string} playerID - The ID of the player.
    * @param {int} cardID - The ID of the card to be moved.
    */
-  moveToCompound(playerID, cardID) {
+  _moveToCompound(playerID, cardID) {
     // TODO: add validation
     console.log('Moving card', cardID, 'to compound', playerID)
     this.players[playerID].compound.push(this.players[playerID].hand[cardID])
@@ -72,7 +74,20 @@ export class GameState {
     this.players[playerID].prestige = cards.calculatePrestige(this.players[playerID].compound)
   }
 
+  /**
+   * Builds a card for a player by using resources and discarding a matching tool card.
+   *
+   * @param {string} playerID - The ID of the player attempting to build the card.
+   * @param {int} cardIDToBuild - The ID of the card the player wants to build.
+   * @param {int} cardIDToDiscard - The ID of the card the player wants to discard.
+   * @returns {boolean} - Returns true if the card was successfully built, otherwise false.
+   */
   buildCard(playerID, cardIDToBuild, cardIDToDiscard) {
+    if (!this.workPhase) {
+      console.log('Cannot build cards outside of Work phase')
+      return false
+    }
+
     if (cardIDToBuild === cardIDToDiscard) {
       console.log('Card ID', cardIDToBuild, 'selected to build and discard are the same')
       return false
@@ -102,8 +117,8 @@ export class GameState {
     }
     this.players[playerID].metal -= card.cost_metal
     this.players[playerID].energy -= card.cost_energy
-    this.moveToCompound(playerID, cardIDToBuild)
-    this.removeFromHand(playerID, cardIDToDiscard)
+    this._moveToCompound(playerID, cardIDToBuild)
+    this._removeFromHand(playerID, cardIDToDiscard)
     return true
   }
 
@@ -113,7 +128,7 @@ export class GameState {
    * @param {string} playerID - The ID of the player.
    * @param {int} cardID - The ID of the card to be removed.
    */
-  removeFromHand(playerID, cardID) {
+  _removeFromHand(playerID, cardID) {
     this.discard.push(this.players[playerID].hand[cardID])
     delete this.players[playerID].hand[cardID]
   }
@@ -123,8 +138,8 @@ export class GameState {
    *
    * @param {string} playerID - The ID of the player.
    */
-  drawCard(playerID) {
-    const card = this.getNextCardFromDeck()
+  _drawCard(playerID) {
+    const card = this._getNextCardFromDeck()
     if (card === null) {
       console.log('No cards left in deck')
       return
@@ -138,7 +153,7 @@ export class GameState {
    *
    * @returns {BlueprintCard|null} The next card from the deck, or null if no cards are available.
    */
-  getNextCardFromDeck() {
+  _getNextCardFromDeck() {
     if (this.deck.length === 0) {
       if (this.discard.length === 0) {
         // No cards left in the deck or discard pile
@@ -148,5 +163,147 @@ export class GameState {
       this.discard = []
     }
     return this.deck.pop()
+  }
+
+  /**
+   * Transition between Market Phase and Work Phase
+   *
+   * @returns {boolean} - True if the phase was changed successfully, false otherwise.
+   */
+  changePhase() {
+    if (this.workPhase) {
+      // Currently in Work phase, change to Market phase, resetting player temporary states
+      this.workPhase = false
+      for (const playerID of Object.keys(this.players)) {
+        this.players[playerID].resetRound()
+      }
+    } else {
+      // Currently in Market phase, change to Work phase
+      this.workPhase = true
+    }
+    console.log('Work phase has been set to', this.workPhase)
+    return true
+  }
+
+  /**
+   * Fills the marketplace with cards from the deck
+   *
+   * @returns {boolean} - True if the marketplace was filled successfully, false otherwise.
+   */
+  fillMarketplace() {
+    while (this.marketplace.length < 4) {
+      const card = this._getNextCardFromDeck()
+      if (card == null) {
+        // Out of cards
+        return false
+      }
+      this.marketplace.push(card)
+    }
+    return true
+  }
+
+  pickupFromMarketplace(playerID, cardID) {
+    // TODO: check that provided cardID is actually in the marketplace
+    if (this.workPhase) {
+      console.log('Cannot pick up cards outside of Market phase')
+      return false
+    }
+
+    const card = cards.removeCardByID(this.marketplace, cardID)
+    if (card === null) {
+      console.log('Card ID', cardID, 'not found in marketplace')
+      return false
+    }
+    this.players[playerID].hand[cardID] = card
+    return true
+  }
+
+  /**
+   * Rolls dice for a given player during the Work phase.
+   *
+   * @param {string} playerID - The ID of the player rolling the dice.
+   * @returns {boolean} - True if the dice were rolled successfully, false otherwise.
+   */
+  rollDice(playerID) {
+    if (!this.workPhase) {
+      console.log('Cannot roll dice outside of Work phase')
+      return false
+    }
+
+    const numDice = this.players[playerID].numDice
+    for (let i = 0; i < numDice; i++) {
+      // Pick a random number from 1-6
+      const value = Math.ceil(Math.random() * 6)
+      this.players[playerID].dice.push(value)
+    }
+    this.players[playerID].numDice = 0
+    return true
+  }
+
+  /**
+   * Places a die in the specified floor of the player's headquarters.
+   *
+   * @param {string} playerID - The ID of the player.
+   * @param {int} dieIndex - The index of the die in the player's dice pool.
+   * @param {string} floor - The floor in the headquarters where the die should be placed. Valid values are 'generate', 'mine', and 'research'.
+   * @returns {boolean} - Returns true if the die was successfully placed, otherwise false.
+   */
+  placeDieInHeadquarters(playerID, dieIndex, floor) {
+    if (!this.workPhase) {
+      console.log('Cannot place dice outside of Work phase')
+      return false
+    }
+
+    // Verify that the player actually has this die
+    if (typeof dieIndex !== 'number' || dieIndex > this.players[playerID].dice.length || dieIndex < 0) {
+      console.log('Invalid die index', dieIndex, 'requested. Player has', this.players[playerID].dice.length, 'dice')
+      return false
+    }
+
+    // Verify that this is a valid floor
+    if (!(floor in this.players[playerID].headquarters)) {
+      console.log('Invalid floor', floor, 'requested')
+      return false
+    }
+
+    // Verify that this floor is not full
+    if (this.players[playerID].headquarters.length >= 3) {
+      console.log('Floor', floor, 'is full')
+      return false
+    }
+
+    // Get dice value from index
+    const die = this.players[playerID].dice[dieIndex]
+
+    // Only dice 1-3 can be used for "generate", Only dice 4-6 can be used for "mine"
+    if ((floor === 'generate' && die > 3) || (floor === 'mine' && die < 4)) {
+      console.log('Die value', die, 'cannot be placed in', floor)
+      return false
+    }
+
+    // Remove die from player's dice pool and add it to the headquarters
+    console.log('Placing die', die, 'with index', dieIndex, 'in', floor)
+    this.players[playerID].dice.splice(dieIndex, 1)
+
+    // Match Bonus: gain an extra resource if you have matching dice values
+    // This should cleanly handle X=X->+1 and X=X=X->+2
+    const bonus = this.players[playerID].headquarters[floor].includes(die) ? 1 : 0
+
+    // Update player resources based on where dice are placed
+    if (floor === 'research') {
+      // Draw a card for each die placed on research
+      for (let i = 0; i < 1 + bonus; i++) {
+        this._drawCard(playerID)
+      }
+    } else if (floor === 'generate') {
+      // Gain energy based on value of die
+      this.players[playerID].energy += die + bonus
+    } else if (floor === 'mine') {
+      // Gain one metal regardless of die value
+      this.players[playerID].metal += 1 + bonus
+    }
+
+    this.players[playerID].headquarters[floor].push(die)
+    return true
   }
 }

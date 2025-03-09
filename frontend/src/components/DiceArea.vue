@@ -1,6 +1,6 @@
 <!-- DiceArea.vue -->
 <template>
-  <div class="dice-area">
+  <div class="dice-area" :class="{ 'inactive-area': gamestate.state.workPhase !== true }">
     <p>Your Dice</p>
     <button @click="gamestate.rollDice">Roll Dice</button>
     <div v-for="(diceval, index) in myDice" class="die" @click="activateDie(index)">

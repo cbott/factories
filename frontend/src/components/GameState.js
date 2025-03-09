@@ -48,6 +48,12 @@ export const gamestate = reactive({
     this.socket.emit('fill-marketplace')
   },
 
+  // Request the server to switch between Market Phase and Work Phase
+  requestChangePhase() {
+    console.log('Requesting phase change')
+    this.socket.emit('change-phase')
+  },
+
   // Add the specified card to this player's hand
   pickUpFromMarketplace(cardID) {
     console.log('pickup', cardID)

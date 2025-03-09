@@ -1,6 +1,6 @@
 <!-- Marketplace.vue -->
 <template>
-  <div class="marketplace">
+  <div class="marketplace" :class="{ 'inactive-area': gamestate.state.workPhase !== false }">
     <p>Marketplace</p>
     <div class="card-area">
       <Card v-for="card in gamestate.state.marketplace" :key="card.id" :card="card" @click="addToHand(card.id)" />
