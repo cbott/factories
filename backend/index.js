@@ -57,16 +57,11 @@ io.on('connection', (socket) => {
 
   // Move a card from the marketplace to a player's hand
   socket.on('pickup-from-marketplace', (cardID) => {
+    // TODO: check that provided cardID is actually in the marketplace
     console.log('Picking up from marketplace', cardID)
     const card = cards.removeCardByID(gameState.marketplace, cardID)[0]
     gameState.players[socket.id].hand[cardID] = card
     console.log('Player hand is now', gameState.players[socket.id].hand)
-    broadcastGameState()
-  })
-
-  // Move a card from the player's hand to their compound
-  socket.on('add-to-compound', (cardID) => {
-    gameState.moveToCompound(socket.id, cardID)
     broadcastGameState()
   })
 
@@ -75,16 +70,13 @@ io.on('connection', (socket) => {
     console.log('Playing card', cardIDToMove, 'by discarding card', cardIDToDiscard)
     // TODO: this will need a lot more validation
     // Client can send anything they want here so need to check cards are actually in the hand
-    if (
-      cardIDToMove != cardIDToDiscard &&
-      gameState.players[socket.id].hand[cardIDToMove].tool === gameState.players[socket.id].hand[cardIDToDiscard].tool
-    ) {
-      gameState.moveToCompound(socket.id, cardIDToMove)
-      gameState.removeFromHand(socket.id, cardIDToDiscard)
+    if (gameState.buildCard(socket.id, cardIDToMove, cardIDToDiscard)) {
+      console.log('Built Successfully')
       broadcastGameState()
-      console.log('Moved Card')
+    } else {
+      // TODO: handle else case, return error to client
+      console.log('Failed to build card')
     }
-    // TODO: handle else case, return error to client
   })
 
   // Roll all of the player's available dice

@@ -69,7 +69,42 @@ export class GameState {
     this.players[playerID].compound.push(this.players[playerID].hand[cardID])
     // Card is moved to compound, now remove it from hand
     delete this.players[playerID].hand[cardID]
-    this.players[playerID].prestige = calculatePrestige(this.players[playerID].compound)
+    this.players[playerID].prestige = cards.calculatePrestige(this.players[playerID].compound)
+  }
+
+  buildCard(playerID, cardIDToBuild, cardIDToDiscard) {
+    if (cardIDToBuild === cardIDToDiscard) {
+      console.log('Card ID', cardIDToBuild, 'selected to build and discard are the same')
+      return false
+    }
+
+    let hand = this.players[playerID].hand
+    if (!hand[cardIDToBuild]) {
+      console.log('Card ID', cardIDToBuild, 'selected to build but is not in player hand')
+      return false
+    }
+    if (!hand[cardIDToDiscard]) {
+      console.log('Card ID', cardIDToDiscard, 'selected to discard but is not in player hand')
+      return false
+    }
+    if (hand[cardIDToBuild].tool !== hand[cardIDToDiscard].tool) {
+      console.log('Card to build and discard do not have matching tools')
+      return false
+    }
+
+    let card = hand[cardIDToBuild]
+    if (card.cost_metal > this.players[playerID].metal) {
+      console.log('Player does not have enough metal to build card')
+      return false
+    } else if (card.cost_energy > this.players[playerID].energy) {
+      console.log('Player does not have enough energy to build card')
+      return false
+    }
+    this.players[playerID].metal -= card.cost_metal
+    this.players[playerID].energy -= card.cost_energy
+    this.moveToCompound(playerID, cardIDToBuild)
+    this.removeFromHand(playerID, cardIDToDiscard)
+    return true
   }
 
   /**

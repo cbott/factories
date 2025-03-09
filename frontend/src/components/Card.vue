@@ -5,6 +5,8 @@
     <br />
     {{ card.tool }}
     <br />
+    🔩{{ card.cost_metal }} ⚡{{ card.cost_energy }} 🏆{{ card.prestige !== null ? card.prestige : '?' }}
+    <br />
     {{ card.id }}
   </div>
 </template>

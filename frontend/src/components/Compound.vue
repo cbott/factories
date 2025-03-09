@@ -2,8 +2,8 @@
   <div class="compound">
     <p>Your Compound</p>
     <div class="score">
-      <p>⚡x{{ energy }}</p>
       <p>🔩x{{ metal }}</p>
+      <p>⚡x{{ energy }}</p>
       <p>🏆x{{ prestige }}</p>
     </div>
     <div class="card-area">

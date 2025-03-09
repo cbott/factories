@@ -14,25 +14,29 @@ const BLUEPRINT_DEFINITION_CSV = path.join(__dirname, '..', 'resources', 'bluepr
  * Class representing a blueprint card
  *
  * There are 74 of these in the deck
- * Attributes
- * - Name
- * - Build Cost
- * -- Tool
- * -- Metal
- * -- Energy
- * - Card Type (production | utility | training | monument | special)
- * - Prestige Value
- * - Recipe
- * - # of Card Copies
  */
 export class BlueprintCard {
-  constructor(id, name, tool, prestige, copies) {
-    this.id = id // a unique identifier for us to keep track of it in code
+  /**
+   * Creates an instance of a Card.
+   *
+   * @constructor
+   * @param {int} id - A unique identifier for the card in the code.
+   * @param {string} name - The name of the card.
+   * @param {string} tool - The tool associated with the card.
+   * @param {string} type - Card Type (production | utility | training | monument | special).
+   * @param {int} prestige - The prestige value of the card.
+   * @param {int} cost_metal - Metal cost to build the card.
+   * @param {int} cost_energy - Energy cost to build the card.
+   * @param {int} copies - The number of copies of this card in the deck.
+   */
+  constructor(id, name, tool, type, prestige, cost_metal, cost_energy, copies) {
+    this.id = id
     this.name = name
     this.tool = tool
+    this.type = type
     this.copies = copies
-    this.cost_metal = 0
-    this.cost_energy = 0
+    this.cost_metal = cost_metal
+    this.cost_energy = cost_energy
     this.prestige = prestige
   }
 }
@@ -42,7 +46,7 @@ export class BlueprintCard {
  * with format { name: 'Aluminum Factory', tool: 'shovel', prestige: 1, copies: 2 ... }
  *
  * @param {Array<Object>} cardDefinitions
- * @returns Array<BlueprintCard>
+ * @returns {Array<BlueprintCard>}
  */
 function buildDeckFromDefinitions(cardDefinitions) {
   let deck = []
@@ -50,11 +54,42 @@ function buildDeckFromDefinitions(cardDefinitions) {
   for (let i = 0; i < cardDefinitions.length; i++) {
     let cardType = cardDefinitions[i]
     for (let copy = 0; copy < cardType.copies; copy++) {
-      deck.push(new BlueprintCard(id, cardType.name, cardType.tool, cardType.prestige, cardType.copies))
+      deck.push(
+        new BlueprintCard(
+          id,
+          cardType.name,
+          cardType.tool,
+          cardType.type,
+          cardType.prestige,
+          cardType.cost_metal,
+          cardType.cost_energy,
+          cardType.copies
+        )
+      )
       id++
     }
   }
   return shuffleArray(deck)
+}
+
+/**
+ * Casts a CSV value to the appropriate type based on the column it comes from
+ *
+ * @param {string} value - The value to be cast.
+ * @param {Object} context - The csv-parse context.
+ * @returns {string|number|null} - The value converted to the correct type.
+ */
+function castCSVValue(value, context) {
+  if (context.header) {
+    return value
+  }
+  if (value === 'null') {
+    return null
+  }
+  if (['name', 'tool', 'type'].includes(context.column)) {
+    return value
+  }
+  return parseInt(value, 10)
 }
 
 /**
@@ -65,15 +100,24 @@ function buildDeckFromDefinitions(cardDefinitions) {
 export async function buildDeck() {
   const data = await fs.readFile(BLUEPRINT_DEFINITION_CSV, 'utf8')
   return new Promise((resolve, reject) => {
-    parse(data, { columns: true }, (err, cardDefinitions) => {
-      if (err) {
-        console.error('Error parsing the CSV file:', err)
-        reject(err)
-      } else {
-        console.error('Creating deck from file', BLUEPRINT_DEFINITION_CSV)
-        resolve(buildDeckFromDefinitions(cardDefinitions))
+    parse(
+      data,
+      {
+        cast: (value, context) => {
+          return castCSVValue(value, context)
+        },
+        columns: true,
+      },
+      (err, cardDefinitions) => {
+        if (err) {
+          console.error('Error parsing the CSV file:', err)
+          reject(err)
+        } else {
+          console.log('Creating deck from file', BLUEPRINT_DEFINITION_CSV)
+          resolve(buildDeckFromDefinitions(cardDefinitions))
+        }
       }
-    })
+    )
   })
 }
 

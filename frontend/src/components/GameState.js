@@ -54,12 +54,6 @@ export const gamestate = reactive({
     this.socket.emit('pickup-from-marketplace', cardID)
   },
 
-  // Move a card from the player's hand into their compound
-  addToCompound(cardID) {
-    console.log('play card', cardID)
-    this.socket.emit('add-to-compound', cardID)
-  },
-
   // Roll all available dice
   rollDice() {
     console.log('Rolling Dice')
