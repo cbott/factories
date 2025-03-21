@@ -9,6 +9,7 @@
   <PlayerHand />
   <Compound :playerID="gamestate.playerID" />
   <Headquarters />
+  <ModalWindow />
 </template>
 
 <script>
@@ -21,6 +22,7 @@ import PlayerHand from './PlayerHand.vue'
 import Compound from './Compound.vue'
 import DiceArea from './DiceArea.vue'
 import Headquarters from './Headquarters.vue'
+import ModalWindow from './ModalWindow.vue'
 
 // Exports
 export default {
@@ -30,6 +32,7 @@ export default {
     Compound,
     DiceArea,
     Headquarters,
+    ModalWindow,
   },
   data() {
     return {
@@ -69,5 +72,17 @@ export default {
   text-align: center;
   margin: 3px;
   font-size: 20px;
+}
+
+.valid-div {
+  box-shadow: inset 0 0 5px rgba(0, 255, 0, 0.8);
+}
+
+.valid-div-hover:hover {
+  box-shadow: inset 0 0 5px rgba(0, 255, 0, 0.8);
+}
+
+.invalid-div-hover:hover {
+  box-shadow: inset 0 0 5px rgba(255, 0, 0, 0.8);
 }
 </style>

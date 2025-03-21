@@ -7,8 +7,8 @@
       v-for="floorname in ['research', 'generate', 'mine']"
       :class="{
         floor: true,
-        'valid-floor': isValidDieTarget(floorname) === true,
-        'invalid-floor': isValidDieTarget(floorname) === false,
+        'valid-div-hover': isValidDieTarget(floorname) === true,
+        'invalid-div-hover': isValidDieTarget(floorname) === false,
       }"
       @click="placeDie(floorname)"
     >
@@ -116,14 +116,6 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
-}
-
-.valid-floor:hover {
-  box-shadow: inset 0 0 5px rgba(0, 255, 0, 0.8);
-}
-
-.invalid-floor:hover {
-  box-shadow: inset 0 0 5px rgba(255, 0, 0, 0.8);
 }
 
 /* Container for displaying dice on a floor */

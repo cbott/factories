@@ -39,5 +39,8 @@ export class Player {
     this.headquarters.generate = []
     this.headquarters.mine = []
     this.numDice = STARTING_DICE
+    this.compound.forEach((card) => {
+      card.alreadyActivated = false
+    })
   }
 }

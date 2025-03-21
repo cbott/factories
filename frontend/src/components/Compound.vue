@@ -7,13 +7,23 @@
       <p>🏆x{{ prestige }}</p>
     </div>
     <div class="card-area">
-      <Card v-for="card in gamestate.getPlayerCompound(playerID)" :key="card.id" :card="card" />
+      <Card
+        v-for="card in gamestate.getPlayerCompound(playerID)"
+        :key="card.id"
+        :card="card"
+        :class="{
+          'valid-div-hover': card.activatable && !card.alreadyActivated,
+          'invalid-div-hover': !card.activatable || card.alreadyActivated,
+        }"
+        :isDisabled="card.alreadyActivated"
+        @click="activateCard(card)"
+      />
     </div>
   </div>
 </template>
 
 <script>
-import { gamestate } from './GameState.js'
+import { Actions, gamestate } from './GameState.js'
 import Card from './Card.vue'
 
 export default {
@@ -50,6 +60,15 @@ export default {
     return {
       gamestate,
     }
+  },
+  methods: {
+    activateCard(card) {
+      if (!card.activatable) {
+        return
+      }
+      gamestate.activeAction = Actions.activateCard
+      gamestate.activeActionTarget = card
+    },
   },
 }
 </script>

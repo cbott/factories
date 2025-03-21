@@ -15,6 +15,7 @@ backend
 
 To Do list
 
+- Update megalith cost, mark as null in csv
 - Move a lot of game logic into the gamestate class
 - Create a button to switch between market phase and work phase
 - Implement server-side logging

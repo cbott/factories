@@ -45,6 +45,10 @@ export class GameState {
     for (let i = 0; i < player.STARTING_HAND_SIZE; i++) {
       this._drawCard(playerID)
     }
+    // TEMP FOR TESTING
+    for (let i = 0; i < 5; i++) {
+      this.players[playerID].compound.push(this._getNextCardFromDeck())
+    }
   }
 
   /**
@@ -56,6 +60,7 @@ export class GameState {
     for (const cardID of Object.keys(this.players[playerID].hand)) {
       this._removeFromHand(playerID, cardID)
     }
+    // TODO: Also discard the player's compound
     delete this.players[playerID]
   }
 
@@ -149,7 +154,7 @@ export class GameState {
   }
 
   /**
-   * Retrieves the next card from the deck, shuffling the discard pile back into the deck if necessary.
+   * Removes and returns the next card from the deck, shuffling the discard pile back into the deck if necessary.
    *
    * @returns {BlueprintCard|null} The next card from the deck, or null if no cards are available.
    */

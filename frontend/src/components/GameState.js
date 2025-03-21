@@ -11,15 +11,17 @@ export const Actions = Object.freeze({
   selectMatchingTool: 'selectMatchingTool',
   // Select where to move a die to after selecting the die to move
   selectDieTarget: 'selectDieTarget',
+  // Select the inputs or outputs required to activate a card in the compound
+  activateCard: 'activateCard',
 })
 
 export const gamestate = reactive({
   socket: null,
   playerID: 'null',
   state: {},
+  hand: new Map(), // Initialize hand as an empty Map
   activeAction: Actions.none, // Current step of a multi-step action
   activeActionTarget: null, // This will track the dice or card being used in the multi-step action
-  hand: new Map(), // Initialize hand as an empty Map
 
   //  Methods
   openSocket() {
@@ -77,5 +79,23 @@ export const gamestate = reactive({
   addToCompoundWithDiscard(cardIDToMove, cardIDToDiscard) {
     console.log('play card', cardIDToMove, 'by discarding', cardIDToDiscard)
     this.socket.emit('add-to-compound-wtih-discard', cardIDToMove, cardIDToDiscard)
+  },
+
+  // Activate a card from the player's compound
+  // diceSelection: Array<int> with indices into the player's dice array
+  // cardSelection: Array<int> list of cardIDs, which should be in the player's hand
+  // energySelection: int - number of energy to use for activation (applies to Golem only)
+  activateCard(cardIDToActivate, diceSelection, cardSelection, energySelection) {
+    console.log(
+      'Activate card',
+      cardIDToActivate,
+      'with dice selection',
+      diceSelection,
+      'card selection',
+      cardSelection,
+      'energy selection',
+      energySelection,
+    )
+    this.socket.emit('activate-card', cardIDToActivate, diceSelection, cardSelection, energySelection)
   },
 })
