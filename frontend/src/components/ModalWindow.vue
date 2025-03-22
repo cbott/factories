@@ -3,7 +3,7 @@
   <div id="modal" v-if="showModal">
     <div class="modal-contents">
       <h2>Activate Card</h2>
-      <p>Card: {{ this.gamestate.activeActionTarget }}</p>
+      <p>Card: {{ gamestate.activeActionTarget }}</p>
       <p>Recipe: {{ this.getRecipe.recipe }}</p>
 
       <div v-if="this.getRecipe.requiresDiceSelection" class="dice-select-area">
@@ -63,6 +63,7 @@ export default {
     Card,
   },
   mounted() {
+    // TODO: determine if this actually matters or if initializing in data() is okay
     this.selectedDice = []
   },
   data() {
@@ -78,7 +79,7 @@ export default {
   },
   computed: {
     showModal() {
-      return this.gamestate.activeAction === Actions.activateCard
+      return gamestate.activeAction === Actions.activateCard
     },
     getRecipe() {
       let recipe = 'Example Recipe'
@@ -87,7 +88,7 @@ export default {
       let requiresEnergySelection = false
 
       if (this.showModal) {
-        switch (this.gamestate.activeActionTarget.name) {
+        switch (gamestate.activeActionTarget.name) {
           case 'Aluminum Factory':
             requiresDiceSelection = true
             break
@@ -209,9 +210,8 @@ export default {
      * Activate the card
      */
     submit() {
-      console.log('Energy Selection', this.selectedEnergy)
-      this.gamestate.activateCard(
-        this.gamestate.activeActionTarget.id,
+      gamestate.activateCard(
+        gamestate.activeActionTarget.id,
         this.selectedDice,
         this.selectedCards,
         this.selectedEnergy,
@@ -219,8 +219,8 @@ export default {
       this.closeModal()
     },
     closeModal() {
-      this.gamestate.activeAction = Actions.none
-      this.gamestate.activeActionTarget = null
+      gamestate.activeAction = Actions.none
+      gamestate.activeActionTarget = null
       this.selectedDice = []
       this.selectedCards = []
       this.selectedEnergy = 0

@@ -1,6 +1,6 @@
 <template>
-  <div class="compound">
-    <p>Your Compound</p>
+  <div class="area compound">
+    <p>{{ playerID }}'s Compound</p>
     <div class="score">
       <p>🔩x{{ metal }}</p>
       <p>⚡x{{ energy }}</p>
@@ -12,8 +12,8 @@
         :key="card.id"
         :card="card"
         :class="{
-          'valid-div-hover': card.activatable && !card.alreadyActivated,
-          'invalid-div-hover': !card.activatable || card.alreadyActivated,
+          'valid-div-hover': card.activatable && !card.alreadyActivated && isMainPlayer,
+          'invalid-div-hover': (!card.activatable || card.alreadyActivated) && isMainPlayer,
         }"
         :isDisabled="card.alreadyActivated"
         @click="activateCard(card)"
@@ -41,19 +41,22 @@ export default {
       if (gamestate.state.players == null) {
         return 0
       }
-      return this.gamestate.state.players[this.playerID].energy
+      return gamestate.state.players[this.playerID].energy
     },
     metal() {
       if (gamestate.state.players == null) {
         return 0
       }
-      return this.gamestate.state.players[this.playerID].metal
+      return gamestate.state.players[this.playerID].metal
     },
     prestige() {
       if (gamestate.state.players == null) {
         return 0
       }
-      return this.gamestate.state.players[this.playerID].prestige
+      return gamestate.state.players[this.playerID].prestige
+    },
+    isMainPlayer() {
+      return this.playerID === gamestate.playerID && this.playerID !== null
     },
   },
   data() {
@@ -63,7 +66,7 @@ export default {
   },
   methods: {
     activateCard(card) {
-      if (!card.activatable) {
+      if (!card.activatable || card.alreadyActivated || !this.isMainPlayer) {
         return
       }
       gamestate.activeAction = Actions.activateCard
@@ -75,11 +78,8 @@ export default {
 
 <style scoped>
 .compound {
-  border: 2px solid orange;
-  border-radius: 10px;
-  width: 800px;
+  border-color: orange;
   height: 225px;
-  margin: 5px;
 }
 .score {
   display: flex;

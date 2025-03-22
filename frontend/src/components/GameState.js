@@ -17,7 +17,7 @@ export const Actions = Object.freeze({
 
 export const gamestate = reactive({
   socket: null,
-  playerID: 'null',
+  playerID: 'uninitialized',
   state: {},
   hand: new Map(), // Initialize hand as an empty Map
   activeAction: Actions.none, // Current step of a multi-step action
@@ -26,6 +26,7 @@ export const gamestate = reactive({
   //  Methods
   openSocket() {
     // Open a connection to the server
+    // TODO: update to handle different server IPs
     this.socket = io('http://localhost:3000')
     this.socket.on('game-state', (state) => {
       this.state = state

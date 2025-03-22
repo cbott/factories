@@ -1,9 +1,14 @@
 <!-- DiceArea.vue -->
 <template>
-  <div class="dice-area" :class="{ 'inactive-area': gamestate.state.workPhase !== true }">
+  <div class="area dice-area" :class="{ 'inactive-area': gamestate.state.workPhase !== true }">
     <p>Your Dice</p>
     <button @click="gamestate.rollDice">Roll Dice</button>
-    <div v-for="(diceval, index) in myDice" class="die" @click="activateDie(index)">
+    <div
+      v-for="(diceval, index) in myDice"
+      class="die"
+      :class="{ 'selected-div': isSelectedDice(index) }"
+      @click="activateDie(index)"
+    >
       <p>{{ diceval }}</p>
     </div>
   </div>
@@ -29,10 +34,23 @@ export default {
     }
   },
   methods: {
+    /**
+     * Sets die as active action target. Player must click on a valid target to complete the action.
+     *
+     * @param {int} index - The index in the player's dice array of the die to activate.
+     */
     activateDie(index) {
-      // Selects one of the dice. Player must click on a valid target to complete the action
       gamestate.activeAction = Actions.selectDieTarget
       gamestate.activeActionTarget = index
+    },
+    /**
+     * Checks if the die at the given index is currently selected.
+     *
+     * @param {number} index - The index of the die to check.
+     * @returns {boolean} - True if the die is selected, false otherwise.
+     */
+    isSelectedDice(index) {
+      return gamestate.activeAction === Actions.selectDieTarget && gamestate.activeActionTarget === index
     },
   },
 }
@@ -40,10 +58,8 @@ export default {
 
 <style scoped>
 .dice-area {
-  border: 2px solid black;
-  width: 500px;
+  border-color: black;
   height: 50px;
-  margin: 10px;
   display: flex;
 }
 </style>

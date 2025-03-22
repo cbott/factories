@@ -1,6 +1,6 @@
 <!-- PlayerHand.vue -->
 <template>
-  <div class="hand">
+  <div class="area hand">
     <p>Your Hand</p>
     <div class="card-area">
       <Card
@@ -62,8 +62,7 @@ export default {
 
 <style scoped>
 .hand {
-  border: 2px solid blue;
-  width: 800px;
+  border-color: blue;
   height: 200px;
 }
 </style>

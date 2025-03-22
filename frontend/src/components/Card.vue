@@ -34,6 +34,7 @@ export default {
   border-radius: 4px;
   width: 100px;
   height: 150px;
+  text-align: center;
 }
 
 .disabled {

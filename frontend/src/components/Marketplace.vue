@@ -1,6 +1,6 @@
 <!-- Marketplace.vue -->
 <template>
-  <div class="marketplace" :class="{ 'inactive-area': gamestate.state.workPhase !== false }">
+  <div class="area marketplace" :class="{ 'inactive-area': gamestate.state.workPhase !== false }">
     <p>Marketplace</p>
     <div class="card-area">
       <Card v-for="card in gamestate.state.marketplace" :key="card.id" :card="card" @click="addToHand(card.id)" />
@@ -31,9 +31,7 @@ export default {
 
 <style scoped>
 .marketplace {
-  border: 2px solid green;
-  width: 500px;
+  border-color: green;
   height: 200px;
-  margin: 10px;
 }
 </style>

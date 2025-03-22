@@ -84,6 +84,13 @@ io.on('connection', (socket) => {
     broadcastGameState()
   })
 
+  // DEBUG: log unknown events
+  var onevent = socket.onevent
+  socket.onevent = (packet) => {
+    console.log('Received event:', packet.data)
+    onevent.call(socket, packet) // original call
+  }
+
   socket.on('disconnect', () => {
     console.log(`User disconnected: ${socket.id}`)
     gameState.removePlayer(socket.id)

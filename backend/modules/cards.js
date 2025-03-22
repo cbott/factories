@@ -44,9 +44,10 @@ export class BlueprintCard {
     this.activatable = activatable
     // Whether or not card was activated this round (applies to cards in compound only)
     // TODO: determine if it would make more sense to track this in Player instead
-    this.alreadyActivated = true
+    this.alreadyActivated = false
   }
 }
+// 🟦📦
 
 /**
  * Create a deck of BlueprintCards from a list of card definitions
