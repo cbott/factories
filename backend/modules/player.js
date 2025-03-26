@@ -22,6 +22,7 @@ export class Player {
     this.energy = STARTING_ENERGY // ⚡
     this.metal = STARTING_METAL // 🔩
     this.prestige = 0 // 🏆
+    this.goods = 0 // 📦
     // Dice played in the Headquarters
     this.headquarters = {
       research: [],

@@ -27,10 +27,11 @@ export class BlueprintCard {
    * @param {int} prestige - The prestige value of the card.
    * @param {int} cost_metal - Metal cost to build the card.
    * @param {int} cost_energy - Energy cost to build the card.
-   * @param {int} copies - The number of copies of this card in the deck.
    * @param {bool} activatable - Whether the card can be manually activated from the compound
+   * @param {string} recipe - Card recipe in plain text
+   * @param {int} copies - The number of copies of this card in the deck.
    */
-  constructor(id, name, tool, type, prestige, cost_metal, cost_energy, activatable, copies) {
+  constructor(id, name, tool, type, prestige, cost_metal, cost_energy, activatable, recipe, copies) {
     this.id = id
     this.name = name
     this.tool = tool
@@ -42,12 +43,12 @@ export class BlueprintCard {
     // Note: a card may not be activatable either because it is a monument type (no effect)
     // or because it is activated by another action such as acquiring goods (automatic effect)
     this.activatable = activatable
+    this.recipe = recipe
     // Whether or not card was activated this round (applies to cards in compound only)
     // TODO: determine if it would make more sense to track this in Player instead
     this.alreadyActivated = false
   }
 }
-// 🟦📦
 
 /**
  * Create a deck of BlueprintCards from a list of card definitions
@@ -72,6 +73,7 @@ function buildDeckFromDefinitions(cardDefinitions) {
           cardType.cost_metal,
           cardType.cost_energy,
           cardType.activatable,
+          cardType.recipe,
           cardType.copies
         )
       )
@@ -95,8 +97,8 @@ function castCSVValue(value, context) {
   if (value === 'null') {
     return null
   }
-  // name, tool, and type are Strings
-  if (['name', 'tool', 'type'].includes(context.column)) {
+  // name, tool, type, and recipe are Strings
+  if (['name', 'tool', 'type', 'recipe'].includes(context.column)) {
     return value
   }
   // activatable is a Boolean
@@ -128,8 +130,9 @@ export async function buildDeck() {
           console.error('Error parsing the CSV file:', err)
           reject(err)
         } else {
-          console.log('Creating deck from file', BLUEPRINT_DEFINITION_CSV)
-          resolve(buildDeckFromDefinitions(cardDefinitions))
+          let deck = buildDeckFromDefinitions(cardDefinitions)
+          console.log('Created deck of', deck.length, 'cards from file', BLUEPRINT_DEFINITION_CSV)
+          resolve(deck)
         }
       }
     )
@@ -193,7 +196,7 @@ export function shuffleArray(array) {
 }
 
 /**
- * Removes a card from the array by its ID.
+ * Removes a card from an array by its ID.
  *
  * @param {Array<BlueprintCard>} arr - The array of cards.
  * @param {number} id - The ID of the card to remove.

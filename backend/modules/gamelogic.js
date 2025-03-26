@@ -4,6 +4,16 @@
 
 import * as cards from './cards.js'
 import * as player from './player.js'
+import * as activateCards from './activateCards.js'
+
+/**
+ * Get a random dice roll
+ *
+ * @returns {int} A random dice value (1-6)
+ */
+function randomDice() {
+  return Math.ceil(Math.random() * 6)
+}
 
 export class GameState {
   constructor() {
@@ -46,7 +56,7 @@ export class GameState {
       this._drawCard(playerID)
     }
     // TEMP FOR TESTING
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 8; i++) {
       this.players[playerID].compound.push(this._getNextCardFromDeck())
     }
   }
@@ -88,6 +98,7 @@ export class GameState {
    * @returns {boolean} - Returns true if the card was successfully built, otherwise false.
    */
   buildCard(playerID, cardIDToBuild, cardIDToDiscard) {
+    // TODO: check that player does not already have one of these cards in their compound
     if (!this.workPhase) {
       console.log('Cannot build cards outside of Work phase')
       return false
@@ -238,7 +249,7 @@ export class GameState {
     const numDice = this.players[playerID].numDice
     for (let i = 0; i < numDice; i++) {
       // Pick a random number from 1-6
-      const value = Math.ceil(Math.random() * 6)
+      const value = randomDice()
       this.players[playerID].dice.push(value)
     }
     this.players[playerID].numDice = 0
@@ -309,6 +320,461 @@ export class GameState {
     }
 
     this.players[playerID].headquarters[floor].push(die)
+    return true
+  }
+
+  /**
+   * Activates a card from the player's compound
+   *
+   * @param {string} playerID - The ID of the player attempting to activate the card.
+   * @param {int} cardID - The ID of the card to be activated.
+   * @param {Array<int>} diceSelection - The dice indices selected by the player for this action.
+   * @param {Array<int>} cardSelection - The IDs of other cards selected by the player for this action.
+   * @param {int} energySelection - The number of energy selected by the player for this action.
+   * @returns {boolean} Whether or not the card was successfully activated.
+   */
+  activateCard(playerID, cardID, diceSelection, cardSelection, energySelection) {
+    // Check we're in the right phase
+    if (!this.workPhase) {
+      console.log('Cannot activate cards outside of the work phase')
+      return false
+    }
+    // Check that the player actually has this card in their compound
+    let card = this.players[playerID].compound.find((card) => card.id === cardID)
+    if (!card) {
+      console.log('Player', playerID, 'does not have card', cardID, 'in compound')
+      return false
+    }
+    // Check that the card has not been activated already
+    if (card.alreadyActivated) {
+      console.log('Card ID', cardID, 'has already been activated')
+      return false
+    }
+    // Attempt to activate the card, using up the player's resources
+    console.log('Activating card ID', cardID, 'for player', playerID)
+    if (!this._activate(playerID, card, diceSelection, cardSelection, energySelection)) {
+      return false
+    }
+    console.log('Successfully activated card ID', cardID)
+    // Mark the card as activated
+    card.alreadyActivated = true
+    return true
+  }
+
+  /**
+   * Helper function to break out all the hard-coded logic for the unique cards.
+   *
+   * @param {string} playerID - The ID of the player attempting to activate the card.
+   * @param {BlueprintCard} card - The card to activate, must be in player's compound.
+   * @param {Array<int>} diceSelection - The dice indices selected by the player for this action.
+   * @param {Array<int>} cardSelection - The IDs of other cards selected by the player for this action.
+   * @param {int} energySelection - The number of energy selected by the player for this action.
+   * @returns {boolean} Whether or not the card was successfully activated.
+   */
+  _activate(playerID, card, diceSelection, cardSelection, energySelection) {
+    // This function should not worry about game state
+    // It should just check and update the player's resources basically
+    if (!card.activatable) {
+      return false
+    }
+
+    let player = this.players[playerID]
+
+    switch (card.name) {
+      case 'Aluminum Factory':
+        // [X]=[X] + ⚡5 -> 📦2 + 🔩
+        console.log('Aluminum Factory')
+        // Confirm that we have 2 dice of equal value
+        if (activateCards.checkDiceEqual(player.dice, diceSelection, 2) === null) {
+          console.log('Invalid dice selection')
+          return false
+        }
+
+        // Confirm that we have 5 energy
+        if (player.energy < 5) {
+          console.log('Insufficient energy')
+          return false
+        }
+
+        activateCards.removeIndicesFromArray(player.dice, diceSelection)
+        player.energy -= 5
+        player.goods += 2
+        player.metal += 1
+        break
+
+      case 'Assembly Line':
+        // [X]+[X+1]+[X+2] -> 📦2
+        console.log('Assembly Line')
+        // Confirm we have 3 dice with incrementing values
+        if (!activateCards.checkDiceSeries(player.dice, diceSelection, 3)) {
+          console.log('Invalid dice selection')
+          return false
+        }
+        player.goods += 2
+
+      case 'Battery Factory':
+        // ⚡4 -> 📦
+        console.log('Battery Factory')
+        if (player.energy < 4) {
+          console.log('Insufficient energy')
+          return false
+        }
+        activateCards.removeIndicesFromArray(player.dice, diceSelection)
+        player.energy -= 4
+        player.goods += 1
+        break
+
+      case 'Biolab':
+        // [1] + ⚡ -> 📦
+        console.log('Biolab')
+        if (activateCards.checkDieValue(player.dice, diceSelection, [1]) === null) {
+          console.log('Invalid dice selection')
+          return false
+        }
+        if (player.energy < 1) {
+          return false
+        }
+        activateCards.removeIndicesFromArray(player.dice, diceSelection)
+        player.energy -= 1
+        player.goods += 1
+        break
+
+      case 'Black Market': {
+        // [?] + 🟦 -> ⚡+🔩* (gain up to 4 resources equal to the build cost of the discarded 🟦)
+        console.log('Black Market')
+        // TODO: implement resource selection, for now you just get 2 of each
+        if (activateCards.checkDieValue(player.dice, diceSelection, [1, 2, 3, 4, 5, 6]) === null) {
+          console.log('Invalid dice selection')
+          return false
+        }
+        let cards = activateCards.getCards(player.hand, cardSelection)
+        if (cards.length !== 1) {
+          return false
+        }
+        activateCards.removeIndicesFromArray(player.dice, diceSelection)
+        this._removeFromHand(playerID, cardSelection[0])
+        player.energy += 2
+        player.metal += 2
+        break
+      }
+
+      case 'Concrete Plant': {
+        // [X]=[X] + 🔩X -> 📦2
+        console.log('Concrete Plant')
+        // Confirm that we have 2 dice of equal value
+        let value = activateCards.checkDiceEqual(player.dice, diceSelection, 2)
+        if (value === null) {
+          console.log('Invalid dice selection')
+          return false
+        }
+        // Confirm that we have X metal
+        if (player.metal < value) {
+          return false
+        }
+        activateCards.removeIndicesFromArray(player.dice, diceSelection)
+        player.metal -= value
+        player.goods += 2
+        break
+      }
+
+      case 'Dojo': {
+        // ⚡ -> [?] flip
+        console.log('Dojo')
+        let value = activateCards.checkDieValue(player.dice, diceSelection, [1, 2, 3, 4, 5, 6])
+        if (value === null) {
+          console.log('Invalid dice selection')
+          return false
+        }
+        if (player.energy < 1) {
+          return false
+        }
+        player.energy -= 1
+        player.dice[diceSelection[0]] = 7 - value
+        break
+      }
+
+      case 'Fitness Center': {
+        // ⚡ -> [-1]
+        console.log('Fitness Center')
+
+        let value = activateCards.checkDieValue(player.dice, diceSelection, [2, 3, 4, 5, 6])
+        if (value === null) {
+          console.log('Invalid dice selection')
+          return false
+        }
+        if (player.energy < 1) {
+          return false
+        }
+        player.energy -= 1
+        player.dice[diceSelection[0]] = value - 1
+        break
+      }
+
+      case 'Foundry': {
+        // [X] + ⚡X -> 🔩X
+        console.log('Foundry')
+        let value = activateCards.checkDieValue(player.dice, diceSelection, [1, 2, 3, 4, 5, 6])
+        if (value === null) {
+          console.log('Invalid dice selection')
+          return false
+        }
+        if (player.energy < value) {
+          return false
+        }
+        activateCards.removeIndicesFromArray(player.dice, diceSelection)
+        player.energy -= value
+        player.metal += value
+        break
+      }
+
+      case 'Fulfillment Center':
+        // [4] + ⚡2 -> 📦 + 🔩
+        console.log('Fulfillment Center')
+        if (activateCards.checkDieValue(player.dice, diceSelection, [4]) === null) {
+          console.log('Invalid dice selection')
+          return false
+        }
+        if (player.energy < 2) {
+          return false
+        }
+        activateCards.removeIndicesFromArray(player.dice, diceSelection)
+        player.energy -= 2
+        player.metal += 1
+        player.goods += 1
+        break
+
+      case 'Golem':
+        // ⚡X -> [X] gain an extra [?] with a value of X this turn
+        console.log('Golem')
+        if (energySelection < 1 || energySelection > 6 || player.energy < energySelection) {
+          console.log('Invalid energy selection')
+          return false
+        }
+        player.energy -= energySelection
+        player.dice.push(energySelection)
+        break
+
+      case 'Gymnasium': {
+        // ⚡ -> [+1]
+        console.log('Gymnasium')
+        let value = activateCards.checkDieValue(player.dice, diceSelection, [1, 2, 3, 4, 5])
+        if (value === null) {
+          console.log('Invalid dice selection')
+          return false
+        }
+        if (player.energy < 1) {
+          return false
+        }
+        player.energy -= 1
+        console.log('Changing die', diceSelection[0], 'with value', player.dice[diceSelection[0]], 'to', value + 1)
+        player.dice[diceSelection[0]] = value + 1
+        break
+      }
+
+      case 'Harvester':
+        // [X]=[X] -> 🔩4 OR [X]=[X] -> ⚡7
+        console.log('Harvester')
+        if (activateCards.checkDiceEqual(player.dice, diceSelection, 2) === null) {
+          console.log('Invalid dice selection')
+          return false
+        }
+
+        activateCards.removeIndicesFromArray(player.dice, diceSelection)
+        // TODO: implement selection of metal vs energy. For now just give metal
+        player.metal += 4
+        break
+
+      case 'Incinerator': {
+        // 🟦 + 🔩 -> ⚡6
+        console.log('Incinerator')
+        let cards = activateCards.getCards(player.hand, cardSelection)
+        if (cards.length !== 1) {
+          return false
+        }
+
+        if (player.metal < 1) {
+          return false
+        }
+
+        this._removeFromHand(playerID, cardSelection[0])
+        player.metal -= 1
+        player.energy += 6
+        break
+      }
+
+      case 'Manufactory':
+        // [X]=[X] -> 📦 + 🔩2 OR 🟦2 OR ⚡3
+        console.log('Manufactory')
+        if (activateCards.checkDiceEqual(player.dice, diceSelection, 2) === null) {
+          console.log('Invalid dice selection')
+          return false
+        }
+        activateCards.removeIndicesFromArray(player.dice, diceSelection)
+        // TODO: implement reward selection, for now just give metal
+        // TODO: handle if the deck is empty and cards were selected?
+        player.metal += 2
+        player.goods += 1
+        break
+
+      case 'Mega Factory':
+        // [X]=[X]=[X] -> 📦2 + [?]* Gain an extra [?] of any value this turn
+        console.log('Mega Factory')
+        // TODO: implement reward selection, for now just give a [6]
+        if (activateCards.checkDiceEqual(player.dice, diceSelection, 3) === null) {
+          console.log('Invalid dice selection')
+          return false
+        }
+        activateCards.removeIndicesFromArray(player.dice, diceSelection)
+        player.goods += 2
+        player.dice.push(6)
+        break
+
+      case 'Motherlode':
+        // [1] | [2] | [3] -> 🔩 OR [4] | [5] | [6] -> 🔩2
+        console.log('Motherlode')
+        if (activateCards.checkDieValue(player.dice, diceSelection, [1, 2, 3])) {
+          player.metal += 1
+        } else if (activateCards.checkDieValue(player.dice, diceSelection, [4, 5, 6])) {
+          player.metal += 2
+        } else {
+          console.log('Invalid dice selection')
+          return false
+        }
+        activateCards.removeIndicesFromArray(player.dice, diceSelection)
+        break
+
+      case 'Nuclear Plant':
+        // [6] -> 📦 + ⚡
+        console.log('Nuclear Plant')
+        if (activateCards.checkDieValue(player.dice, diceSelection, [6]) === null) {
+          console.log('Invalid dice selection')
+          return false
+        }
+        activateCards.removeIndicesFromArray(player.dice, diceSelection)
+        player.goods += 1
+        player.energy += 1
+        break
+
+      case 'Power Plant': {
+        // [X] -> ⚡X
+        console.log('Power Plant')
+        let value = activateCards.checkDieValue(player.dice, diceSelection, [1, 2, 3, 4, 5, 6])
+        if (value === null) {
+          console.log('Invalid dice selection')
+          return false
+        }
+        activateCards.removeIndicesFromArray(player.dice, diceSelection)
+        player.energy += value
+        break
+      }
+
+      case 'Recycling Plant': {
+        // 🟦2 + ⚡2 -> 📦 + 🟦
+        console.log('Recycling Plant')
+        let cards = activateCards.getCards(player.hand, cardSelection)
+        if (cards.length !== 2) {
+          return false
+        }
+        if (player.energy < 2) {
+          return false
+        }
+        player.energy -= 2
+        this._removeFromHand(playerID, cardSelection[0])
+        this._removeFromHand(playerID, cardSelection[1])
+        this._drawCard(playerID)
+        player.goods += 1
+        break
+      }
+
+      case 'Refinery': {
+        // 🟦 + ⚡3 -> 🔩3
+        console.log('Refinery')
+        let cards = activateCards.getCards(player.hand, cardSelection)
+        if (cards.length !== 1) {
+          return false
+        }
+        if (player.energy < 3) {
+          return false
+        }
+        player.energy -= 3
+        this._removeFromHand(playerID, cardSelection[0])
+        player.metal += 3
+        break
+      }
+
+      case 'Replicator':
+        // ⚡ -> Use a 🟦 in the MARKETPLACE (activation costs still apply)
+        console.log('Replicator')
+        // TODO: implement marketplace card activation, for now do nothing but use energy
+        // one way to do this would be to have a "used by replicator" flag where the client could
+        // send a normal activate-card request with that set, then the server can check that flag,
+        // see if the player actually has a replicator, and if so activate the card like normal, just
+        // set the replicator as alreadyActivated instead of the marketplace card
+        if (player.energy < 1) {
+          return false
+        }
+        player.energy -= 1
+        break
+
+      case 'Robot':
+        // 🔩 -> Roll an extra [?] this turn
+        console.log('Robot')
+        if (player.metal < 1) {
+          return false
+        }
+        player.dice.push(randomDice())
+        break
+
+      case 'Temp Agency':
+        // ⚡ -> choose 1 or more unplaced [?] and reroll them
+        console.log('Temp Agency')
+        if (!activateCards.checkDiceValid(player.dice, diceSelection)) {
+          console.log('Invalid dice selection')
+          return false
+        }
+        for (let index in diceSelection) {
+          player.dice[index] = randomDice()
+        }
+        break
+
+      case 'Trash Compactor': {
+        // [X]=[X] + 🟦2 -> 📦2
+        console.log('Trash Compactor')
+        if (activateCards.checkDiceEqual(player.dice, diceSelection, 2) === null) {
+          console.log('Invalid dice selection')
+          return false
+        }
+        let cards = activateCards.getCards(player.hand, cardSelection)
+        if (cards.length !== 2) {
+          return false
+        }
+        activateCards.removeIndicesFromArray(player.dice, diceSelection)
+        this._removeFromHand(playerID, cardSelection[0])
+        this._removeFromHand(playerID, cardSelection[1])
+        player.goods += 2
+        break
+      }
+
+      case 'Warehouse':
+        // [?]+[?]+[?] sum must be 14+ -> 📦2 + ⚡2
+        console.log('Warehouse')
+        if (!activateCards.checkDiceSum(player.dice, diceSelection, 3, 14)) {
+          console.log('Invalid dice selection')
+          return false
+        }
+        activateCards.removeIndicesFromArray(player.dice, diceSelection)
+        player.goods += 2
+        player.energy += 2
+        break
+
+      default:
+        console.log('Cannot activate unknown card', card.name)
+        return false
+    }
+
+    // TODO: should we ignore if extra selections are specified?
+    // i.e. if only dice are needed but cardSelection is not []?
+    // Could check in each card activation that only required inputs are present
     return true
   }
 }

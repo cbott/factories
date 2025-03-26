@@ -1,33 +1,33 @@
-name,tool,type,prestige,cost_metal,cost_energy,copies,activatable
-Aluminum Factory,shovel,production,1,2,2,2,TRUE
-Assembly Line,gear,production,1,2,1,2,TRUE
-Battery Factory,wrench,production,1,2,1,2,TRUE
-Beacon,shovel,monument,null,2,4,4,FALSE
-Biolab,gear,production,1,1,3,2,TRUE
-Black Market,gear,utility,1,3,2,2,TRUE
-Concrete Plant,shovel,production,1,2,2,2,TRUE
-Dojo,gear,training,0,1,1,2,TRUE
-Fitness Center,wrench,training,0,1,0,3,TRUE
-Foundry,gear,utility,1,2,1,2,TRUE
-Fulfillment Center,hammer,production,1,2,1,2,TRUE
-Golem,hammer,special,1,4,0,2,TRUE
-Gymnasium,shovel,training,0,1,0,3,TRUE
-Harvester,hammer,utility,1,1,2,2,TRUE
-Incinerator,shovel,utility,1,2,1,2,TRUE
-Laboratory,wrench,special,1,1,4,2,FALSE
-Manufactory,wrench,production,1,2,3,2,TRUE
-Mega Factory,gear,production,1,3,2,2,TRUE
-Megalith,wrench,monument,3,5,2,3,FALSE
-Motherlode,shovel,utility,1,1,3,2,TRUE
-Nuclear Plant,wrench,production,1,2,2,2,TRUE
-Obelisk,hammer,monument,2,3,1,5,FALSE
-Power Plant,gear,utility,1,3,0,2,TRUE
-Recycling Plant,gear,production,1,2,0,3,TRUE
-Refinery,wrench,utility,1,1,3,2,TRUE
-Replicator,shovel,special,1,2,2,2,TRUE
-Robot,hammer,special,0,1,1,3,TRUE
-Scrap Yard,wrench,special,0,1,2,2,FALSE
-Solar Array,gear,special,0,1,2,2,FALSE
-Temp Agency,hammer,training,0,1,0,2,TRUE
-Trash Compactor,shovel,production,1,2,1,2,TRUE
-Warehouse,hammer,production,1,3,2,2,TRUE
+name,tool,type,prestige,cost_metal,cost_energy,copies,activatable,recipe
+Aluminum Factory,shovel,production,1,2,2,2,TRUE,[X]=[X] + ⚡5 -> 📦2 + 🔩
+Assembly Line,gear,production,1,2,1,2,TRUE,[X]+[X+1]+[X+2] -> 📦2
+Battery Factory,wrench,production,1,2,1,2,TRUE,⚡4 -> 📦
+Beacon,shovel,monument,null,2,4,4,FALSE,
+Biolab,gear,production,1,1,3,2,TRUE,[1] + ⚡ -> 📦
+Black Market,gear,utility,1,3,2,2,TRUE,[?] + 🟦 -> ⚡+🔩* (Gain up to 4 resources equal to the build cost of the discarded 🟦)
+Concrete Plant,shovel,production,1,2,2,2,TRUE,[X]=[X] + 🔩X -> 📦2
+Dojo,gear,training,0,1,1,2,TRUE,⚡ -> [?]* (Flip an unplaced [?] to its opposite side)
+Fitness Center,wrench,training,0,1,0,3,TRUE,⚡ -> [-1]* (Decrease the value of an unplaced [?] by 1)
+Foundry,gear,utility,1,2,1,2,TRUE,[X] + ⚡X -> 🔩X
+Fulfillment Center,hammer,production,1,2,1,2,TRUE,[4] + ⚡2 -> 📦 + 🔩
+Golem,hammer,special,1,4,0,2,TRUE,⚡X -> [X] gain an extra [?] with a value of X this turn
+Gymnasium,shovel,training,0,1,0,3,TRUE,⚡ -> [+1]* (Increase the value of an unplaced [?] by 1)
+Harvester,hammer,utility,1,1,2,2,TRUE,[X]=[X] -> 🔩4 OR [X]=[X] -> ⚡7
+Incinerator,shovel,utility,1,2,1,2,TRUE,🟦 + 🔩 -> ⚡6
+Laboratory,wrench,special,1,1,4,2,FALSE,
+Manufactory,wrench,production,1,2,3,2,TRUE,[X]=[X] -> 📦 + 🔩2 OR 🟦2 OR ⚡3
+Mega Factory,gear,production,1,3,2,2,TRUE,[X]=[X]=[X] -> 📦2 + [?]* (Gain an extra [?] of any value this turn)
+Megalith,wrench,monument,3,5,2,3,FALSE,
+Motherlode,shovel,utility,1,1,3,2,TRUE,[1] | [2] | [3] -> 🔩 OR [4] | [5] | [6] -> 🔩2
+Nuclear Plant,wrench,production,1,2,2,2,TRUE,[6] -> 📦 + ⚡
+Obelisk,hammer,monument,2,3,1,5,FALSE,
+Power Plant,gear,utility,1,3,0,2,TRUE,[X] -> ⚡X
+Recycling Plant,gear,production,1,2,0,3,TRUE,🟦2 + ⚡2 -> 📦 + 🟦
+Refinery,wrench,utility,1,1,3,2,TRUE,🟦 + ⚡3 -> 🔩3
+Replicator,shovel,special,1,2,2,2,TRUE,⚡ -> Use a 🟦 in the MARKETPLACE (activation costs still apply)
+Robot,hammer,special,0,1,1,3,TRUE,🔩 -> Roll an extra [?] this turn
+Scrap Yard,wrench,special,0,1,2,2,FALSE,
+Solar Array,gear,special,0,1,2,2,FALSE,
+Temp Agency,hammer,training,0,1,0,2,TRUE,⚡ -> choose 1 or more unplaced [?] and reroll them
+Trash Compactor,shovel,production,1,2,1,2,TRUE,[X]=[X] + 🟦2 -> 📦2
+Warehouse,hammer,production,1,3,2,2,TRUE,[?]+[?]+[?] sum must be 14+ -> 📦2 + ⚡2

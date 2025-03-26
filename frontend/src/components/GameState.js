@@ -30,6 +30,7 @@ export const gamestate = reactive({
     this.socket = io('http://localhost:3000')
     this.socket.on('game-state', (state) => {
       this.state = state
+      console.log('New State:', state)
       if (state.players[this.socket.id]) {
         // Convert hand to Map object for ease of use later on. We cannot directly send and receive Maps
         this.hand = new Map(Object.entries(state.players[this.socket.id].hand))
@@ -79,7 +80,7 @@ export const gamestate = reactive({
   // Move a card from the player's hand into their compound
   addToCompoundWithDiscard(cardIDToMove, cardIDToDiscard) {
     console.log('play card', cardIDToMove, 'by discarding', cardIDToDiscard)
-    this.socket.emit('add-to-compound-wtih-discard', cardIDToMove, cardIDToDiscard)
+    this.socket.emit('add-to-compound-with-discard', cardIDToMove, cardIDToDiscard)
   },
 
   // Activate a card from the player's compound

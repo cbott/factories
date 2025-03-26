@@ -52,7 +52,7 @@ io.on('connection', (socket) => {
   })
 
   // Move a card from the player's hand to their compound, discarding an approprate tool card
-  socket.on('add-to-compound-wtih-discard', (cardIDToMove, cardIDToDiscard) => {
+  socket.on('add-to-compound-with-discard', (cardIDToMove, cardIDToDiscard) => {
     console.log('Playing card', cardIDToMove, 'by discarding card', cardIDToDiscard)
     if (gameState.buildCard(socket.id, cardIDToMove, cardIDToDiscard)) {
       console.log('Built Successfully')
@@ -60,6 +60,15 @@ io.on('connection', (socket) => {
     } else {
       // TODO: handle else case, return error to client
       console.log('Failed to build card')
+    }
+  })
+
+  // Activate a card in the player's compound
+  socket.on('activate-card', (cardID, diceSelection, cardSelection, energySelection) => {
+    if (gameState.activateCard(socket.id, cardID, diceSelection, cardSelection, energySelection)) {
+      broadcastGameState()
+    } else {
+      console.log('Failed to activate card')
     }
   })
 

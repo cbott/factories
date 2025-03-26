@@ -3,7 +3,7 @@
   <div id="modal" v-if="showModal">
     <div class="modal-contents">
       <h2>Activate Card</h2>
-      <p>Card: {{ gamestate.activeActionTarget }}</p>
+      <p>Card: {{ gamestate.activeActionTarget.name }}</p>
       <p>Recipe: {{ this.getRecipe.recipe }}</p>
 
       <div v-if="this.getRecipe.requiresDiceSelection" class="dice-select-area">
@@ -82,12 +82,13 @@ export default {
       return gamestate.activeAction === Actions.activateCard
     },
     getRecipe() {
-      let recipe = 'Example Recipe'
+      let recipe = 'No Recipe'
       let requiresDiceSelection = false
       let requiresCardSelection = false
       let requiresEnergySelection = false
 
       if (this.showModal) {
+        recipe = gamestate.activeActionTarget.recipe
         switch (gamestate.activeActionTarget.name) {
           case 'Aluminum Factory':
             requiresDiceSelection = true
@@ -229,7 +230,7 @@ export default {
       return this.selectedDice.includes(diceIndex)
     },
     isSelectedCard(cardID) {
-      return this.selectedCards.includes(cardID)
+      return this.selectedCards.includes(parseInt(cardID, 10))
     },
     /**
      * Select a die to be used for activating this card
@@ -242,7 +243,7 @@ export default {
      *
      * */
     selectCard(cardID) {
-      this.selectedCards.push(cardID)
+      this.selectedCards.push(parseInt(cardID, 10))
     },
   },
 }

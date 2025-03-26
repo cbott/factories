@@ -5,6 +5,7 @@
       <p>🔩x{{ metal }}</p>
       <p>⚡x{{ energy }}</p>
       <p>🏆x{{ prestige }}</p>
+      <p>📦x{{ goods }}</p>
     </div>
     <div class="card-area">
       <Card
@@ -54,6 +55,12 @@ export default {
         return 0
       }
       return gamestate.state.players[this.playerID].prestige
+    },
+    goods() {
+      if (gamestate.state.players == null) {
+        return 0
+      }
+      return gamestate.state.players[this.playerID].goods
     },
     isMainPlayer() {
       return this.playerID === gamestate.playerID && this.playerID !== null
