@@ -1,4 +1,4 @@
-<!-- Component representing a single Fantastic Factories card -->
+<!-- Component representing a single Blueprint Factories card -->
 <template>
   <div class="card" :class="{ disabled: isDisabled }">
     {{ card.name }}

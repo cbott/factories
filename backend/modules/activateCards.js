@@ -199,6 +199,6 @@ export function removeIndicesFromArray(arr, indices) {
   // Splicing modifies the array so we need to start from the highest index
   indices.sort((a, b) => b - a)
   for (let i = 0; i < indices.length; i++) {
-    arr.splice(i, 1)
+    arr.splice(indices[i], 1)
   }
 }

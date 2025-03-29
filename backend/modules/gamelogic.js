@@ -55,10 +55,6 @@ export class GameState {
     for (let i = 0; i < player.STARTING_HAND_SIZE; i++) {
       this._drawCard(playerID)
     }
-    // TEMP FOR TESTING
-    for (let i = 0; i < 8; i++) {
-      this.players[playerID].compound.push(this._getNextCardFromDeck())
-    }
   }
 
   /**
@@ -410,7 +406,9 @@ export class GameState {
           console.log('Invalid dice selection')
           return false
         }
+        activateCards.removeIndicesFromArray(player.dice, diceSelection)
         player.goods += 2
+        break
 
       case 'Battery Factory':
         // ⚡4 -> 📦
@@ -449,6 +447,7 @@ export class GameState {
         }
         let cards = activateCards.getCards(player.hand, cardSelection)
         if (cards.length !== 1) {
+          console.log('Expected 1 card selection, got', cards.length)
           return false
         }
         activateCards.removeIndicesFromArray(player.dice, diceSelection)
@@ -589,10 +588,12 @@ export class GameState {
         console.log('Incinerator')
         let cards = activateCards.getCards(player.hand, cardSelection)
         if (cards.length !== 1) {
+          console.log('Expected 1 card selection, got', cards.length)
           return false
         }
 
         if (player.metal < 1) {
+          console.log('Insufficient metal')
           return false
         }
 
@@ -673,9 +674,11 @@ export class GameState {
         console.log('Recycling Plant')
         let cards = activateCards.getCards(player.hand, cardSelection)
         if (cards.length !== 2) {
+          console.log('Expected 2 card selection, got', cardSelection.length)
           return false
         }
         if (player.energy < 2) {
+          console.log('Insufficient energy')
           return false
         }
         player.energy -= 2
@@ -691,9 +694,11 @@ export class GameState {
         console.log('Refinery')
         let cards = activateCards.getCards(player.hand, cardSelection)
         if (cards.length !== 1) {
+          console.log('Expected 1 card selection, got', cardSelection.length)
           return false
         }
         if (player.energy < 3) {
+          console.log('Insufficient energy')
           return false
         }
         player.energy -= 3
@@ -725,17 +730,21 @@ export class GameState {
         player.dice.push(randomDice())
         break
 
-      case 'Temp Agency':
+      case 'Temp Agency': {
         // ⚡ -> choose 1 or more unplaced [?] and reroll them
         console.log('Temp Agency')
         if (!activateCards.checkDiceValid(player.dice, diceSelection)) {
           console.log('Invalid dice selection')
           return false
         }
-        for (let index in diceSelection) {
+
+        this.energy -= 1
+        for (let i = 0; i < diceSelection.length; i++) {
+          let index = diceSelection[i]
           player.dice[index] = randomDice()
         }
         break
+      }
 
       case 'Trash Compactor': {
         // [X]=[X] + 🟦2 -> 📦2
@@ -746,6 +755,7 @@ export class GameState {
         }
         let cards = activateCards.getCards(player.hand, cardSelection)
         if (cards.length !== 2) {
+          console.log('Expected 2 card selection, got', cards.length)
           return false
         }
         activateCards.removeIndicesFromArray(player.dice, diceSelection)

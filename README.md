@@ -1,6 +1,8 @@
 # factories
 
-Web version of the board game Fantastic Factories
+Online multiplayer board game
+
+For a much better game than this, check out _Fantastic Factories_
 
 Development notes:
 https://vuejs.org/guide/quick-start
@@ -15,6 +17,11 @@ backend
 
 To Do list
 
+-- Create "gain goods" method so that we can have laboratory work
+
+- Implement auto-activating cards
+- Prevent repeats in the compound
+- Allow de-selecting dice, cards
 - \*Allow de-selecting a card when it's selected in the hand
 - Update megalith cost, mark as null in csv
 - Move a lot of game logic into the gamestate class

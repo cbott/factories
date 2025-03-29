@@ -1,5 +1,5 @@
 <template>
-  <header>Fantastic Factories Online</header>
+  <header>Factories Online</header>
   <div id="game">
     <CardGame />
   </div>
