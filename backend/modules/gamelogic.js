@@ -6,6 +6,8 @@ import * as cards from './cards.js'
 import * as player from './player.js'
 import * as activateCards from './activateCards.js'
 
+const BUILD_MULTIPLE = ['Beacon', 'Obelisk']
+
 /**
  * Get a random dice roll
  *
@@ -86,6 +88,21 @@ export class GameState {
   }
 
   /**
+   * Increases the goods for a specific player.
+   *
+   * @private
+   * @param {string} playerID - The ID of the player.
+   * @param {int} count - The number of goods to add to the player's total.
+   */
+  _manufactureGoods(playerID, count) {
+    this.players[playerID].goods += count
+    if (this.players[playerID].markCardNameActivated('Laboratory')) {
+      // Having a laboratory in the compound allows the player to draw a card when gaining goods
+      this._drawCard(playerID)
+    }
+  }
+
+  /**
    * Builds a card for a player by using resources and discarding a matching tool card.
    *
    * @param {string} playerID - The ID of the player attempting to build the card.
@@ -94,7 +111,6 @@ export class GameState {
    * @returns {boolean} - Returns true if the card was successfully built, otherwise false.
    */
   buildCard(playerID, cardIDToBuild, cardIDToDiscard) {
-    // TODO: check that player does not already have one of these cards in their compound
     if (!this.workPhase) {
       console.log('Cannot build cards outside of Work phase')
       return false
@@ -120,22 +136,47 @@ export class GameState {
     }
 
     let card = hand[cardIDToBuild]
-    if (card.cost_metal > this.players[playerID].metal) {
+    // Check that player does not already have one of these cards in their compound
+    if (!BUILD_MULTIPLE.includes(card.name) && this.players[playerID].compound.some((c) => c.name === card.name)) {
+      console.log('Player already has card', card.name, 'in compound')
+      return false
+    }
+    // Check player resources
+    let metalCost = card.cost_metal
+    if (metalCost === null) {
+      // Special case for Megalith, metal cost reduced by 1 for each monument card in compound
+      metalCost = Math.max(0, 5 - this.players[playerID].monumentsInCompound())
+    }
+
+    if (metalCost > this.players[playerID].metal) {
       console.log('Player does not have enough metal to build card')
       return false
     } else if (card.cost_energy > this.players[playerID].energy) {
       console.log('Player does not have enough energy to build card')
       return false
     }
-    this.players[playerID].metal -= card.cost_metal
+
+    // Build the card
+    this.players[playerID].metal -= metalCost
     this.players[playerID].energy -= card.cost_energy
     this._moveToCompound(playerID, cardIDToBuild)
     this._removeFromHand(playerID, cardIDToDiscard)
+
+    if (this.players[playerID].markCardNameActivated('Scrap Yard')) {
+      // Scrap Yard: gain 1 metal after building a card
+      this.players[playerID].metal += 1
+    }
+
+    if (this.players[playerID].markCardNameActivated('Solar Array')) {
+      // Solar Array: gain 2 energy after building a card
+      this.players[playerID].energy += 2
+    }
+
     return true
   }
 
   /**
-   * Removes a card from a player's hand and adds it to the discard pile.
+   * Removes a blueprint card from a player's hand and adds it to the discard pile.
    *
    * @param {string} playerID - The ID of the player.
    * @param {int} cardID - The ID of the card to be removed.
@@ -143,6 +184,16 @@ export class GameState {
   _removeFromHand(playerID, cardID) {
     this.discard.push(this.players[playerID].hand[cardID])
     delete this.players[playerID].hand[cardID]
+  }
+
+  /**
+   * Discard all blueprint cards in the marketplace
+   */
+  _clearMarketplaceBlueprints() {
+    for (let card of this.marketplace) {
+      this.discard.push(card)
+    }
+    this.marketplace = []
   }
 
   /**
@@ -227,6 +278,7 @@ export class GameState {
       return false
     }
     this.players[playerID].hand[cardID] = card
+    this.fillMarketplace()
     return true
   }
 
@@ -249,6 +301,41 @@ export class GameState {
       this.players[playerID].dice.push(value)
     }
     this.players[playerID].numDice = 0
+    return true
+  }
+
+  /**
+   * Refresh the marketplace with new blueprint cards
+   *
+   * @param {string} playerID - The ID of the player.
+   * @param {string} resource - 'metal' or 'energy' to determine which resource to spend.
+   * @returns {boolean} - True if the marketplace was refreshed successfully, false otherwise.
+   */
+  refreshMarketplaceBlueprints(playerID, resource) {
+    if (this.players[playerID].workDone.hasRefreshedCards) {
+      console.log('Player has already refreshed cards this round')
+      return false
+    }
+
+    if (resource === 'metal') {
+      if (this.players[playerID].metal < 1) {
+        console.log('Player does not have enough metal to refresh marketplace')
+        return false
+      }
+      this.players[playerID].metal -= 1
+    } else if (resource === 'energy') {
+      if (this.players[playerID].energy < 1) {
+        console.log('Player does not have enough energy to refresh marketplace')
+        return false
+      }
+      this.players[playerID].energy -= 1
+    } else {
+      console.log('Invalid resource', resource, 'requested for refreshing marketplace')
+      return false
+    }
+    this.players[playerID].workDone.hasRefreshedCards = true
+    this._clearMarketplaceBlueprints()
+    this.fillMarketplace()
     return true
   }
 
@@ -394,7 +481,7 @@ export class GameState {
 
         activateCards.removeIndicesFromArray(player.dice, diceSelection)
         player.energy -= 5
-        player.goods += 2
+        this._manufactureGoods(playerID, 2)
         player.metal += 1
         break
 
@@ -407,7 +494,7 @@ export class GameState {
           return false
         }
         activateCards.removeIndicesFromArray(player.dice, diceSelection)
-        player.goods += 2
+        this._manufactureGoods(playerID, 2)
         break
 
       case 'Battery Factory':
@@ -419,7 +506,7 @@ export class GameState {
         }
         activateCards.removeIndicesFromArray(player.dice, diceSelection)
         player.energy -= 4
-        player.goods += 1
+        this._manufactureGoods(playerID, 1)
         break
 
       case 'Biolab':
@@ -434,7 +521,7 @@ export class GameState {
         }
         activateCards.removeIndicesFromArray(player.dice, diceSelection)
         player.energy -= 1
-        player.goods += 1
+        this._manufactureGoods(playerID, 1)
         break
 
       case 'Black Market': {
@@ -472,7 +559,7 @@ export class GameState {
         }
         activateCards.removeIndicesFromArray(player.dice, diceSelection)
         player.metal -= value
-        player.goods += 2
+        this._manufactureGoods(playerID, 2)
         break
       }
 
@@ -539,7 +626,7 @@ export class GameState {
         activateCards.removeIndicesFromArray(player.dice, diceSelection)
         player.energy -= 2
         player.metal += 1
-        player.goods += 1
+        this._manufactureGoods(playerID, 1)
         break
 
       case 'Golem':
@@ -614,7 +701,7 @@ export class GameState {
         // TODO: implement reward selection, for now just give metal
         // TODO: handle if the deck is empty and cards were selected?
         player.metal += 2
-        player.goods += 1
+        this._manufactureGoods(playerID, 1)
         break
 
       case 'Mega Factory':
@@ -626,7 +713,7 @@ export class GameState {
           return false
         }
         activateCards.removeIndicesFromArray(player.dice, diceSelection)
-        player.goods += 2
+        this._manufactureGoods(playerID, 2)
         player.dice.push(6)
         break
 
@@ -652,7 +739,7 @@ export class GameState {
           return false
         }
         activateCards.removeIndicesFromArray(player.dice, diceSelection)
-        player.goods += 1
+        this._manufactureGoods(playerID, 1)
         player.energy += 1
         break
 
@@ -685,7 +772,7 @@ export class GameState {
         this._removeFromHand(playerID, cardSelection[0])
         this._removeFromHand(playerID, cardSelection[1])
         this._drawCard(playerID)
-        player.goods += 1
+        this._manufactureGoods(playerID, 1)
         break
       }
 
@@ -761,7 +848,7 @@ export class GameState {
         activateCards.removeIndicesFromArray(player.dice, diceSelection)
         this._removeFromHand(playerID, cardSelection[0])
         this._removeFromHand(playerID, cardSelection[1])
-        player.goods += 2
+        this._manufactureGoods(playerID, 2)
         break
       }
 
@@ -773,7 +860,7 @@ export class GameState {
           return false
         }
         activateCards.removeIndicesFromArray(player.dice, diceSelection)
-        player.goods += 2
+        this._manufactureGoods(playerID, 2)
         player.energy += 2
         break
 

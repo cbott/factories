@@ -29,6 +29,10 @@ export class Player {
       generate: [],
       mine: [],
     }
+    this.workDone = {
+      hasRefreshedCards: false,
+      hasDrawnCard: false,
+    }
   }
 
   /**
@@ -43,5 +47,32 @@ export class Player {
     this.compound.forEach((card) => {
       card.alreadyActivated = false
     })
+    this.workDone.hasRefreshedCards = false
+    this.workDone.hasDrawnCard = false
+  }
+
+  /**
+   * Counts the number of cards of type 'monument' in the compound.
+   *
+   * @returns {int} The total count of 'monument' cards in the compound.
+   */
+  monumentsInCompound() {
+    return this.compound.filter((card) => card.type === 'monument').length
+  }
+
+  /**
+   * Check player compound for unactivated blueprint card with a given name and mark it as activated.
+   *
+   * @param {string} cardName - The name of the card to search for.
+   * @returns {boolean} True if a card with the given name exists in the compound and was able to be activated.
+   */
+  markCardNameActivated(cardName) {
+    this.compound.forEach((card) => {
+      if (card.name === cardName && !card.alreadyActivated) {
+        card.alreadyActivated = true
+        return true
+      }
+    })
+    return false
   }
 }

@@ -78,6 +78,17 @@ io.on('connection', (socket) => {
     broadcastGameState()
   })
 
+  /**
+   * Refresh the marketplace with new blueprint cards
+   *
+   * @param {string} resource - 'metal' or 'energy' to determine which resource to spend
+   */
+
+  socket.on('refresh-marketplace-blueprints', (resource) => {
+    gameState.refreshMarketplaceBlueprints(socket.id, resource)
+    broadcastGameState()
+  })
+
   // Move a die from the player's dice pool to the headquarters
   socket.on('place-die-in-headquarters', (dieIndex, floor) => {
     gameState.placeDieInHeadquarters(socket.id, dieIndex, floor)

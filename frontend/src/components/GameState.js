@@ -70,6 +70,16 @@ export const gamestate = reactive({
     this.socket.emit('roll-dice')
   },
 
+  /**
+   * Replace all blueprint cards in the marketplace with new ones
+   *
+   * @param {string} resource - 'metal' or 'energy' to determine which resource to spend
+   */
+  refreshMarketplaceBlueprints(resource) {
+    console.log('Refreshing Blueprint cards in Marketplace')
+    this.socket.emit('refresh-marketplace-blueprints', resource)
+  },
+
   // Move one die from the player's dice pool to the specified floor of the headquarters
   // floor should be one of 'research', 'generate', or 'mine'
   placeDieInHeadquarters(dieIndex, floor) {

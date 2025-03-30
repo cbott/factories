@@ -86,7 +86,7 @@ export default {
 <style scoped>
 .compound {
   border-color: orange;
-  height: 225px;
+  min-height: 225px;
 }
 .score {
   display: flex;

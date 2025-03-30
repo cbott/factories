@@ -1,8 +1,7 @@
 <!-- DiceArea.vue -->
 <template>
   <div class="area dice-area" :class="{ 'inactive-area': gamestate.state.workPhase !== true }">
-    <p>Your Dice</p>
-    <button @click="gamestate.rollDice">Roll Dice</button>
+    <button @click="gamestate.rollDice">Roll Dice ({{ unrolledDice }})</button>
     <div
       v-for="(diceval, index) in myDice"
       class="die"
@@ -27,6 +26,12 @@ export default {
       }
       return gamestate.state.players[gamestate.playerID]?.dice || []
     },
+    unrolledDice() {
+      if (gamestate.state.players == null) {
+        return 0
+      }
+      return gamestate.state.players[gamestate.playerID]?.numDice || 0
+    },
   },
   data() {
     return {
@@ -40,6 +45,12 @@ export default {
      * @param {int} index - The index in the player's dice array of the die to activate.
      */
     activateDie(index) {
+      if (gamestate.activeAction === Actions.selectDieTarget && gamestate.activeActionTarget === index) {
+        // If the player clicks the same die again, deselect it
+        gamestate.activeAction = Actions.none
+        gamestate.activeActionTarget = null
+        return
+      }
       gamestate.activeAction = Actions.selectDieTarget
       gamestate.activeActionTarget = index
     },

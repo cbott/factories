@@ -2,8 +2,14 @@
 <template>
   <div class="area marketplace" :class="{ 'inactive-area': gamestate.state.workPhase !== false }">
     <p>Marketplace</p>
-    <div class="card-area">
-      <Card v-for="card in gamestate.state.marketplace" :key="card.id" :card="card" @click="addToHand(card.id)" />
+    <div class="marketplace-container">
+      <div class="refresh-buttons">
+        <button @click="gamestate.refreshMarketplaceBlueprints('energy')">Refresh (⚡)</button>
+        <button @click="gamestate.refreshMarketplaceBlueprints('metal')">Refresh (🔩)</button>
+      </div>
+      <div class="card-area">
+        <Card v-for="card in gamestate.state.marketplace" :key="card.id" :card="card" @click="addToHand(card.id)" />
+      </div>
     </div>
   </div>
 </template>
@@ -33,5 +39,16 @@ export default {
 .marketplace {
   border-color: green;
   height: 200px;
+}
+
+.marketplace-container {
+  display: flex;
+  flex-direction: row;
+}
+
+.refresh-buttons {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 </style>
