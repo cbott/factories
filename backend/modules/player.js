@@ -67,12 +67,13 @@ export class Player {
    * @returns {boolean} True if a card with the given name exists in the compound and was able to be activated.
    */
   markCardNameActivated(cardName) {
-    this.compound.forEach((card) => {
+    for (let card of this.compound) {
       if (card.name === cardName && !card.alreadyActivated) {
+        console.log('Marking card', card.id, 'as activated')
         card.alreadyActivated = true
         return true
       }
-    })
+    }
     return false
   }
 }

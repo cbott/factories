@@ -159,18 +159,21 @@ export class GameState {
     // Build the card
     this.players[playerID].metal -= metalCost
     this.players[playerID].energy -= card.cost_energy
-    this._moveToCompound(playerID, cardIDToBuild)
     this._removeFromHand(playerID, cardIDToDiscard)
 
     if (this.players[playerID].markCardNameActivated('Scrap Yard')) {
       // Scrap Yard: gain 1 metal after building a card
+      console.log('Activating Scrap Yard')
       this.players[playerID].metal += 1
     }
 
     if (this.players[playerID].markCardNameActivated('Solar Array')) {
       // Solar Array: gain 2 energy after building a card
+      console.log('Activating Solar Array')
       this.players[playerID].energy += 2
     }
+
+    this._moveToCompound(playerID, cardIDToBuild)
 
     return true
   }

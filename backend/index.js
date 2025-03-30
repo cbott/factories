@@ -17,6 +17,7 @@ const io = new Server(server, {
 
 //////////////////////////////////
 let gameState = new gamelogic.GameState()
+let socketMapping = new Map()
 //////////////////////////////////
 
 /**
@@ -31,7 +32,14 @@ function broadcastGameState() {
 io.on('connection', (socket) => {
   console.log(`User connected: ${socket.id}`)
 
-  gameState.addPlayer(socket.id)
+  socket.on('join-game', (username) => {
+    console.log('Assigning username', username, 'to socket', socket.id)
+    socketMapping.set(socket.id, username)
+
+    gameState.addPlayer(username)
+    // Update all clients when a player joins
+    broadcastGameState()
+  })
 
   // Update the marketplace to have 4 cards
   socket.on('fill-marketplace', () => {
@@ -47,14 +55,14 @@ io.on('connection', (socket) => {
   // Move a card from the marketplace to a player's hand
   socket.on('pickup-from-marketplace', (cardID) => {
     console.log('Picking up from marketplace', cardID)
-    gameState.pickupFromMarketplace(socket.id, cardID)
+    gameState.pickupFromMarketplace(socketMapping.get(socket.id), cardID)
     broadcastGameState()
   })
 
   // Move a card from the player's hand to their compound, discarding an approprate tool card
   socket.on('add-to-compound-with-discard', (cardIDToMove, cardIDToDiscard) => {
     console.log('Playing card', cardIDToMove, 'by discarding card', cardIDToDiscard)
-    if (gameState.buildCard(socket.id, cardIDToMove, cardIDToDiscard)) {
+    if (gameState.buildCard(socketMapping.get(socket.id), cardIDToMove, cardIDToDiscard)) {
       console.log('Built Successfully')
       broadcastGameState()
     } else {
@@ -65,7 +73,7 @@ io.on('connection', (socket) => {
 
   // Activate a card in the player's compound
   socket.on('activate-card', (cardID, diceSelection, cardSelection, energySelection) => {
-    if (gameState.activateCard(socket.id, cardID, diceSelection, cardSelection, energySelection)) {
+    if (gameState.activateCard(socketMapping.get(socket.id), cardID, diceSelection, cardSelection, energySelection)) {
       broadcastGameState()
     } else {
       console.log('Failed to activate card')
@@ -74,7 +82,7 @@ io.on('connection', (socket) => {
 
   // Roll all of the player's available dice
   socket.on('roll-dice', () => {
-    gameState.rollDice(socket.id)
+    gameState.rollDice(socketMapping.get(socket.id))
     broadcastGameState()
   })
 
@@ -85,13 +93,13 @@ io.on('connection', (socket) => {
    */
 
   socket.on('refresh-marketplace-blueprints', (resource) => {
-    gameState.refreshMarketplaceBlueprints(socket.id, resource)
+    gameState.refreshMarketplaceBlueprints(socketMapping.get(socket.id), resource)
     broadcastGameState()
   })
 
   // Move a die from the player's dice pool to the headquarters
   socket.on('place-die-in-headquarters', (dieIndex, floor) => {
-    gameState.placeDieInHeadquarters(socket.id, dieIndex, floor)
+    gameState.placeDieInHeadquarters(socketMapping.get(socket.id), dieIndex, floor)
     broadcastGameState()
   })
 
@@ -107,18 +115,16 @@ io.on('connection', (socket) => {
   // DEBUG: log unknown events
   var onevent = socket.onevent
   socket.onevent = (packet) => {
-    console.log('Received event:', packet.data)
+    console.log('Received event (', socket.id, '/', socketMapping.get(socket.id), '):', packet.data)
     onevent.call(socket, packet) // original call
   }
 
   socket.on('disconnect', () => {
-    console.log(`User disconnected: ${socket.id}`)
-    gameState.removePlayer(socket.id)
+    console.log(`User disconnected: ${socket.id} (${socketMapping.get(socket.id)})`)
+    // gameState.removePlayer(socket.id)
+    socketMapping.delete(socket.id)
     broadcastGameState()
   })
-
-  // Update all clients when a player joins
-  broadcastGameState()
 })
 
 const PORT = process.env.PORT || 3000

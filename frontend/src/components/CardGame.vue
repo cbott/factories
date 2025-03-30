@@ -1,23 +1,30 @@
 <template>
-  <p>{{ gamestate.state.workPhase ? 'Work' : 'Market' }} Phase | Player ID: {{ gamestate.playerID }}</p>
-  <div class="button-container">
-    <button @click="gamestate.fillMarketplace">Fill Marketplace</button>
-    <button @click="gamestate.requestChangePhase">Change Phase</button>
+  <div v-if="!initialized">
+    <input v-model="usernameInput" placeholder="Enter username" data-bwignore="true" />
+    <button @click="submitUsername">Connect</button>
   </div>
 
-  <div class="container">
-    <div class="opponents">
-      <OtherPlayers />
+  <template v-if="initialized">
+    <p>{{ gamestate.state.workPhase ? 'Work' : 'Market' }} Phase | Player ID: {{ gamestate.playerID }}</p>
+    <div class="button-container">
+      <button @click="gamestate.fillMarketplace">Fill Marketplace</button>
+      <button @click="gamestate.requestChangePhase">Change Phase</button>
     </div>
-    <div class="player">
-      <Marketplace />
-      <DiceArea />
-      <PlayerHand />
-      <Compound :playerID="gamestate.playerID" />
-      <Headquarters />
-      <ModalWindow />
+
+    <div class="container">
+      <div class="opponents">
+        <OtherPlayers />
+      </div>
+      <div class="player">
+        <Marketplace />
+        <DiceArea />
+        <PlayerHand />
+        <Compound :playerID="gamestate.playerID" />
+        <Headquarters />
+        <ModalWindow />
+      </div>
     </div>
-  </div>
+  </template>
 </template>
 
 <script>
@@ -47,11 +54,17 @@ export default {
   data() {
     return {
       gamestate,
+      initialized: false,
     }
   },
-  methods: {},
+  methods: {
+    submitUsername() {
+      gamestate.openSocket(this.usernameInput)
+      this.initialized = true
+    },
+  },
   mounted() {
-    gamestate.openSocket()
+    // gamestate.openSocket()
   },
 }
 </script>

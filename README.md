@@ -17,6 +17,8 @@ backend
 
 To Do list
 
+- Allow player names
+- Resolve TODOs
 - Enforce limits on cards and goods at the end of the round
 - Implement contractor cards (delay for now, can do most of the game without it)
 - Move a lot of game logic into the gamestate class

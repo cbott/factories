@@ -24,18 +24,24 @@ export const gamestate = reactive({
   activeActionTarget: null, // This will track the dice or card being used in the multi-step action
 
   //  Methods
-  openSocket() {
+  openSocket(username) {
     // Open a connection to the server
     // TODO: update to handle different server IPs
     this.socket = io('http://localhost:3000')
+    this.socket.emit('join-game', username)
+    this.playerID = username
+
     this.socket.on('game-state', (state) => {
       this.state = state
       console.log('New State:', state)
-      if (state.players[this.socket.id]) {
+      if (state.players[this.playerID]) {
         // Convert hand to Map object for ease of use later on. We cannot directly send and receive Maps
-        this.hand = new Map(Object.entries(state.players[this.socket.id].hand))
+        this.hand = new Map(Object.entries(state.players[this.playerID].hand))
       }
-      this.playerID = this.socket.id
+    })
+
+    this.socket.on('disconnect', () => {
+      console.log('Disconnected from server')
     })
   },
 
