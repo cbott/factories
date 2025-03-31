@@ -18,6 +18,7 @@ export const Actions = Object.freeze({
 export const gamestate = reactive({
   socket: null,
   playerID: 'uninitialized',
+  initialized: false,
   state: {},
   hand: new Map(), // Initialize hand as an empty Map
   activeAction: Actions.none, // Current step of a multi-step action
@@ -30,6 +31,7 @@ export const gamestate = reactive({
     this.socket = io('http://localhost:3000')
     this.socket.emit('join-game', username)
     this.playerID = username
+    this.initialized = true
 
     this.socket.on('game-state', (state) => {
       this.state = state
@@ -41,8 +43,15 @@ export const gamestate = reactive({
     })
 
     this.socket.on('disconnect', () => {
-      console.log('Disconnected from server')
+      this.initialized = false
+      alert('Disconnected from server')
     })
+  },
+
+  // Tell the server we are leaving the game :(
+  quit() {
+    console.log('Quitting the game')
+    this.socket.emit('quit')
   },
 
   // Get the list of cards in the compound for the specified player

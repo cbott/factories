@@ -1,14 +1,24 @@
 <template>
-  <div v-if="!initialized">
+  <div v-if="!gamestate.initialized">
     <input v-model="usernameInput" placeholder="Enter username" data-bwignore="true" />
     <button @click="submitUsername">Connect</button>
   </div>
 
-  <template v-if="initialized">
-    <p>{{ gamestate.state.workPhase ? 'Work' : 'Market' }} Phase | Player ID: {{ gamestate.playerID }}</p>
-    <div class="button-container">
-      <button @click="gamestate.fillMarketplace">Fill Marketplace</button>
-      <button @click="gamestate.requestChangePhase">Change Phase</button>
+  <template v-if="gamestate.initialized">
+    <div class="infobar">
+      <div style="display: flex">
+        <p>{{ gamestate.state.workPhase ? 'Work' : 'Market' }} Phase</p>
+        <div style="margin-left: 10px">
+          <button @click="gamestate.requestChangePhase">Change Phase</button>
+        </div>
+      </div>
+
+      <div style="display: flex">
+        <p>Player ID: {{ gamestate.playerID }}</p>
+        <div style="margin-left: 10px">
+          <button @click="gamestate.quit">Quit</button>
+        </div>
+      </div>
     </div>
 
     <div class="container">
@@ -54,13 +64,11 @@ export default {
   data() {
     return {
       gamestate,
-      initialized: false,
     }
   },
   methods: {
     submitUsername() {
       gamestate.openSocket(this.usernameInput)
-      this.initialized = true
     },
   },
   mounted() {
@@ -70,6 +78,14 @@ export default {
 </script>
 
 <style scoped>
+.infobar {
+  display: flex;
+  justify-content: space-between;
+  font-size: 1.5em;
+  width: 100%;
+  padding: 0px 10px 0px 10px;
+}
+
 .container {
   display: flex;
   justify-content: space-between;

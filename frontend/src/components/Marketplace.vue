@@ -1,9 +1,12 @@
 <!-- Marketplace.vue -->
 <template>
   <div class="area marketplace" :class="{ 'inactive-area': gamestate.state.workPhase !== false }">
-    <p>Marketplace</p>
+    <p>
+      Marketplace (Deck has {{ gamestate.state.deckSize }} cards, Discard has {{ gamestate.state.discardSize }} cards)
+    </p>
     <div class="marketplace-container">
       <div class="refresh-buttons">
+        <button @click="gamestate.fillMarketplace">Fill Marketplace</button>
         <button @click="gamestate.refreshMarketplaceBlueprints('energy')">Refresh (⚡)</button>
         <button @click="gamestate.refreshMarketplaceBlueprints('metal')">Refresh (🔩)</button>
       </div>

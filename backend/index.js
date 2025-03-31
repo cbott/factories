@@ -36,7 +36,11 @@ io.on('connection', (socket) => {
     console.log('Assigning username', username, 'to socket', socket.id)
     socketMapping.set(socket.id, username)
 
-    gameState.addPlayer(username)
+    if (gameState.players.hasOwnProperty(username)) {
+      console.log('Player', username, 'reconnected')
+    } else {
+      gameState.addPlayer(username)
+    }
     // Update all clients when a player joins
     broadcastGameState()
   })
@@ -112,6 +116,14 @@ io.on('connection', (socket) => {
     broadcastGameState()
   })
 
+  // Remove a player from the game
+  socket.on('quit', () => {
+    console.log('Player', socketMapping.get(socket.id), 'has left the game')
+    gameState.removePlayer(socketMapping.get(socket.id))
+    socket.disconnect()
+    broadcastGameState()
+  })
+
   // DEBUG: log unknown events
   var onevent = socket.onevent
   socket.onevent = (packet) => {
@@ -121,7 +133,6 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     console.log(`User disconnected: ${socket.id} (${socketMapping.get(socket.id)})`)
-    // gameState.removePlayer(socket.id)
     socketMapping.delete(socket.id)
     broadcastGameState()
   })

@@ -44,6 +44,8 @@ export class GameState {
       marketplace: this.marketplace,
       players: this.players,
       workPhase: this.workPhase,
+      deckSize: this.deck.length,
+      discardSize: this.discard.length,
     }
   }
 
@@ -65,10 +67,14 @@ export class GameState {
    * @param {string} playerID - The ID of the player to remove.
    */
   removePlayer(playerID) {
+    // Discard the player's hand
     for (const cardID of Object.keys(this.players[playerID].hand)) {
       this._removeFromHand(playerID, cardID)
     }
-    // TODO: Also discard the player's compound
+    // Discard the player's compound
+    for (let card of this.players[playerID].compound) {
+      this.discard.push(card)
+    }
     delete this.players[playerID]
   }
 
