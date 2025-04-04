@@ -76,8 +76,17 @@ io.on('connection', (socket) => {
   })
 
   // Activate a card in the player's compound
-  socket.on('activate-card', (cardID, diceSelection, cardSelection, energySelection) => {
-    if (gameState.activateCard(socketMapping.get(socket.id), cardID, diceSelection, cardSelection, energySelection)) {
+  socket.on('activate-card', (cardID, diceSelection, cardSelection, energySelection, rewardSelection) => {
+    if (
+      gameState.activateCard(
+        socketMapping.get(socket.id),
+        cardID,
+        diceSelection,
+        cardSelection,
+        energySelection,
+        rewardSelection
+      )
+    ) {
       broadcastGameState()
     } else {
       console.log('Failed to activate card')

@@ -4,7 +4,7 @@
     <div class="card" :class="{ disabled: isDisabled }">
       {{ card.name }}
       <br />
-      🔩{{ card.cost_metal ? card.cost_metal : '5*' }} ⚡{{ card.cost_energy }} 🏆{{
+      🔩{{ card.cost_metal }}{{ card.name == 'Megalith' ? '*' : '' }} ⚡{{ card.cost_energy }} 🏆{{
         card.prestige !== null ? card.prestige : '?'
       }}
       <br />

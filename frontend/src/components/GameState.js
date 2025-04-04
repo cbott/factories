@@ -139,7 +139,8 @@ export const gamestate = reactive({
   // diceSelection: Array<int> with indices into the player's dice array
   // cardSelection: Array<int> list of cardIDs, which should be in the player's hand
   // energySelection: int - number of energy to use for activation (applies to Golem only)
-  activateCard(cardIDToActivate, diceSelection, cardSelection, energySelection) {
+  // rewardSelection: string - one of 'Card', 'Metal', 'Energy' to select the reward when there is a choice
+  activateCard(cardIDToActivate, diceSelection, cardSelection, energySelection, rewardSelection) {
     console.log(
       'Activate card',
       cardIDToActivate,
@@ -149,7 +150,9 @@ export const gamestate = reactive({
       cardSelection,
       'energy selection',
       energySelection,
+      'reward selection',
+      rewardSelection,
     )
-    this.socket.emit('activate-card', cardIDToActivate, diceSelection, cardSelection, energySelection)
+    this.socket.emit('activate-card', cardIDToActivate, diceSelection, cardSelection, energySelection, rewardSelection)
   },
 })

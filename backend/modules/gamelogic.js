@@ -146,9 +146,9 @@ export class GameState {
     }
     // Check player resources
     let metalCost = card.cost_metal
-    if (metalCost === null) {
+    if (card.name === 'Megalith') {
       // Special case for Megalith, metal cost reduced by 1 for each monument card in compound
-      metalCost = Math.max(0, 5 - this.players[playerID].monumentsInCompound())
+      metalCost = Math.max(0, metalCost - this.players[playerID].monumentsInCompound())
     }
 
     if (metalCost > this.players[playerID].metal) {
@@ -509,9 +509,10 @@ export class GameState {
    * @param {Array<int>} diceSelection - The dice indices selected by the player for this action.
    * @param {Array<int>} cardSelection - The IDs of other cards selected by the player for this action.
    * @param {int} energySelection - The number of energy selected by the player for this action.
+   * @param {String} rewardSelection - One of 'Card', 'Energy', 'Metal' to earn by activating the card.
    * @returns {boolean} Whether or not the card was successfully activated.
    */
-  activateCard(playerID, cardID, diceSelection, cardSelection, energySelection) {
+  activateCard(playerID, cardID, diceSelection, cardSelection, energySelection, rewardSelection) {
     // Check we're in the right phase
     if (!this.workPhase) {
       console.log('Cannot activate cards outside of the work phase')
@@ -530,7 +531,7 @@ export class GameState {
     }
     // Attempt to activate the card, using up the player's resources
     console.log('Activating card ID', cardID, 'for player', playerID)
-    if (!this._activate(playerID, card, diceSelection, cardSelection, energySelection)) {
+    if (!this._activate(playerID, card, diceSelection, cardSelection, energySelection, rewardSelection)) {
       return false
     }
     console.log('Successfully activated card ID', cardID)
@@ -547,9 +548,10 @@ export class GameState {
    * @param {Array<int>} diceSelection - The dice indices selected by the player for this action.
    * @param {Array<int>} cardSelection - The IDs of other cards selected by the player for this action.
    * @param {int} energySelection - The number of energy selected by the player for this action.
+   * @param {String} rewardSelection - One of 'Card', 'Energy', 'Metal' to earn by activating the card.
    * @returns {boolean} Whether or not the card was successfully activated.
    */
-  _activate(playerID, card, diceSelection, cardSelection, energySelection) {
+  _activate(playerID, card, diceSelection, cardSelection, energySelection, rewardSelection) {
     // This function should not worry about game state
     // It should just check and update the player's resources basically
     if (!card.activatable) {
@@ -766,9 +768,16 @@ export class GameState {
           return false
         }
 
+        if (rewardSelection === 'Metal') {
+          player.metal += 4
+        } else if (rewardSelection === 'Energy') {
+          player.energy += 7
+        } else {
+          console.log('Invalid reward selection:', rewardSelection)
+          return false
+        }
+
         activateCards.removeIndicesFromArray(player.dice, diceSelection)
-        // TODO: implement selection of metal vs energy. For now just give metal
-        player.metal += 4
         break
 
       case 'Incinerator': {
@@ -802,10 +811,22 @@ export class GameState {
           console.log('Invalid dice selection')
           return false
         }
+
+        if (rewardSelection === 'Metal') {
+          player.metal += 2
+        } else if (rewardSelection === 'Energy') {
+          player.energy += 3
+        } else if (rewardSelection === 'Card') {
+          for (let i = 0; i < 2; i++) {
+            this._drawCard(playerID)
+          }
+        } else {
+          console.log('Invalid reward selection:', rewardSelection)
+          return false
+        }
+
         activateCards.removeIndicesFromArray(player.dice, diceSelection)
-        // TODO: implement reward selection, for now just give metal
         // TODO: handle if the deck is empty and cards were selected?
-        player.metal += 2
         this._manufactureGoods(playerID, 1)
         break
 

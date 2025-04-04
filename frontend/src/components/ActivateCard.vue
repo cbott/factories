@@ -42,6 +42,16 @@
     </div>
   </div>
 
+  <div v-if="this.getRecipe.requiresRewardSelection" class="resource-select-area">
+    <p>Select Reward</p>
+    <div class="selection-area">
+      <div v-for="n in ['Card', 'Metal', 'Energy']" :key="n">
+        <input type="radio" :id="n" :value="n" name="reward" v-model="this.selectedReward" />
+        <label style="margin-right: 15px; margin-left: 3px" :for="n">{{ n }}</label>
+      </div>
+    </div>
+  </div>
+
   <button @click="cancel()">Cancel</button>
   <button @click="submit()">Activate!</button>
 </template>
@@ -64,11 +74,13 @@ export default {
     let selectedDice = []
     let selectedCards = []
     let selectedEnergy = 0
+    let selectedReward = null
     return {
       gamestate,
       selectedDice,
       selectedCards,
       selectedEnergy,
+      selectedReward,
     }
   },
   computed: {
@@ -77,6 +89,7 @@ export default {
       let requiresDiceSelection = false
       let requiresCardSelection = false
       let requiresEnergySelection = false
+      let requiresRewardSelection = false
 
       if (gamestate.activeAction === Actions.activateCard) {
         recipe = gamestate.activeActionTarget.recipe
@@ -121,6 +134,7 @@ export default {
             break
           case 'Harvester':
             requiresDiceSelection = true
+            requiresRewardSelection = true
             break
           case 'Incinerator':
             requiresCardSelection = true
@@ -129,6 +143,7 @@ export default {
             break
           case 'Manufactory':
             requiresDiceSelection = true
+            requiresRewardSelection = true
             break
           case 'Mega Factory':
             requiresDiceSelection = true
@@ -178,6 +193,7 @@ export default {
         requiresDiceSelection: requiresDiceSelection,
         requiresCardSelection: requiresCardSelection,
         requiresEnergySelection: requiresEnergySelection,
+        requiresRewardSelection: requiresRewardSelection,
       }
     },
     // TODO: reduce duplication with Compound
@@ -207,6 +223,7 @@ export default {
         this.selectedDice,
         this.selectedCards,
         this.selectedEnergy,
+        this.selectedReward,
       )
       this.cancel()
     },
@@ -216,6 +233,7 @@ export default {
       this.selectedDice = []
       this.selectedCards = []
       this.selectedEnergy = 0
+      this.selectedReward = null
     },
     isSelectedDice(diceIndex) {
       return this.selectedDice.includes(diceIndex)
