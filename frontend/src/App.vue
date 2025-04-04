@@ -27,7 +27,6 @@ header {
 #game {
   flex: 1;
   background-color: #e8e8e8;
-  padding: 0.5rem;
   display: flex;
   flex-direction: column;
   justify-content: center;

@@ -36,6 +36,6 @@ export default {
 
 <style scoped>
 .opponent {
-  zoom: 0.5;
+  zoom: 0.75;
 }
 </style>

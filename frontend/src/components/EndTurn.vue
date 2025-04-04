@@ -113,21 +113,4 @@ export default {
 }
 </script>
 
-<style scoped>
-.card-select-area {
-  border: 2px solid black;
-  margin: 10px;
-}
-
-.resource-select-area {
-  border: 2px solid black;
-  margin: 10px;
-  padding: 10px;
-}
-
-.selection-area {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-</style>
+<style scoped></style>

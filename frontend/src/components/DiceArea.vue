@@ -70,7 +70,7 @@ export default {
 <style scoped>
 .dice-area {
   border-color: black;
-  height: 50px;
+  height: 55px;
   display: flex;
 }
 </style>

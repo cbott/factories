@@ -41,7 +41,7 @@ export default {
 <style scoped>
 .marketplace {
   border-color: green;
-  height: 200px;
+  min-height: 200px;
 }
 
 .marketplace-container {

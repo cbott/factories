@@ -33,7 +33,7 @@
     </div>
   </div>
 
-  <div v-if="this.getRecipe.requiresEnergySelection" class="energy-select-area">
+  <div v-if="this.getRecipe.requiresEnergySelection" class="resource-select-area">
     <p>Select 1-{{ golemEnergyOptions }} Energy</p>
     <div class="selection-area">
       <select name="energy" v-model="this.selectedEnergy">
@@ -250,20 +250,4 @@ export default {
 }
 </script>
 
-<style scoped>
-.dice-select-area {
-  border: 2px solid black;
-}
-
-.card-select-area {
-  border: 2px solid black;
-}
-
-.energy-select-area {
-  border: 2px solid black;
-}
-
-.selection-area {
-  display: flex;
-}
-</style>
+<style scoped></style>

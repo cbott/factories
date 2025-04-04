@@ -50,6 +50,9 @@ export class GameState {
     for (let i = 0; i < player.STARTING_HAND_SIZE; i++) {
       this._drawCard(playerID)
     }
+    for (let i = 0; i < 5; i++) {
+      this.players[playerID].compound.push(this._getNextCardFromDeck())
+    }
   }
 
   /**

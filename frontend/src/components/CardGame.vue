@@ -24,17 +24,23 @@
       </div>
     </div>
 
-    <div class="container">
+    <div class="container-horiz">
       <div class="opponents">
         <OtherPlayers />
       </div>
       <div class="player">
-        <Marketplace />
-        <DiceArea />
-        <PlayerHand />
-        <Compound :playerID="gamestate.playerID" />
-        <Headquarters />
-        <ModalWindow />
+        <div class="container-vert">
+          <div class="container-horiz">
+            <div class="container-vert">
+              <Marketplace />
+              <DiceArea />
+            </div>
+            <Headquarters />
+          </div>
+          <PlayerHand />
+          <Compound :playerID="gamestate.playerID" />
+          <ModalWindow />
+        </div>
       </div>
     </div>
   </template>
@@ -103,69 +109,29 @@ export default {
   padding: 0px 10px 0px 10px;
 }
 
-.container {
+.container-horiz {
   display: flex;
+  flex-direction: row;
   justify-content: space-between;
+  width: 100%;
+}
+
+.container-vert {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
   width: 100%;
 }
 
 .opponents {
   flex: 1;
-  border: 1px solid black;
   margin: 5px;
+  text-align: center;
 }
 
 .player {
   flex: 3;
-  border: 1px solid black;
-  margin: 5px;
   display: flex;
   flex-direction: column;
-}
-</style>
-
-<style>
-.area {
-  border-width: 2px;
-  border-style: solid;
-  margin: 10px;
-}
-
-.card-area {
-  display: flex;
-  flex-wrap: wrap;
-}
-
-.card {
-  margin: 5px;
-  padding: 10px;
-  background: lightblue;
-  border-radius: 4px;
-  width: 100px;
-  height: 150px;
-}
-
-.die {
-  width: 40px;
-  height: 40px;
-  border: 3px solid black;
-  border-radius: 5px;
-  background-color: ivory;
-  text-align: center;
-  margin: 3px;
-  font-size: 20px;
-}
-
-.valid-div,
-.valid-div-hover:hover {
-  box-shadow: inset 0 0 5px rgba(0, 255, 0, 0.8);
-}
-
-.invalid-div-hover:hover {
-  box-shadow: inset 0 0 5px rgba(255, 0, 0, 0.8);
-}
-
-.selected-div {
-  box-shadow: inset 0 0 5px rgba(0, 0, 255, 0.8);
 }
 </style>
