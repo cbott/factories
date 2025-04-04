@@ -24,16 +24,17 @@
     <div class="selection-area">
       <p style="margin-right: 5px">Discard</p>
       <select name="energy" v-model="this.selectedEnergy">
-        <option v-for="n in gamestate.playerEnergy()" :key="n" :value="n">{{ n }}</option>
+        <option v-for="n in gamestate.playerEnergy() + 1" :key="n" :value="n - 1">{{ n - 1 }}</option>
       </select>
       <p>⚡</p>
       <span style="margin-left: 20px"></span>
       <p style="margin-right: 5px">Discard</p>
       <select name="metal" v-model="this.selectedMetal">
-        <option v-for="n in gamestate.playerMetal()" :key="n" :value="n">{{ n }}</option>
+        <option v-for="n in gamestate.playerMetal() + 1" :key="n" :value="n - 1">{{ n - 1 }}</option>
       </select>
       <p>🔩</p>
     </div>
+    <p style="margin-top: 10px">Total Selected: {{ resourcesSelected }} / {{ totalResources - 12 }} needed</p>
   </div>
 
   <button @click="cancel()">Cancel</button>
@@ -70,6 +71,14 @@ export default {
      */
     totalResources() {
       return gamestate.playerEnergy() + gamestate.playerMetal()
+    },
+    /**
+     * Get the total number of resources (energy and metal) the player selected to discard
+     *
+     * @returns {int} The total of selected energy and metal resources.
+     */
+    resourcesSelected() {
+      return this.selectedEnergy + this.selectedMetal
     },
   },
   methods: {
@@ -118,6 +127,7 @@ export default {
 
 .selection-area {
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
 }
 </style>

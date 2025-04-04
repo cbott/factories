@@ -5,17 +5,8 @@
 import * as cards from './cards.js'
 import * as player from './player.js'
 import * as activateCards from './activateCards.js'
-
-const BUILD_MULTIPLE = ['Beacon', 'Obelisk']
-
-/**
- * Get a random dice roll
- *
- * @returns {int} A random dice value (1-6)
- */
-function randomDice() {
-  return Math.ceil(Math.random() * 6)
-}
+import * as constants from './constants.js'
+import { checkArrayValuesUnique, randomDice } from './helpers.js'
 
 export class GameState {
   constructor() {
@@ -143,7 +134,10 @@ export class GameState {
 
     let card = hand[cardIDToBuild]
     // Check that player does not already have one of these cards in their compound
-    if (!BUILD_MULTIPLE.includes(card.name) && this.players[playerID].compound.some((c) => c.name === card.name)) {
+    if (
+      !constants.BUILD_MULTIPLE.includes(card.name) &&
+      this.players[playerID].compound.some((c) => c.name === card.name)
+    ) {
       console.log('Player already has card', card.name, 'in compound')
       return false
     }
@@ -258,24 +252,85 @@ export class GameState {
   }
 
   /**
+   * Checks whether all players in the game have finished their work phase.
+   *
+   * @returns {boolean} - True if currently work phase and all players are finished
+   */
+  _checkAllPlayersFinishedWork() {
+    if (!this.workPhase) {
+      return false
+    }
+    for (const playerID of Object.keys(this.players)) {
+      if (!this.players[playerID].workDone.hasFinishedWork) {
+        return false
+      }
+    }
+    return true
+  }
+
+  /**
    * Requests that a player be marked as having completed the work phase
    *
    * @param {string} playerID - The ID of the player to mark work phase complete for
    * @param {Array<cards.BlueprintCard>} cards - Any cards to discard
-   * @param {int} metal - The number of metal to discard
    * @param {int} energy - The number of energy to discard
+   * @param {int} metal - The number of metal to discard
    * @returns {boolean} - Whether the player's work phase was successfully marked as complete
    */
-  endTurn(playerID, cards, metal, energy) {
+  endTurn(playerID, cards, energy, metal) {
     if (!this.workPhase) {
       console.log('Cannot end turn outside of Work phase')
       return false
     }
-    // TODO: discard the resources
+
+    // Check that resource discard selection is valid
+    if (this.players[playerID].energy < energy || energy < 0) {
+      console.log('Player does not have', energy, 'energy to discard')
+      return false
+    }
+    if (this.players[playerID].metal < metal || metal < 0) {
+      console.log('Player does not have', metal, 'metal to discard')
+      return false
+    }
+
+    // Check that resource discards are sufficient
+    let currentResources = this.players[playerID].energy + this.players[playerID].metal
+    if (currentResources - metal - energy > constants.END_WORK_MAX_RESOURCES) {
+      console.log('Player has', currentResources, 'resources, must discard down to', constants.END_WORK_MAX_RESOURCES)
+      return false
+    }
+
+    let nCardsInHand = Object.keys(this.players[playerID].hand).length
+    let nDiscardsNeeded = nCardsInHand - constants.END_WORK_MAX_CARDS
+    if (nDiscardsNeeded > 0) {
+      // Check that player provided acceptable list of cards to discard
+      if (!checkArrayValuesUnique(cards, nDiscardsNeeded)) {
+        console.log('Player must discard', nDiscardsNeeded, 'unique cards from hand')
+        return false
+      }
+      for (let cardID of cards) {
+        if (!this.players[playerID].hand[cardID]) {
+          console.log('Card ID', cardID, 'not found in player hand')
+          return false
+        }
+      }
+    }
+
+    // Discard the resources
     console.log('Discarding', cards, metal, energy)
+    this.players[playerID].metal -= metal
+    this.players[playerID].energy -= energy
+    for (let cardID of cards) {
+      this._removeFromHand(playerID, cardID)
+    }
+
     this.players[playerID].workDone.hasFinishedWork = true
+
+    if (this._checkAllPlayersFinishedWork()) {
+      this.changePhase()
+    }
+
     return true
-    // TODO: if all players have ended turn, change phase
   }
 
   /**
@@ -571,7 +626,7 @@ export class GameState {
         }
         // TODO: handle card validation better so we don't perform two checks here
         // and we don't seem to use the cards from getCards so that might be unnecessary
-        if (!activateCards.checkArrayValuesUnique(cardSelection, 1)) {
+        if (!checkArrayValuesUnique(cardSelection, 1)) {
           console.log('Invalid card selection')
           return false
         }
@@ -716,7 +771,7 @@ export class GameState {
       case 'Incinerator': {
         // 🟦 + 🔩 -> ⚡6
         console.log('Incinerator')
-        if (!activateCards.checkArrayValuesUnique(cardSelection, 1)) {
+        if (!checkArrayValuesUnique(cardSelection, 1)) {
           console.log('Invalid card selection')
           return false
         }
@@ -806,7 +861,7 @@ export class GameState {
       case 'Recycling Plant': {
         // 🟦2 + ⚡2 -> 📦 + 🟦
         console.log('Recycling Plant')
-        if (!activateCards.checkArrayValuesUnique(cardSelection, 2)) {
+        if (!checkArrayValuesUnique(cardSelection, 2)) {
           console.log('Invalid card selection')
           return false
         }
@@ -830,7 +885,7 @@ export class GameState {
       case 'Refinery': {
         // 🟦 + ⚡3 -> 🔩3
         console.log('Refinery')
-        if (!activateCards.checkArrayValuesUnique(cardSelection, 1)) {
+        if (!checkArrayValuesUnique(cardSelection, 1)) {
           console.log('Invalid card selection')
           return false
         }
@@ -895,7 +950,7 @@ export class GameState {
           console.log('Invalid dice selection')
           return false
         }
-        if (!activateCards.checkArrayValuesUnique(cardSelection, 2)) {
+        if (!checkArrayValuesUnique(cardSelection, 2)) {
           console.log('Invalid card selection')
           return false
         }
