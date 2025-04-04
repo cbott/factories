@@ -13,6 +13,8 @@ export const Actions = Object.freeze({
   selectDieTarget: 'selectDieTarget',
   // Select the inputs or outputs required to activate a card in the compound
   activateCard: 'activateCard',
+  // Select cards, metal, or energy to discard to get below resource limits to end your turn
+  selectTurnEndResources: 'selectTurnEndResources',
 })
 
 export const gamestate = reactive({
@@ -56,12 +58,25 @@ export const gamestate = reactive({
 
   // Get the list of cards in the compound for the specified player
   getPlayerCompound(playerID) {
-    if (this.state.players == null) {
+    if (!this.state.players) {
       return []
     }
     return this.state.players[playerID]?.compound || []
   },
 
+  playerEnergy() {
+    if (!this.initialized) {
+      return 0
+    }
+    return this.state.players[this.playerID].energy
+  },
+
+  playerMetal() {
+    if (!this.initialized) {
+      return 0
+    }
+    return this.state.players[this.playerID].metal
+  },
   // Fill marketplace with cards
   fillMarketplace() {
     this.socket.emit('fill-marketplace')
@@ -71,6 +86,18 @@ export const gamestate = reactive({
   requestChangePhase() {
     console.log('Requesting phase change')
     this.socket.emit('change-phase')
+  },
+
+  /**
+   * Request the server to mark player's work phase as complete
+   *
+   * @param {Array} cards - The list of cards do discard to end the turn.
+   * @param {int} energy - The amount of energy to discard to end the turn.
+   * @param {int} metal - The amount of metal to discard to end the turn.
+   */
+  requestEndTurn(cards, energy, metal) {
+    console.log('Requesting work phase complete')
+    this.socket.emit('end-turn', cards, energy, metal)
   },
 
   // Add the specified card to this player's hand

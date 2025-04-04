@@ -9,7 +9,10 @@
       <div style="display: flex">
         <p>{{ gamestate.state.workPhase ? 'Work' : 'Market' }} Phase</p>
         <div style="margin-left: 10px">
-          <button @click="gamestate.requestChangePhase">Change Phase</button>
+          <button @click="gamestate.requestChangePhase">Change Phase (debug)</button>
+        </div>
+        <div style="margin-left: 10px">
+          <button @click="openEndTurnDialog" :disabled="disableEndTurn">End Turn</button>
         </div>
       </div>
 
@@ -39,7 +42,7 @@
 
 <script>
 // Game state
-import { gamestate } from './GameState.js'
+import { gamestate, Actions } from './GameState.js'
 
 // Components
 import Compound from './Compound.vue'
@@ -66,9 +69,23 @@ export default {
       gamestate,
     }
   },
+  computed: {
+    disableEndTurn() {
+      if (!gamestate.initialized) {
+        return true
+      }
+      if (gamestate.state.workPhase && !gamestate.state.players[gamestate.playerID].workDone.hasFinishedWork) {
+        return null
+      }
+      return true
+    },
+  },
   methods: {
     submitUsername() {
       gamestate.openSocket(this.usernameInput)
+    },
+    openEndTurnDialog() {
+      gamestate.activeAction = Actions.selectTurnEndResources
     },
   },
   mounted() {

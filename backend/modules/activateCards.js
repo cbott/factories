@@ -10,7 +10,7 @@ import { BlueprintCard } from './cards.js'
  * @param {int} n - The expected number of elements in the array
  * @returns {boolean} Whether or not there are N unique values in the array
  */
-function checkArrayValuesUnique(arr, n) {
+export function checkArrayValuesUnique(arr, n) {
   // Check that the expected number of values are present
   if (arr.length !== n) {
     console.log('Expected', n, 'values, got', arr.length)
@@ -55,10 +55,9 @@ function getDiceValues(diceArray, diceSelection) {
  */
 export function getCards(hand, cardSelection) {
   let selectedCards = []
-  for (let i = 0; i < cardSelection.length; i++) {
-    let cardID = cardSelection[i]
+  for (let cardID of cardSelection) {
     if (hand[cardID] === undefined) {
-      // This is not a valid index into the dice array
+      // This is not a valid card in the hand
       console.log('cardID', cardID, 'is invalid')
       return []
     }

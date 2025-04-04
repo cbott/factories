@@ -1,7 +1,7 @@
 export const STARTING_DICE = 4
 export const STARTING_HAND_SIZE = 4
-const STARTING_ENERGY = 2
-const STARTING_METAL = 1
+const STARTING_ENERGY = 20
+const STARTING_METAL = 10
 
 /**
  * Represents a player in the game.
@@ -32,6 +32,7 @@ export class Player {
     this.workDone = {
       hasRefreshedCards: false,
       hasDrawnCard: false,
+      hasFinishedWork: false,
     }
   }
 
@@ -49,6 +50,7 @@ export class Player {
     })
     this.workDone.hasRefreshedCards = false
     this.workDone.hasDrawnCard = false
+    this.workDone.hasFinishedWork = false
   }
 
   /**

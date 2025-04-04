@@ -258,6 +258,27 @@ export class GameState {
   }
 
   /**
+   * Requests that a player be marked as having completed the work phase
+   *
+   * @param {string} playerID - The ID of the player to mark work phase complete for
+   * @param {Array<cards.BlueprintCard>} cards - Any cards to discard
+   * @param {int} metal - The number of metal to discard
+   * @param {int} energy - The number of energy to discard
+   * @returns {boolean} - Whether the player's work phase was successfully marked as complete
+   */
+  endTurn(playerID, cards, metal, energy) {
+    if (!this.workPhase) {
+      console.log('Cannot end turn outside of Work phase')
+      return false
+    }
+    // TODO: discard the resources
+    console.log('Discarding', cards, metal, energy)
+    this.players[playerID].workDone.hasFinishedWork = true
+    return true
+    // TODO: if all players have ended turn, change phase
+  }
+
+  /**
    * Fills the marketplace with cards from the deck
    *
    * @returns {boolean} - True if the marketplace was filled successfully, false otherwise.
@@ -274,6 +295,13 @@ export class GameState {
     return true
   }
 
+  /**
+   * Moves the selected card from the marketplace into the player's hand
+   *
+   * @param {string} playerID - The ID of the player attempting to pick up the card.
+   * @param {int} cardID - The ID of the card to be picked up from the marketplace.
+   * @returns {boolean} - Whether the card was successfully picked up.
+   */
   pickupFromMarketplace(playerID, cardID) {
     // TODO: check that provided cardID is actually in the marketplace
     if (this.workPhase) {
@@ -541,6 +569,12 @@ export class GameState {
           console.log('Invalid dice selection')
           return false
         }
+        // TODO: handle card validation better so we don't perform two checks here
+        // and we don't seem to use the cards from getCards so that might be unnecessary
+        if (!activateCards.checkArrayValuesUnique(cardSelection, 1)) {
+          console.log('Invalid card selection')
+          return false
+        }
         let cards = activateCards.getCards(player.hand, cardSelection)
         if (cards.length !== 1) {
           console.log('Expected 1 card selection, got', cards.length)
@@ -682,6 +716,10 @@ export class GameState {
       case 'Incinerator': {
         // 🟦 + 🔩 -> ⚡6
         console.log('Incinerator')
+        if (!activateCards.checkArrayValuesUnique(cardSelection, 1)) {
+          console.log('Invalid card selection')
+          return false
+        }
         let cards = activateCards.getCards(player.hand, cardSelection)
         if (cards.length !== 1) {
           console.log('Expected 1 card selection, got', cards.length)
@@ -768,6 +806,10 @@ export class GameState {
       case 'Recycling Plant': {
         // 🟦2 + ⚡2 -> 📦 + 🟦
         console.log('Recycling Plant')
+        if (!activateCards.checkArrayValuesUnique(cardSelection, 2)) {
+          console.log('Invalid card selection')
+          return false
+        }
         let cards = activateCards.getCards(player.hand, cardSelection)
         if (cards.length !== 2) {
           console.log('Expected 2 card selection, got', cardSelection.length)
@@ -788,6 +830,10 @@ export class GameState {
       case 'Refinery': {
         // 🟦 + ⚡3 -> 🔩3
         console.log('Refinery')
+        if (!activateCards.checkArrayValuesUnique(cardSelection, 1)) {
+          console.log('Invalid card selection')
+          return false
+        }
         let cards = activateCards.getCards(player.hand, cardSelection)
         if (cards.length !== 1) {
           console.log('Expected 1 card selection, got', cardSelection.length)
@@ -847,6 +893,10 @@ export class GameState {
         console.log('Trash Compactor')
         if (activateCards.checkDiceEqual(player.dice, diceSelection, 2) === null) {
           console.log('Invalid dice selection')
+          return false
+        }
+        if (!activateCards.checkArrayValuesUnique(cardSelection, 2)) {
+          console.log('Invalid card selection')
           return false
         }
         let cards = activateCards.getCards(player.hand, cardSelection)

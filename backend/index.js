@@ -116,6 +116,14 @@ io.on('connection', (socket) => {
     broadcastGameState()
   })
 
+  socket.on('end-turn', (cards, metal, energy) => {
+    // I think we might want this to take
+    // [list of cards to discard], num metal to discard, num energy to discard
+    // and we can verify that the player is in bounds before accepting
+    gameState.endTurn(socketMapping.get(socket.id), cards, metal, energy)
+    broadcastGameState()
+  })
+
   // Remove a player from the game
   socket.on('quit', () => {
     console.log('Player', socketMapping.get(socket.id), 'has left the game')

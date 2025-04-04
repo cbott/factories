@@ -1,5 +1,5 @@
 <template>
-  <div class="area compound">
+  <div class="area compound" :class="{ 'work-complete': isWorkComplete }">
     <p>{{ playerID }}'s Compound</p>
     <div class="score">
       <p>🔩x{{ metal }}</p>
@@ -65,6 +65,12 @@ export default {
     isMainPlayer() {
       return this.playerID === gamestate.playerID && this.playerID !== null
     },
+    isWorkComplete() {
+      if (gamestate.state.players === undefined) {
+        return false
+      }
+      return gamestate.state.players[this.playerID].workDone.hasFinishedWork
+    },
   },
   data() {
     return {
@@ -88,6 +94,11 @@ export default {
   border-color: orange;
   min-height: 225px;
 }
+
+.work-complete {
+  background-color: #00ff0022;
+}
+
 .score {
   display: flex;
 }
