@@ -1,6 +1,6 @@
 <!-- Marketplace.vue -->
 <template>
-  <div class="area marketplace" :class="{ 'inactive-area': gamestate.state.workPhase !== false }">
+  <div class="area marketplace" :class="{ 'inactive-area': !isMarketplaceAvailable }">
     <p>
       Marketplace (Deck has {{ gamestate.state.deckSize }} cards, Discard has {{ gamestate.state.discardSize }} cards)
     </p>
@@ -11,7 +11,15 @@
         <button @click="gamestate.refreshMarketplaceBlueprints('metal')">Refresh (🔩)</button>
       </div>
       <div class="card-area">
-        <Card v-for="card in gamestate.state.marketplace" :key="card.id" :card="card" @click="addToHand(card.id)" />
+        <Card
+          v-for="card in gamestate.state.marketplace"
+          :key="card.id"
+          :card="card"
+          :class="{
+            'valid-div-hover': isMarketplaceAvailable,
+          }"
+          @click="addToHand(card.id)"
+        />
       </div>
     </div>
   </div>
@@ -29,6 +37,11 @@ export default {
     return {
       gamestate,
     }
+  },
+  computed: {
+    isMarketplaceAvailable() {
+      return gamestate.state.workPhase === false && gamestate.state.currentPlayerID === gamestate.playerID
+    },
   },
   methods: {
     addToHand(cardID) {

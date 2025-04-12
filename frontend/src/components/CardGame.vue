@@ -73,6 +73,7 @@ export default {
   data() {
     return {
       gamestate,
+      usernameInput: '',
     }
   },
   computed: {

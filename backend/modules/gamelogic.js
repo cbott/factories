@@ -75,6 +75,11 @@ export class GameState {
     for (let card of this.players[playerID].compound) {
       this.discard.push(card)
     }
+    // Pass on the current player token to the next player if needed
+    if (this.currentPlayerID === playerID) {
+      this._advanceToNextPlayer()
+    }
+
     delete this.players[playerID]
   }
 
@@ -237,7 +242,7 @@ export class GameState {
       console.log('No cards left in deck')
       return
     }
-    console.log('Drawing card')
+    console.log('Moving card', card.id, 'to player', playerID, 'hand')
     this.players[playerID].hand[card.id] = card
   }
 
@@ -270,6 +275,7 @@ export class GameState {
       for (const playerID of Object.keys(this.players)) {
         this.players[playerID].resetRound()
       }
+      this._advanceToNextPlayer()
     } else {
       // Currently in Market phase, change to Work phase
       this.workPhase = true
@@ -417,8 +423,8 @@ export class GameState {
       return false
     }
 
-    if (!this._isPlayersTurn()) {
-      console.log('It is not', playerID, "'s turn")
+    if (!this._isPlayersTurn(playerID)) {
+      console.log('It is not', playerID + "'s turn")
       return false
     }
 

@@ -23,10 +23,10 @@ Scoped
 
 - (bugfix) Server allows players to take work phase actions after ending their turn
 - (feature) Implement contractor cards
+- (feature) Implement replicator and black market blueprints
 - (dev) Resolve remaining TODO items in code
 - (dev) Implement server-side logging with consistent formatting
 - (dev) Save game state to persistent storage to allow for resuming a game after a crash or a server reset
-- (feature) Switch to work phase automatically once all players have picked up card
 - (feature) Implement end and win condition (12 goods or 10 cards in compound)
 - (feature) Add messages from server to individual clients such as error responses
 - (feature) Add a sound effect for rolling dice
