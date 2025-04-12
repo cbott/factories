@@ -16,6 +16,7 @@ export class GameState {
     // `players` object maps session IDs to instances of the Player class
     this.players = {}
     this.workPhase = false
+    this.currentPlayerID = null
   }
 
   /**
@@ -35,6 +36,7 @@ export class GameState {
       marketplace: this.marketplace,
       players: this.players,
       workPhase: this.workPhase,
+      currentPlayerID: this.currentPlayerID,
       deckSize: this.deck.length,
       discardSize: this.discard.length,
     }
@@ -50,9 +52,13 @@ export class GameState {
     for (let i = 0; i < player.STARTING_HAND_SIZE; i++) {
       this._drawCard(playerID)
     }
-    for (let i = 0; i < 5; i++) {
-      this.players[playerID].compound.push(this._getNextCardFromDeck())
+
+    if (this.currentPlayerID === null) {
+      this.currentPlayerID = playerID
     }
+    // for (let i = 0; i < 5; i++) {
+    //   this.players[playerID].compound.push(this._getNextCardFromDeck())
+    // }
   }
 
   /**
@@ -70,6 +76,24 @@ export class GameState {
       this.discard.push(card)
     }
     delete this.players[playerID]
+  }
+
+  /**
+   * Sets it to the next player's turn of the Market phase
+   */
+  _advanceToNextPlayer() {
+    let keys = Object.keys(this.players)
+    let nextPlayerID = ''
+
+    if (this.currentPlayerID === null) {
+      // Current player is not set
+      nextPlayerID = keys[0]
+    } else {
+      nextPlayerID = keys[(keys.indexOf(this.currentPlayerID) + 1) % keys.length]
+    }
+
+    console.log('Advancing player token from', this.currentPlayerID, 'to', nextPlayerID)
+    this.currentPlayerID = nextPlayerID
   }
 
   /**
@@ -272,6 +296,23 @@ export class GameState {
   }
 
   /**
+   * Checks whether all players in the game have finished their market phase.
+   *
+   * @returns {boolean} - True if currently market phase and all players have drawn a card
+   */
+  _checkAllPlayersHaveDrawnCard() {
+    if (this.workPhase) {
+      return false
+    }
+    for (const playerID of Object.keys(this.players)) {
+      if (!this.players[playerID].workDone.hasDrawnCard) {
+        return false
+      }
+    }
+    return true
+  }
+
+  /**
    * Requests that a player be marked as having completed the work phase
    *
    * @param {string} playerID - The ID of the player to mark work phase complete for
@@ -354,6 +395,16 @@ export class GameState {
   }
 
   /**
+   * Checks whether it is this player's turn of the market phase
+   *
+   * @param {string} playerID  - The ID of the player to check.
+   * @returns {boolean} - Whether or not it is this player's turn.
+   */
+  _isPlayersTurn(playerID) {
+    return playerID === this.currentPlayerID
+  }
+
+  /**
    * Moves the selected card from the marketplace into the player's hand
    *
    * @param {string} playerID - The ID of the player attempting to pick up the card.
@@ -361,10 +412,18 @@ export class GameState {
    * @returns {boolean} - Whether the card was successfully picked up.
    */
   pickupFromMarketplace(playerID, cardID) {
-    // TODO: check that provided cardID is actually in the marketplace
     if (this.workPhase) {
       console.log('Cannot pick up cards outside of Market phase')
       return false
+    }
+
+    if (!this._isPlayersTurn()) {
+      console.log('It is not', playerID, "'s turn")
+      return false
+    }
+
+    if (this.players[playerID].workDone.hasDrawnCard) {
+      console.log('Player', playerID, 'has already drawn a card this round')
     }
 
     const card = cards.removeCardByID(this.marketplace, cardID)
@@ -373,7 +432,12 @@ export class GameState {
       return false
     }
     this.players[playerID].hand[cardID] = card
+    this.players[playerID].workDone.hasDrawnCard = true
     this.fillMarketplace()
+    this._advanceToNextPlayer()
+    if (this._checkAllPlayersHaveDrawnCard()) {
+      this.changePhase()
+    }
     return true
   }
 

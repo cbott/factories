@@ -4,22 +4,34 @@ Online multiplayer board game
 
 For a much better game than this, check out _Fantastic Factories_
 
-Development notes:
+## Development
+
+This project utilizes Vue.js for frontend rendering
 https://vuejs.org/guide/quick-start
 
-frontend
-
-> npm run dev
-
-backend
+Run game server from backend/ with
 
 > npm start
 
-To Do list
+Serve UI from frontend/ with
 
-- Implement contractor cards (delay for now, can do most of the game without it)
-- Move a lot of game logic into the gamestate class
-- Implement server-side logging
-- Switch to work phase automatically once all players have picked up card (delay for now, enforce manually)
-- Implement end and win condition (12 goods or 10 cards in compound)
-- Resolve TODOs
+> npm run dev
+
+## Remaining Work
+
+Scoped
+
+- (bugfix) Server allows players to take work phase actions after ending their turn
+- (feature) Implement contractor cards
+- (dev) Resolve remaining TODO items in code
+- (dev) Implement server-side logging with consistent formatting
+- (dev) Save game state to persistent storage to allow for resuming a game after a crash or a server reset
+- (feature) Switch to work phase automatically once all players have picked up card
+- (feature) Implement end and win condition (12 goods or 10 cards in compound)
+- (feature) Add messages from server to individual clients such as error responses
+- (feature) Add a sound effect for rolling dice
+- (bugfix) Card tooltips get cut off if they are too close to the edge of the screen
+
+Unscoped (possible future work)
+
+- Add an "Undo" button.
