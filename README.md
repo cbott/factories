@@ -21,7 +21,6 @@ Serve UI from frontend/ with
 
 Scoped
 
-- (bugfix) Server allows players to take work phase actions after ending their turn
 - (feature) Implement contractor cards
 - (feature) Implement replicator and black market blueprints
 - (dev) Resolve remaining TODO items in code
@@ -31,6 +30,7 @@ Scoped
 - (feature) Add messages from server to individual clients such as error responses
 - (feature) Add a sound effect for rolling dice
 - (bugfix) Card tooltips get cut off if they are too close to the edge of the screen
+- (feature) Indicate headquarters requirements/rewards on UI
 
 Unscoped (possible future work)
 

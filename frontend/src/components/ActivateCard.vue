@@ -66,10 +66,6 @@ export default {
   components: {
     Card,
   },
-  mounted() {
-    // TODO: determine if this actually matters or if initializing in data() is okay
-    this.selectedDice = []
-  },
   data() {
     let selectedDice = []
     let selectedCards = []

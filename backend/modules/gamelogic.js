@@ -117,6 +117,46 @@ export class GameState {
   }
 
   /**
+   * Checks whether a player is allowed to perform a market phase action at this time
+   *
+   * @param {string} playerID - The ID of the player.
+   * @returns {boolean} - True if the player can perform an action, false otherwise.
+   */
+  _marketPhaseActionValid(playerID) {
+    if (this.workPhase) {
+      console.log('Action can only be performed during Market phase')
+      return false
+    }
+
+    if (!this._isPlayersTurn(playerID)) {
+      console.log('It is not', playerID + "'s turn")
+      return false
+    }
+
+    return true
+  }
+
+  /**
+   * Checks whether a player is allowed to perform a work phase action at this time
+   *
+   * @param {string} playerID - The ID of the player.
+   * @returns {boolean} - True if the player can perform an action, false otherwise.
+   */
+  _workPhaseActionValid(playerID) {
+    if (!this.workPhase) {
+      console.log('Action can only be performed during Work phase')
+      return false
+    }
+
+    if (this.players[playerID].workDone.hasFinishedWork) {
+      console.log('Player', playerID, 'has already ended their turn')
+      return false
+    }
+
+    return true
+  }
+
+  /**
    * Increases the goods for a specific player.
    *
    * @private
@@ -140,8 +180,7 @@ export class GameState {
    * @returns {boolean} - Returns true if the card was successfully built, otherwise false.
    */
   buildCard(playerID, cardIDToBuild, cardIDToDiscard) {
-    if (!this.workPhase) {
-      console.log('Cannot build cards outside of Work phase')
+    if (!this._workPhaseActionValid(playerID)) {
       return false
     }
 
@@ -418,13 +457,7 @@ export class GameState {
    * @returns {boolean} - Whether the card was successfully picked up.
    */
   pickupFromMarketplace(playerID, cardID) {
-    if (this.workPhase) {
-      console.log('Cannot pick up cards outside of Market phase')
-      return false
-    }
-
-    if (!this._isPlayersTurn(playerID)) {
-      console.log('It is not', playerID + "'s turn")
+    if (!this._marketPhaseActionValid(playerID)) {
       return false
     }
 
@@ -454,8 +487,7 @@ export class GameState {
    * @returns {boolean} - True if the dice were rolled successfully, false otherwise.
    */
   rollDice(playerID) {
-    if (!this.workPhase) {
-      console.log('Cannot roll dice outside of Work phase')
+    if (!this._workPhaseActionValid(playerID)) {
       return false
     }
 
@@ -474,7 +506,7 @@ export class GameState {
    *
    * @param {string} playerID - The ID of the player.
    * @param {string} resource - 'metal' or 'energy' to determine which resource to spend.
-   * @returns {boolean} - True if the marketplace was refreshed successfully, false otherwise.
+   * @returns {boolean} True if the marketplace was refreshed successfully, false otherwise.
    */
   refreshMarketplaceBlueprints(playerID, resource) {
     if (this.players[playerID].workDone.hasRefreshedCards) {
@@ -513,8 +545,7 @@ export class GameState {
    * @returns {boolean} - Returns true if the die was successfully placed, otherwise false.
    */
   placeDieInHeadquarters(playerID, dieIndex, floor) {
-    if (!this.workPhase) {
-      console.log('Cannot place dice outside of Work phase')
+    if (!this._workPhaseActionValid(playerID)) {
       return false
     }
 
@@ -583,9 +614,7 @@ export class GameState {
    * @returns {boolean} Whether or not the card was successfully activated.
    */
   activateCard(playerID, cardID, diceSelection, cardSelection, energySelection, rewardSelection) {
-    // Check we're in the right phase
-    if (!this.workPhase) {
-      console.log('Cannot activate cards outside of the work phase')
+    if (!this._workPhaseActionValid(playerID)) {
       return false
     }
     // Check that the player actually has this card in their compound

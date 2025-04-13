@@ -50,10 +50,10 @@ io.on('connection', (socket) => {
     console.log('Filling marketplace')
     if (gameState.fillMarketplace()) {
       console.log('Marketplace filled successfully')
+      broadcastGameState()
     } else {
       console.log('No cards left to fill marketplace')
     }
-    broadcastGameState()
   })
 
   // Move a card from the marketplace to a player's hand
@@ -95,8 +95,11 @@ io.on('connection', (socket) => {
 
   // Roll all of the player's available dice
   socket.on('roll-dice', () => {
-    gameState.rollDice(socketMapping.get(socket.id))
-    broadcastGameState()
+    if (gameState.rollDice(socketMapping.get(socket.id))) {
+      broadcastGameState()
+    } else {
+      console.log('Failed to roll dice')
+    }
   })
 
   /**
@@ -106,14 +109,20 @@ io.on('connection', (socket) => {
    */
 
   socket.on('refresh-marketplace-blueprints', (resource) => {
-    gameState.refreshMarketplaceBlueprints(socketMapping.get(socket.id), resource)
-    broadcastGameState()
+    if (gameState.refreshMarketplaceBlueprints(socketMapping.get(socket.id), resource)) {
+      broadcastGameState()
+    } else {
+      console.log('Failed to refresh marketplace blueprints')
+    }
   })
 
   // Move a die from the player's dice pool to the headquarters
   socket.on('place-die-in-headquarters', (dieIndex, floor) => {
-    gameState.placeDieInHeadquarters(socketMapping.get(socket.id), dieIndex, floor)
-    broadcastGameState()
+    if (gameState.placeDieInHeadquarters(socketMapping.get(socket.id), dieIndex, floor)) {
+      broadcastGameState()
+    } else {
+      console.log('Failed to place die in headquarters')
+    }
   })
 
   // Switch between Market phase and Work phase
