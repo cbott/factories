@@ -103,16 +103,17 @@ io.on('connection', (socket) => {
   })
 
   /**
-   * Refresh the marketplace with new blueprint cards
+   * Refresh the marketplace with new blueprint or contractor cards
    *
+   * @param {string} cardType - 'blueprint' or 'contractor' to determine which type of cards to refresh
    * @param {string} resource - 'metal' or 'energy' to determine which resource to spend
    */
 
-  socket.on('refresh-marketplace-blueprints', (resource) => {
-    if (gameState.refreshMarketplaceBlueprints(socketMapping.get(socket.id), resource)) {
+  socket.on('refresh-marketplace', (cardType, resource) => {
+    if (gameState.refreshMarketplace(socketMapping.get(socket.id), cardType, resource)) {
       broadcastGameState()
     } else {
-      console.log('Failed to refresh marketplace blueprints')
+      console.log('Failed to refresh marketplace')
     }
   })
 

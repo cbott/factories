@@ -1,0 +1,9 @@
+name,cost_energy,copies,short_recipe,recipe
+Architect,0,2,🟦3 + 👤🟦1,Draw 3🟦 and then pick an opponent to draw 1🟦
+Electrician,0,2,⚡5 +  👤⚡2,Gain 5⚡ and then pick an opponent to gain 2⚡
+Engineer,4,1,+ BUILD🟦,Draw and reveal a 🟦. Immediately BUILD it for free
+Foreman,2,1,[#] [#] [#] [#],"At the start of the next work phase, instead of rolling you may choose the values for up to 4x [?]"
+Hired Hands,3,3,+ [?] [?],Roll 2 extra [?] at the start of the next work phase
+Investor,0,3,🔩+⚡ of 🟦,Draw and reveal a 🟦. Gain 🔩 and ⚡ equal to its BUILD cost. Discard the 🟦
+Miner,0,2,🔩3 + 👤🔩1,Gain 3🔩 and then pick an opponent to gain 1🔩
+Specialist,0,3,+ [X],Gain an extra [?] of any value any time during the next work phase

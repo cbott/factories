@@ -21,7 +21,12 @@ export const gamestate = reactive({
   socket: null,
   playerID: 'uninitialized',
   initialized: false,
-  state: {},
+  state: {
+    marketplace: {
+      blueprints: [],
+      contractors: {},
+    },
+  },
   hand: new Map(), // Initialize hand as an empty Map
   activeAction: Actions.none, // Current step of a multi-step action
   activeActionTarget: null, // This will track the dice or card being used in the multi-step action
@@ -113,13 +118,14 @@ export const gamestate = reactive({
   },
 
   /**
-   * Replace all blueprint cards in the marketplace with new ones
+   * Replace all blueprint or contractor cards in the marketplace with new ones
    *
+   * @param {string} cardType - 'blueprint' or 'contractor' to determine which type of cards to refresh
    * @param {string} resource - 'metal' or 'energy' to determine which resource to spend
    */
-  refreshMarketplaceBlueprints(resource) {
-    console.log('Refreshing Blueprint cards in Marketplace')
-    this.socket.emit('refresh-marketplace-blueprints', resource)
+  refreshMarketplace(cardType, resource) {
+    console.log('Refreshing', cardType, 'cards in Marketplace')
+    this.socket.emit('refresh-marketplace', cardType, resource)
   },
 
   // Move one die from the player's dice pool to the specified floor of the headquarters

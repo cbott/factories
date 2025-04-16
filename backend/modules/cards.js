@@ -8,7 +8,8 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 // Path to the CSV file containing the definitions for the blueprint cards
-const BLUEPRINT_DEFINITION_CSV = path.join(__dirname, '..', 'resources', 'blueprintcards.csv')
+export const BLUEPRINT_DEFINITION_CSV = path.join(__dirname, '..', 'resources', 'blueprintcards.csv')
+export const CONTRACTOR_DEFINITION_CSV = path.join(__dirname, '..', 'resources', 'contractorcards.csv')
 
 /**
  * Class representing a blueprint card
@@ -17,7 +18,7 @@ const BLUEPRINT_DEFINITION_CSV = path.join(__dirname, '..', 'resources', 'bluepr
  */
 export class BlueprintCard {
   /**
-   * Creates an instance of a Card.
+   * Creates an instance of a Blueprint Card.
    *
    * @constructor
    * @param {int} id - A unique identifier for the card in the code.
@@ -27,8 +28,8 @@ export class BlueprintCard {
    * @param {int} prestige - The prestige value of the card.
    * @param {int} cost_metal - Metal cost to build the card.
    * @param {int} cost_energy - Energy cost to build the card.
-   * @param {bool} activatable - Whether the card can be manually activated from the compound
-   * @param {string} recipe - Card recipe in plain text
+   * @param {bool} activatable - Whether the card can be manually activated from the compound.
+   * @param {string} recipe - Card recipe in plain text.
    * @param {int} copies - The number of copies of this card in the deck.
    */
   constructor(id, name, tool, type, prestige, cost_metal, cost_energy, activatable, recipe, copies) {
@@ -51,13 +52,40 @@ export class BlueprintCard {
 }
 
 /**
+ * Class representing a contractor card
+ *
+ * There are 17 of these in the deck
+ */
+export class ContractorCard {
+  /**
+   * Creates an instance of a Contractor Card.
+   *
+   * @constructor
+   * @param {int} id - A unique identifier for the card in the code.
+   * @param {string} name - The name of the card.
+   * @param {int} cost_energy - Energy cost to pick up the card.
+   * @param {string} short_recipe - Abbreviated recipe to display on the card.
+   * @param {string} recipe - Card recipe in plain text.
+   * @param {int} copies - The number of copies of this card in the deck.
+   */
+  constructor(id, name, cost_energy, short_recipe, recipe, copies) {
+    this.id = id
+    this.name = name
+    this.cost_energy = cost_energy
+    this.short_recipe = short_recipe
+    this.recipe = recipe
+    this.copies = copies
+  }
+}
+
+/**
  * Create a deck of BlueprintCards from a list of card definitions
  * with format { name: 'Aluminum Factory', tool: 'shovel', prestige: 1, copies: 2 ... }
  *
  * @param {Array<Object>} cardDefinitions
  * @returns {Array<BlueprintCard>}
  */
-function buildDeckFromDefinitions(cardDefinitions) {
+function buildBlueprintDeckFromDefinitions(cardDefinitions) {
   let deck = []
   let id = 0
   for (let i = 0; i < cardDefinitions.length; i++) {
@@ -84,6 +112,35 @@ function buildDeckFromDefinitions(cardDefinitions) {
 }
 
 /**
+ * Create a deck of ContractorCards from a list of card definitions
+ * with format { name: 'Architect', cost_energy: 0 ... }
+ *
+ * @param {Array<Object>} cardDefinitions
+ * @returns {Array<ContractorCard>}
+ */
+function buildContractorDeckFromDefinitions(cardDefinitions) {
+  let deck = []
+  let id = 0
+  for (let i = 0; i < cardDefinitions.length; i++) {
+    let cardType = cardDefinitions[i]
+    for (let copy = 0; copy < cardType.copies; copy++) {
+      deck.push(
+        new ContractorCard(
+          id,
+          cardType.name,
+          cardType.cost_energy,
+          cardType.short_recipe,
+          cardType.recipe,
+          cardType.copies
+        )
+      )
+      id++
+    }
+  }
+  return shuffleArray(deck)
+}
+
+/**
  * Casts a CSV value to the appropriate type based on the column it comes from
  *
  * @param {string} value - The value to be cast.
@@ -98,7 +155,7 @@ function castCSVValue(value, context) {
     return null
   }
   // name, tool, type, and recipe are Strings
-  if (['name', 'tool', 'type', 'recipe'].includes(context.column)) {
+  if (['name', 'tool', 'type', 'short_recipe', 'recipe'].includes(context.column)) {
     return value
   }
   // activatable is a Boolean
@@ -112,10 +169,13 @@ function castCSVValue(value, context) {
 /**
  * Create the deck of BlueprintCards from the card definition CSV file
  *
+ * @param {string} cardDefinitionFile - The path to the CSV file containing card definitions.
+ * @param {string} cardType - The type of card to build (one of 'blueprint', 'contractor').
  * @returns {Array<BlueprintCard>} An array of BlueprintCard objects representing the shuffled deck.
  */
-export async function buildDeck() {
-  const data = await fs.readFile(BLUEPRINT_DEFINITION_CSV, 'utf8')
+export async function buildDeck(cardDefinitionFile, cardType) {
+  const buildFunc = cardType === 'blueprint' ? buildBlueprintDeckFromDefinitions : buildContractorDeckFromDefinitions
+  const data = await fs.readFile(cardDefinitionFile, 'utf8')
   return new Promise((resolve, reject) => {
     parse(
       data,
@@ -130,7 +190,7 @@ export async function buildDeck() {
           console.error('Error parsing the CSV file:', err)
           reject(err)
         } else {
-          let deck = buildDeckFromDefinitions(cardDefinitions)
+          let deck = buildFunc(cardDefinitions)
           console.log('Created deck of', deck.length, 'cards from file', BLUEPRINT_DEFINITION_CSV)
           resolve(deck)
         }
@@ -193,6 +253,26 @@ export function shuffleArray(array) {
     ;[array[i], array[j]] = [array[j], array[i]]
   }
   return array
+}
+
+/**
+ * Retrieves the next card from the deck. If the deck is empty, it reshuffles the discard pile
+ * into the deck. If both the deck and discard pile are empty, it returns null.
+ *
+ * @param {Array} deck - The array representing the current deck of cards.
+ * @param {Array} discard - The array representing the discard pile of cards.
+ * @returns {BlueprintCard|ContractorCard|null} The next card from the deck, or null if no cards are available.
+ */
+export function getNextCardFromDeck(deck, discard) {
+  if (deck.length === 0) {
+    if (discard.length === 0) {
+      // No cards left in the deck or discard pile
+      return null
+    }
+    deck = shuffleArray(discard)
+    discard = []
+  }
+  return deck.pop()
 }
 
 /**

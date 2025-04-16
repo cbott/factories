@@ -31,7 +31,9 @@ Scoped
 - (feature) Add a sound effect for rolling dice
 - (bugfix) Card tooltips get cut off if they are too close to the edge of the screen
 - (feature) Indicate headquarters requirements/rewards on UI
+- (feature) Add color to blueprint card header based on card type to help distinguish them
 
 Unscoped (possible future work)
 
 - Add an "Undo" button.
+- Work on "security" type features such as ensuring that players request actions on behalf of others

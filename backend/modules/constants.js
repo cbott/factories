@@ -4,3 +4,5 @@ export const END_WORK_MAX_RESOURCES = 12
 export const END_WORK_MAX_CARDS = 10
 // List of card names that can be built multiple times in the compound
 export const BUILD_MULTIPLE = ['Beacon', 'Obelisk']
+// List of tool options
+export const TOOLS = ['hammer', 'wrench', 'gear', 'shovel']

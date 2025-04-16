@@ -11,8 +11,18 @@ import { checkArrayValuesUnique, randomDice } from './helpers.js'
 export class GameState {
   constructor() {
     this.deck = []
+    this.contractors = []
     this.discard = []
-    this.marketplace = []
+    this.contractorDiscard = []
+    this.marketplace = {
+      blueprints: [],
+      contractors: {
+        hammer: null,
+        wrench: null,
+        gear: null,
+        shovel: null,
+      },
+    }
     // `players` object maps session IDs to instances of the Player class
     this.players = {}
     this.workPhase = false
@@ -23,7 +33,9 @@ export class GameState {
    * Initializes the game state
    */
   async init() {
-    this.deck = await cards.buildDeck()
+    this.deck = await cards.buildDeck(cards.BLUEPRINT_DEFINITION_CSV, 'blueprint')
+    this.contractors = await cards.buildDeck(cards.CONTRACTOR_DEFINITION_CSV, 'contractor')
+    this.fillMarketplace()
   }
 
   /**
@@ -50,14 +62,14 @@ export class GameState {
   addPlayer(playerID) {
     this.players[playerID] = new player.Player()
     for (let i = 0; i < player.STARTING_HAND_SIZE; i++) {
-      this._drawCard(playerID)
+      this._drawBlueprint(playerID)
     }
 
     if (this.currentPlayerID === null) {
       this.currentPlayerID = playerID
     }
     // for (let i = 0; i < 5; i++) {
-    //   this.players[playerID].compound.push(this._getNextCardFromDeck())
+    //   this.players[playerID].compound.push(this._getNextBlueprintFromDeck())
     // }
   }
 
@@ -167,7 +179,7 @@ export class GameState {
     this.players[playerID].goods += count
     if (this.players[playerID].markCardNameActivated('Laboratory')) {
       // Having a laboratory in the compound allows the player to draw a card when gaining goods
-      this._drawCard(playerID)
+      this._drawBlueprint(playerID)
     }
   }
 
@@ -264,10 +276,20 @@ export class GameState {
    * Discard all blueprint cards in the marketplace
    */
   _clearMarketplaceBlueprints() {
-    for (let card of this.marketplace) {
+    for (let card of this.marketplace.blueprints) {
       this.discard.push(card)
     }
-    this.marketplace = []
+    this.marketplace.blueprints = []
+  }
+
+  /**
+   * Discard all contractor cards in the marketplace
+   */
+  _clearMarketplaceContractors() {
+    for (const tool of constants.TOOLS) {
+      this.contractorDiscard.push(this.marketplace.contractors[tool])
+      this.marketplace.contractors[tool] = null
+    }
   }
 
   /**
@@ -275,8 +297,8 @@ export class GameState {
    *
    * @param {string} playerID - The ID of the player.
    */
-  _drawCard(playerID) {
-    const card = this._getNextCardFromDeck()
+  _drawBlueprint(playerID) {
+    const card = this._getNextBlueprintFromDeck()
     if (card === null) {
       console.log('No cards left in deck')
       return
@@ -286,20 +308,21 @@ export class GameState {
   }
 
   /**
-   * Removes and returns the next card from the deck, shuffling the discard pile back into the deck if necessary.
+   * Retrieves the next Blueprint card from the deck
    *
-   * @returns {BlueprintCard|null} The next card from the deck, or null if no cards are available.
+   * @returns {cards.BlueprintCard} - The next blueprint card from the deck.
    */
-  _getNextCardFromDeck() {
-    if (this.deck.length === 0) {
-      if (this.discard.length === 0) {
-        // No cards left in the deck or discard pile
-        return null
-      }
-      this.deck = cards.shuffleArray(this.discard)
-      this.discard = []
-    }
-    return this.deck.pop()
+  _getNextBlueprintFromDeck() {
+    return cards.getNextCardFromDeck(this.deck, this.discard)
+  }
+
+  /**
+   * Retrieves the next Blueprint card from the deck
+   *
+   * @returns {cards.BlueprintCard} - The next blueprint card from the deck.
+   */
+  _getNextContractorFromDeck() {
+    return cards.getNextCardFromDeck(this.contractors, this.contractorDiscard)
   }
 
   /**
@@ -428,13 +451,19 @@ export class GameState {
    * @returns {boolean} - True if the marketplace was filled successfully, false otherwise.
    */
   fillMarketplace() {
-    while (this.marketplace.length < 4) {
-      const card = this._getNextCardFromDeck()
+    for (const tool of constants.TOOLS) {
+      if (this.marketplace.contractors[tool] === null) {
+        this.marketplace.contractors[tool] = this._getNextContractorFromDeck()
+      }
+    }
+
+    while (this.marketplace.blueprints.length < 4) {
+      const card = this._getNextBlueprintFromDeck()
       if (card == null) {
         // Out of cards
         return false
       }
-      this.marketplace.push(card)
+      this.marketplace.blueprints.push(card)
     }
     return true
   }
@@ -465,7 +494,7 @@ export class GameState {
       console.log('Player', playerID, 'has already drawn a card this round')
     }
 
-    const card = cards.removeCardByID(this.marketplace, cardID)
+    const card = cards.removeCardByID(this.marketplace.blueprints, cardID)
     if (card === null) {
       console.log('Card ID', cardID, 'not found in marketplace')
       return false
@@ -505,10 +534,11 @@ export class GameState {
    * Refresh the marketplace with new blueprint cards
    *
    * @param {string} playerID - The ID of the player.
+   * @param {string} cardType - 'blueprint' or 'contractor' to determine which type of cards to refresh
    * @param {string} resource - 'metal' or 'energy' to determine which resource to spend.
    * @returns {boolean} True if the marketplace was refreshed successfully, false otherwise.
    */
-  refreshMarketplaceBlueprints(playerID, resource) {
+  refreshMarketplace(playerID, cardType, resource) {
     if (this.players[playerID].workDone.hasRefreshedCards) {
       console.log('Player has already refreshed cards this round')
       return false
@@ -530,8 +560,16 @@ export class GameState {
       console.log('Invalid resource', resource, 'requested for refreshing marketplace')
       return false
     }
+
+    if (cardType === 'blueprint') {
+      this._clearMarketplaceBlueprints()
+    } else if (cardType === 'contractor') {
+      this._clearMarketplaceContractors()
+    } else {
+      console.log('Invalid card type', cardType, 'requested for refreshing marketplace')
+      return false
+    }
     this.players[playerID].workDone.hasRefreshedCards = true
-    this._clearMarketplaceBlueprints()
     this.fillMarketplace()
     return true
   }
@@ -588,7 +626,7 @@ export class GameState {
     if (floor === 'research') {
       // Draw a card for each die placed on research
       for (let i = 0; i < 1 + bonus; i++) {
-        this._drawCard(playerID)
+        this._drawBlueprint(playerID)
       }
     } else if (floor === 'generate') {
       // Gain energy based on value of die
@@ -643,7 +681,7 @@ export class GameState {
    * Helper function to break out all the hard-coded logic for the unique cards.
    *
    * @param {string} playerID - The ID of the player attempting to activate the card.
-   * @param {BlueprintCard} card - The card to activate, must be in player's compound.
+   * @param {cards.BlueprintCard} card - The card to activate, must be in player's compound.
    * @param {Array<int>} diceSelection - The dice indices selected by the player for this action.
    * @param {Array<int>} cardSelection - The IDs of other cards selected by the player for this action.
    * @param {int} energySelection - The number of energy selected by the player for this action.
@@ -917,7 +955,7 @@ export class GameState {
           player.energy += 3
         } else if (rewardSelection === 'Card') {
           for (let i = 0; i < 2; i++) {
-            this._drawCard(playerID)
+            this._drawBlueprint(playerID)
           }
         } else {
           console.log('Invalid reward selection:', rewardSelection)
@@ -1000,7 +1038,7 @@ export class GameState {
         player.energy -= 2
         this._removeFromHand(playerID, cardSelection[0])
         this._removeFromHand(playerID, cardSelection[1])
-        this._drawCard(playerID)
+        this._drawBlueprint(playerID)
         this._manufactureGoods(playerID, 1)
         break
       }

@@ -1,4 +1,5 @@
 @import './base.css';
+@import './cards.css';
 
 #app {
   display: flex;
@@ -23,15 +24,6 @@
 .card-area {
   display: flex;
   flex-wrap: wrap;
-}
-
-.card {
-  margin: 5px;
-  padding: 10px;
-  background: lightblue;
-  border-radius: 4px;
-  width: 100px;
-  height: 150px;
 }
 
 .die {
