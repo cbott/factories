@@ -21,7 +21,6 @@ Serve UI from frontend/ with
 
 Scoped
 
-- (feature) Implement contractor cards
 - (feature) Implement replicator and black market blueprints
 - (dev) Resolve remaining TODO items in code
 - (dev) Implement server-side logging with consistent formatting

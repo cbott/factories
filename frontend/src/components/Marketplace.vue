@@ -6,11 +6,6 @@
     </p>
     <div class="marketplace-container">
       <div class="horiz-layout">
-        <div class="refresh-buttons">
-          <button @click="gamestate.fillMarketplace">Fill Marketplace</button>
-          <button @click="gamestate.refreshMarketplace('blueprint', 'energy')">Refresh (⚡)</button>
-          <button @click="gamestate.refreshMarketplace('blueprint', 'metal')">Refresh (🔩)</button>
-        </div>
         <div class="card-area">
           <Card
             v-for="card in gamestate.state.marketplace.blueprints"
@@ -22,15 +17,16 @@
             @click="addToHand(card.id)"
           />
         </div>
+        <div class="refresh-buttons">
+          <button @click="gamestate.fillMarketplace">Fill Marketplace</button>
+          <button @click="gamestate.refreshMarketplace('blueprint', 'energy')">Refresh (⚡)</button>
+          <button @click="gamestate.refreshMarketplace('blueprint', 'metal')">Refresh (🔩)</button>
+        </div>
       </div>
       <div class="horiz-layout">
-        <div class="refresh-buttons">
-          <button @click="gamestate.refreshMarketplace('contractor', 'energy')">Refresh (⚡)</button>
-          <button @click="gamestate.refreshMarketplace('contractor', 'metal')">Refresh (🔩)</button>
-        </div>
         <div class="card-area">
-          <div v-for="tool in ['hammer', 'wrench', 'gear', 'shovel']">
-            <p class="tool-label">{{ this.getToolImage(tool) }}</p>
+          <div class="card-with-marker" v-for="tool in ['hammer', 'wrench', 'gear', 'shovel']">
+            <img class="tool-label" :src="getToolImage(tool)" :alt="tool" />
             <ContractorCard
               v-if="gamestate.state.marketplace.contractors[tool]"
               :key="gamestate.state.marketplace.contractors[tool].id"
@@ -41,6 +37,10 @@
               @click="selectContractor(tool)"
             />
           </div>
+        </div>
+        <div class="refresh-buttons">
+          <button @click="gamestate.refreshMarketplace('contractor', 'energy')">Refresh (⚡)</button>
+          <button @click="gamestate.refreshMarketplace('contractor', 'metal')">Refresh (🔩)</button>
         </div>
       </div>
     </div>
@@ -89,13 +89,13 @@ export default {
     getToolImage(tool) {
       switch (tool) {
         case 'hammer':
-          return '🔨'
+          return '/hammer.png'
         case 'wrench':
-          return '🔧'
+          return '/wrench.png'
         case 'gear':
-          return '⚙️'
+          return '/gear.png'
         case 'shovel':
-          return '♠️'
+          return '/shovel.png'
         default:
           return ''
       }
@@ -157,8 +157,14 @@ export default {
   width: 120px;
 }
 
+.card-with-marker {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 .tool-label {
-  font-size: 1.5em;
+  width: 40px;
   text-align: center;
 }
 </style>
