@@ -56,10 +56,24 @@ io.on('connection', (socket) => {
     }
   })
 
-  // Move a card from the marketplace to a player's hand
+  // Pick a Blueprint card from the marketplace
   socket.on('pickup-from-marketplace', (cardID) => {
     console.log('Picking up from marketplace', cardID)
     gameState.pickupFromMarketplace(socketMapping.get(socket.id), cardID)
+    broadcastGameState()
+  })
+
+  // Pick a Contractor card from the marketplace
+  socket.on('hire-contractor', (cardTool, cardIDToDiscard, otherPlayerID) => {
+    console.log(
+      'Hiring contractor with tool',
+      cardTool,
+      'discarding',
+      cardIDToDiscard,
+      'and targeting player',
+      otherPlayerID
+    )
+    gameState.hireContractor(socketMapping.get(socket.id), cardTool, cardIDToDiscard, otherPlayerID)
     broadcastGameState()
   })
 
@@ -99,6 +113,26 @@ io.on('connection', (socket) => {
       broadcastGameState()
     } else {
       console.log('Failed to roll dice')
+    }
+  })
+
+  // Select values for up to 4 dice at the start of the turn instead of rolling
+  socket.on('choose-dice', (diceSelection) => {
+    console.log('Choosing dice', diceSelection)
+    if (gameState.chooseDice(socketMapping.get(socket.id), diceSelection)) {
+      broadcastGameState()
+    } else {
+      console.log('Failed to choose dice')
+    }
+  })
+
+  // Gain a die with a specific value
+  socket.on('gain-dice-value', (value) => {
+    console.log('Gaining dice value', value)
+    if (gameState.gainDiceValue(socketMapping.get(socket.id), value)) {
+      broadcastGameState()
+    } else {
+      console.log('Failed to gain dice value')
     }
   })
 

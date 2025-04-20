@@ -29,3 +29,13 @@ export function checkArrayValuesUnique(arr, n) {
 export function randomDice() {
   return Math.ceil(Math.random() * 6)
 }
+
+/**
+ * Check if a value is a valid dice value
+ *
+ * @param {int} value - The value to check
+ * @returns {boolean} Whether or not the value is a valid dice value
+ */
+export function isValidDiceValue(value) {
+  return Number.isInteger(value) && value >= 1 && value <= 6
+}

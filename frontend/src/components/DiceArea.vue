@@ -1,7 +1,9 @@
 <!-- DiceArea.vue -->
 <template>
   <div class="area dice-area" :class="{ 'inactive-area': gamestate.state.workPhase !== true }">
-    <button @click="gamestate.rollDice">Roll Dice ({{ unrolledDice }})</button>
+    <button v-if="canSelectDice" @click="chooseAllDice()">Select Dice</button>
+    <button v-else @click="gamestate.rollDice">Roll Dice ({{ unrolledDice }})</button>
+    <button v-if="hasBonusDie" @click="chooseOneDice()">Choose 1 Value</button>
     <div
       v-for="(diceval, index) in myDice"
       class="die"
@@ -11,31 +13,63 @@
       <p>{{ diceval }}</p>
     </div>
   </div>
+
+  <ModalTemplate v-if="showModal" @submit="submitModal" @cancel="cancelModal">
+    <div v-for="n in diceToSelect" :key="n" class="selection-area dice-select-area">
+      <p style="margin-right: 20px">Select dice value {{ n }}</p>
+      <div
+        v-for="val in 6"
+        class="die"
+        :class="{ 'selected-div': selectedDice[n - 1] === val }"
+        @click="selectedDice[n - 1] = val"
+      >
+        <p>{{ val }}</p>
+      </div>
+    </div>
+  </ModalTemplate>
 </template>
 
 <script>
 import { gamestate, Actions } from './GameState.js'
+import ModalTemplate from './ModalTemplate.vue'
 
 export default {
-  components: {},
+  components: {
+    ModalTemplate,
+  },
   computed: {
     // Returns the current player's dice array
     myDice() {
-      if (gamestate.state.players == null) {
+      if (!gamestate.initialized) {
         return []
       }
       return gamestate.state.players[gamestate.playerID]?.dice || []
     },
     unrolledDice() {
-      if (gamestate.state.players == null) {
+      if (!gamestate.initialized) {
         return 0
       }
       return gamestate.state.players[gamestate.playerID]?.numDice || 0
+    },
+    canSelectDice() {
+      if (!gamestate.initialized) {
+        return false
+      }
+      return gamestate.state.players[gamestate.playerID].selectableDice
+    },
+    hasBonusDie() {
+      if (!gamestate.initialized) {
+        return false
+      }
+      return gamestate.state.players[gamestate.playerID].bonusDie
     },
   },
   data() {
     return {
       gamestate,
+      showModal: false,
+      diceToSelect: 0,
+      selectedDice: [null, null, null, null],
     }
   },
   methods: {
@@ -62,6 +96,28 @@ export default {
      */
     isSelectedDice(index) {
       return gamestate.activeAction === Actions.selectDieTarget && gamestate.activeActionTarget === index
+    },
+    chooseAllDice() {
+      this.showModal = true
+      this.diceToSelect = Math.min(4, gamestate.state.players[gamestate.playerID].numDice)
+      console.log('Selecting', this.diceToSelect, 'dice')
+    },
+    chooseOneDice() {
+      this.showModal = true
+      this.diceToSelect = 1
+    },
+    cancelModal() {
+      this.showModal = false
+      this.selectedDice = []
+    },
+    submitModal() {
+      this.showModal = false
+      if (this.diceToSelect === 1) {
+        gamestate.gainDiceValue(this.selectedDice[0])
+      } else {
+        gamestate.chooseDice(this.selectedDice.filter((val) => val !== null))
+      }
+      this.selectedDice = []
     },
   },
 }

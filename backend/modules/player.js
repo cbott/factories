@@ -18,6 +18,10 @@ export class Player {
     this.dice = []
     // Number of dice available to roll, can be increased with contractor cards
     this.numDice = STARTING_DICE
+    // Whether the player can manually select dice values (Foreman contractor card)
+    this.selectableDice = false
+    // Whether the player can gain an extra dice of their choice (Specialist contractor card)
+    this.bonusDie = false
     // Resources
     this.energy = STARTING_ENERGY // ⚡
     this.metal = STARTING_METAL // 🔩
@@ -45,6 +49,8 @@ export class Player {
     this.headquarters.generate = []
     this.headquarters.mine = []
     this.numDice = STARTING_DICE
+    this.selectableDice = false
+    this.bonusDie = false
     this.compound.forEach((card) => {
       card.alreadyActivated = false
     })

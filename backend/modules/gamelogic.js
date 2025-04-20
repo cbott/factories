@@ -6,7 +6,7 @@ import * as cards from './cards.js'
 import * as player from './player.js'
 import * as activateCards from './activateCards.js'
 import * as constants from './constants.js'
-import { checkArrayValuesUnique, randomDice } from './helpers.js'
+import { checkArrayValuesUnique, isValidDiceValue, randomDice } from './helpers.js'
 
 export class GameState {
   constructor() {
@@ -81,7 +81,7 @@ export class GameState {
   removePlayer(playerID) {
     // Discard the player's hand
     for (const cardID of Object.keys(this.players[playerID].hand)) {
-      this._removeFromHand(playerID, cardID)
+      this._discardFromHand(playerID, cardID)
     }
     // Discard the player's compound
     for (let card of this.players[playerID].compound) {
@@ -114,21 +114,6 @@ export class GameState {
   }
 
   /**
-   * Moves a card from a player's hand to their compound and updates prestige.
-   *
-   * @param {string} playerID - The ID of the player.
-   * @param {int} cardID - The ID of the card to be moved.
-   */
-  _moveToCompound(playerID, cardID) {
-    // TODO: add validation
-    console.log('Moving card', cardID, 'to compound', playerID)
-    this.players[playerID].compound.push(this.players[playerID].hand[cardID])
-    // Card is moved to compound, now remove it from hand
-    delete this.players[playerID].hand[cardID]
-    this.players[playerID].prestige = cards.calculatePrestige(this.players[playerID].compound)
-  }
-
-  /**
    * Checks whether a player is allowed to perform a market phase action at this time
    *
    * @param {string} playerID - The ID of the player.
@@ -142,6 +127,11 @@ export class GameState {
 
     if (!this._isPlayersTurn(playerID)) {
       console.log('It is not', playerID + "'s turn")
+      return false
+    }
+
+    if (this.players[playerID].workDone.hasDrawnCard) {
+      console.log('Player', playerID, 'has already drawn a card this round')
       return false
     }
 
@@ -171,7 +161,6 @@ export class GameState {
   /**
    * Increases the goods for a specific player.
    *
-   * @private
    * @param {string} playerID - The ID of the player.
    * @param {int} count - The number of goods to add to the player's total.
    */
@@ -184,7 +173,7 @@ export class GameState {
   }
 
   /**
-   * Builds a card for a player by using resources and discarding a matching tool card.
+   * Builds a Blueprint card from the player's hand by using resources and discarding a matching tool card.
    *
    * @param {string} playerID - The ID of the player attempting to build the card.
    * @param {int} cardIDToBuild - The ID of the card the player wants to build.
@@ -202,6 +191,8 @@ export class GameState {
     }
 
     let hand = this.players[playerID].hand
+    let cardToBuild = hand[cardIDToBuild]
+
     if (!hand[cardIDToBuild]) {
       console.log('Card ID', cardIDToBuild, 'selected to build but is not in player hand')
       return false
@@ -210,12 +201,52 @@ export class GameState {
       console.log('Card ID', cardIDToDiscard, 'selected to discard but is not in player hand')
       return false
     }
-    if (hand[cardIDToBuild].tool !== hand[cardIDToDiscard].tool) {
+    if (cardToBuild.tool !== hand[cardIDToDiscard].tool) {
       console.log('Card to build and discard do not have matching tools')
       return false
     }
 
-    let card = hand[cardIDToBuild]
+    // Check player resources
+    let metalCost = cardToBuild.cost_metal
+    if (cardToBuild.name === 'Megalith') {
+      // Special case for Megalith, metal cost reduced by 1 for each monument card in compound
+      metalCost = Math.max(0, metalCost - this.players[playerID].monumentsInCompound())
+    }
+
+    if (metalCost > this.players[playerID].metal) {
+      console.log('Player does not have enough metal to build card')
+      return false
+    } else if (cardToBuild.cost_energy > this.players[playerID].energy) {
+      console.log('Player does not have enough energy to build card')
+      return false
+    }
+
+    // Build the card
+    if (!this._moveToCompound(playerID, cardToBuild)) {
+      return false
+    }
+
+    // Spend resources
+    delete this.players[playerID].hand[cardIDToBuild]
+    this._discardFromHand(playerID, cardIDToDiscard)
+    this.players[playerID].metal -= metalCost
+    this.players[playerID].energy -= cardToBuild.cost_energy
+
+    return true
+  }
+
+  /**
+   * Core logic for building Blueprints. Adds the specified card to the player's compound.
+   * - checks for duplicates
+   * - activates on-build effects
+   * - adds card to the compound
+   * - updates prestige
+   *
+   * @param {string} playerID - The ID of the player for the compound.
+   * @param {cards.BlueprintCard} card - The card to put in the player's compound.
+   * @returns {boolean} - True if the card was successfully moved, false otherwise.
+   */
+  _moveToCompound(playerID, card) {
     // Check that player does not already have one of these cards in their compound
     if (
       !constants.BUILD_MULTIPLE.includes(card.name) &&
@@ -224,26 +255,8 @@ export class GameState {
       console.log('Player already has card', card.name, 'in compound')
       return false
     }
-    // Check player resources
-    let metalCost = card.cost_metal
-    if (card.name === 'Megalith') {
-      // Special case for Megalith, metal cost reduced by 1 for each monument card in compound
-      metalCost = Math.max(0, metalCost - this.players[playerID].monumentsInCompound())
-    }
 
-    if (metalCost > this.players[playerID].metal) {
-      console.log('Player does not have enough metal to build card')
-      return false
-    } else if (card.cost_energy > this.players[playerID].energy) {
-      console.log('Player does not have enough energy to build card')
-      return false
-    }
-
-    // Build the card
-    this.players[playerID].metal -= metalCost
-    this.players[playerID].energy -= card.cost_energy
-    this._removeFromHand(playerID, cardIDToDiscard)
-
+    // Activate extra effects from cards already in the compound
     if (this.players[playerID].markCardNameActivated('Scrap Yard')) {
       // Scrap Yard: gain 1 metal after building a card
       console.log('Activating Scrap Yard')
@@ -256,7 +269,12 @@ export class GameState {
       this.players[playerID].energy += 2
     }
 
-    this._moveToCompound(playerID, cardIDToBuild)
+    // Place the new card in the compound
+    console.log('Moving card', card.id, 'to compound of', playerID)
+    this.players[playerID].compound.push(card)
+
+    // Re-calculate prestige with the new compound contents
+    this.players[playerID].prestige = cards.calculatePrestige(this.players[playerID].compound)
 
     return true
   }
@@ -265,9 +283,9 @@ export class GameState {
    * Removes a blueprint card from a player's hand and adds it to the discard pile.
    *
    * @param {string} playerID - The ID of the player.
-   * @param {int} cardID - The ID of the card to be removed.
+   * @param {int} cardID - The ID of the card to be discarded.
    */
-  _removeFromHand(playerID, cardID) {
+  _discardFromHand(playerID, cardID) {
     this.discard.push(this.players[playerID].hand[cardID])
     delete this.players[playerID].hand[cardID]
   }
@@ -310,7 +328,7 @@ export class GameState {
   /**
    * Retrieves the next Blueprint card from the deck
    *
-   * @returns {cards.BlueprintCard} - The next blueprint card from the deck.
+   * @returns {cards.BlueprintCard|null} - The next blueprint card from the deck.
    */
   _getNextBlueprintFromDeck() {
     return cards.getNextCardFromDeck(this.deck, this.discard)
@@ -433,7 +451,7 @@ export class GameState {
     this.players[playerID].metal -= metal
     this.players[playerID].energy -= energy
     for (let cardID of cards) {
-      this._removeFromHand(playerID, cardID)
+      this._discardFromHand(playerID, cardID)
     }
 
     this.players[playerID].workDone.hasFinishedWork = true
@@ -479,33 +497,174 @@ export class GameState {
   }
 
   /**
-   * Moves the selected card from the marketplace into the player's hand
+   * Cleanup actions to perform after a player has completed the actions of their Market phase
    *
-   * @param {string} playerID - The ID of the player attempting to pick up the card.
-   * @param {int} cardID - The ID of the card to be picked up from the marketplace.
-   * @returns {boolean} - Whether the card was successfully picked up.
+   * @param {string} playerID - The ID of the player to end Market phase for
    */
-  pickupFromMarketplace(playerID, cardID) {
-    if (!this._marketPhaseActionValid(playerID)) {
-      return false
-    }
-
-    if (this.players[playerID].workDone.hasDrawnCard) {
-      console.log('Player', playerID, 'has already drawn a card this round')
-    }
-
-    const card = cards.removeCardByID(this.marketplace.blueprints, cardID)
-    if (card === null) {
-      console.log('Card ID', cardID, 'not found in marketplace')
-      return false
-    }
-    this.players[playerID].hand[cardID] = card
+  _completePlayerMarketPhase(playerID) {
     this.players[playerID].workDone.hasDrawnCard = true
     this.fillMarketplace()
     this._advanceToNextPlayer()
     if (this._checkAllPlayersHaveDrawnCard()) {
       this.changePhase()
     }
+  }
+
+  /**
+   * Moves the selected Blueprint card from the marketplace into the player's hand
+   *
+   * @param {string} playerID - The ID of the player attempting to pick up the card.
+   * @param {int} cardID - The ID of the card to be picked up from the marketplace.
+   * @returns {boolean} - Whether the card was successfully picked up or activated.
+   */
+  pickupFromMarketplace(playerID, cardID) {
+    if (!this._marketPhaseActionValid(playerID)) {
+      return false
+    }
+    const card = cards.removeCardByID(this.marketplace.blueprints, cardID)
+    if (card === null) {
+      console.log('Card ID', cardID, 'not found in marketplace')
+      return false
+    }
+    this.players[playerID].hand[cardID] = card
+    this._completePlayerMarketPhase(playerID)
+    return true
+  }
+
+  /**
+   * Activate a contractor card from the marketplace
+   *
+   * @param {string} playerID - The ID of the player attempting to pick up the card.
+   * @param {int} cardTool - The tool of the Contractor card that is to be picked up.
+   * @param {int} cardIDToDiscard - The ID of a Blueprint card in the player's hand to discard.
+   * @param {string|null} otherPlayerID - Optionally another player to be a target of the contractor action.
+   * @returns {boolean} - Whether the Contractor card was successfully used.
+   */
+  hireContractor(playerID, cardTool, cardIDToDiscard, otherPlayerID) {
+    if (!this._marketPhaseActionValid(playerID)) {
+      return false
+    }
+
+    if (!constants.TOOLS.includes(cardTool)) {
+      console.log('Invalid tool', cardTool, 'selected for contractor')
+      return false
+    }
+
+    let contractorCard = this.marketplace.contractors[cardTool]
+
+    if (contractorCard === null) {
+      // There shouldn't really be a situation where this happens
+      console.log('Contractor card', cardTool, 'not found in marketplace')
+      return false
+    }
+
+    // Check that player has sufficient energy to hire
+    if (this.players[playerID].energy < contractorCard.cost_energy) {
+      console.log('Player does not have', this.players[playerID].energy, 'energy to hire contractor')
+      return false
+    }
+
+    // Check that player has the card they intend to discard
+    if (!this.players[playerID].hand[cardIDToDiscard]) {
+      console.log('Card ID', cardIDToDiscard, 'not found in player hand')
+      return false
+    }
+
+    // Check that the player is discarding the correct tool
+    if (this.players[playerID].hand[cardIDToDiscard].tool !== cardTool) {
+      console.log('Card selected for discard', cardIDToDiscard, 'does not match tool', cardTool)
+      return false
+    }
+
+    // Check that another player is selected for Contractors that require it
+    if (['Architect', 'Electrician', 'Miner'].includes(contractorCard.name)) {
+      if (otherPlayerID === null) {
+        console.log('Contractor', contractorCard.name, 'requires another player to be selected')
+        return false
+      }
+      if (!this.players[otherPlayerID]) {
+        console.log('Other player ID', otherPlayerID, 'not found')
+        return false
+      }
+    }
+
+    switch (contractorCard.name) {
+      case 'Architect':
+        // Draw 3🟦 and then pick an opponent to draw 1🟦
+        for (let i = 0; i < 3; i++) {
+          this._drawBlueprint(playerID)
+        }
+        this._drawBlueprint(otherPlayerID)
+        break
+      case 'Electrician':
+        // Gain 5⚡ and then pick an opponent to gain 2⚡
+        this.players[playerID].energy += 5
+        this.players[otherPlayerID].energy += 2
+        break
+      case 'Engineer': {
+        // Draw and reveal a 🟦. Immediately BUILD it for free
+        const max_retries = this.deck.length + this.discard.length
+        // Theoretically if there are no cards left in the deck that we don't already have
+        // we could get stuck in an infinite loop, so we enforce a limit on retries
+        let success = false
+        for (let i = 0; i < max_retries; i++) {
+          const card = this._getNextBlueprintFromDeck()
+          if (card === null) {
+            console.log('No cards left in deck')
+            return false
+          }
+          if (this._moveToCompound(playerID, card)) {
+            success = true
+            break
+          }
+          this.discard.push(card)
+        }
+        if (!success) {
+          console.log('No cards left in deck that can be built')
+          return false
+        }
+        break
+      }
+      case 'Foreman':
+        // "At the start of the next work phase, instead of rolling you may choose the values for up to 4x [?]"
+        this.players[playerID].selectableDice = true
+        break
+      case 'Hired Hands':
+        // Roll 2 extra [?] at the start of the next work phase
+        this.players[playerID].numDice += 2
+        break
+      case 'Investor': {
+        // Draw and reveal a 🟦. Gain 🔩 and ⚡ equal to its BUILD cost. Discard the 🟦
+        const card = this._getNextBlueprintFromDeck()
+        if (card === null) {
+          console.log('No cards left in deck')
+          return false
+        }
+        this.players[playerID].metal += card.cost_metal
+        this.players[playerID].energy += card.cost_energy
+        this.discard.push(card)
+        break
+      }
+      case 'Miner':
+        // Gain 3🔩 and then pick an opponent to gain 1🔩
+        this.players[playerID].metal += 3
+        this.players[otherPlayerID].metal += 1
+        break
+      case 'Specialist':
+        // Gain an extra [?] of any value any time during the next work phase
+        this.players[playerID].bonusDie = true
+        break
+    }
+
+    // Spend the contractor activation cost
+    this.players[playerID].energy -= contractorCard.cost_energy
+    this._discardFromHand(playerID, cardIDToDiscard)
+
+    // Discard the contractor card
+    this.marketplace.contractors[cardTool] = null
+    this.contractorDiscard.push(contractorCard)
+    this._completePlayerMarketPhase(playerID)
+
     return true
   }
 
@@ -527,6 +686,74 @@ export class GameState {
       this.players[playerID].dice.push(value)
     }
     this.players[playerID].numDice = 0
+    this.players[playerID].selectableDice = false
+    return true
+  }
+
+  /**
+   * Select specific values for up to 4 dice for a given player at the start of the Work phase.
+   * This is the action associated with the "Foreman" contractor card
+   *
+   * @param {string} playerID - The ID of the player selecting the dice.
+   * @param {Array<int>} diceSelection - An array of integers representing the selected dice values.
+   * @returns {boolean} - True if the dice were set, false otherwise.
+   */
+  chooseDice(playerID, diceSelection) {
+    // The rules specify that this should be done "at the start of the next work phase"
+    // We aren't strictly enforcing that, mainly just ensuring it is done before dice are rolled
+    // though with robot/golem there are still some work-arounds to that
+    if (!this._workPhaseActionValid(playerID)) {
+      console.log('Action can only be performed during Work phase')
+      return false
+    }
+
+    if (!this.players[playerID].selectableDice) {
+      console.log('Player', playerID, 'is not allowed to select dice')
+      return false
+    }
+
+    if (diceSelection.length > Math.min(4, this.players[playerID].numDice)) {
+      console.log('Player can only select up to', Math.min(4, this.players[playerID].numDice), 'dice')
+      return false
+    }
+
+    if (diceSelection.some((value) => !isValidDiceValue(value))) {
+      console.log('Invalid die values selected:', diceSelection)
+      return false
+    }
+
+    this.players[playerID].dice = diceSelection
+    this.players[playerID].numDice -= diceSelection.length
+    this.players[playerID].selectableDice = false
+    return true
+  }
+
+  /**
+   * Gain a die with a specific value
+   * This is the actions associated with the "Specialist" contractor card
+   *
+   * @param {string} playerID - The ID of the player selecting the die.
+   * @param {int} value - The value of the die to add.
+   * @returns {boolean} - True if the die was added, false otherwise.
+   */
+  gainDiceValue(playerID, value) {
+    if (!this._workPhaseActionValid(playerID)) {
+      console.log('Action can only be performed during Work phase')
+      return false
+    }
+
+    if (!this.players[playerID].bonusDie) {
+      console.log('Player', playerID, 'does not have a bonus die this round')
+      return false
+    }
+
+    if (!isValidDiceValue(value)) {
+      console.log('Invalid die value selected:', value)
+      return false
+    }
+
+    this.players[playerID].bonusDie = false
+    this.players[playerID].dice.push(value)
     return true
   }
 
@@ -778,7 +1005,7 @@ export class GameState {
           return false
         }
         activateCards.removeIndicesFromArray(player.dice, diceSelection)
-        this._removeFromHand(playerID, cardSelection[0])
+        this._discardFromHand(playerID, cardSelection[0])
         player.energy += 2
         player.metal += 2
         break
@@ -872,8 +1099,8 @@ export class GameState {
       case 'Golem':
         // ⚡X -> [X] gain an extra [?] with a value of X this turn
         console.log('Golem')
-        if (energySelection < 1 || energySelection > 6 || player.energy < energySelection) {
-          console.log('Invalid energy selection')
+        if (!isValidDiceValue(energySelection) || player.energy < energySelection) {
+          console.log('Invalid energy selection', energySelection)
           return false
         }
         player.energy -= energySelection
@@ -935,7 +1162,7 @@ export class GameState {
           return false
         }
 
-        this._removeFromHand(playerID, cardSelection[0])
+        this._discardFromHand(playerID, cardSelection[0])
         player.metal -= 1
         player.energy += 6
         break
@@ -1036,8 +1263,8 @@ export class GameState {
           return false
         }
         player.energy -= 2
-        this._removeFromHand(playerID, cardSelection[0])
-        this._removeFromHand(playerID, cardSelection[1])
+        this._discardFromHand(playerID, cardSelection[0])
+        this._discardFromHand(playerID, cardSelection[1])
         this._drawBlueprint(playerID)
         this._manufactureGoods(playerID, 1)
         break
@@ -1060,7 +1287,7 @@ export class GameState {
           return false
         }
         player.energy -= 3
-        this._removeFromHand(playerID, cardSelection[0])
+        this._discardFromHand(playerID, cardSelection[0])
         player.metal += 3
         break
       }
@@ -1121,8 +1348,8 @@ export class GameState {
           return false
         }
         activateCards.removeIndicesFromArray(player.dice, diceSelection)
-        this._removeFromHand(playerID, cardSelection[0])
-        this._removeFromHand(playerID, cardSelection[1])
+        this._discardFromHand(playerID, cardSelection[0])
+        this._discardFromHand(playerID, cardSelection[1])
         this._manufactureGoods(playerID, 2)
         break
       }

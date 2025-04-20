@@ -123,8 +123,7 @@ export default {
     },
     submitModal() {
       this.showModal = false
-      console.log(
-        'hire-contractor',
+      gamestate.hireContractor(
         this.selectedContractorTool,
         this.modalResult.selectedCard,
         this.modalResult.selectedPlayer,

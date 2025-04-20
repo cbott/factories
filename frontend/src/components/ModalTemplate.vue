@@ -14,7 +14,7 @@
 
 <script>
 // Game state
-import { gamestate, Actions } from './GameState.js'
+import { gamestate } from './GameState.js'
 
 // Exports
 export default {

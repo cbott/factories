@@ -36,4 +36,4 @@ Scoped
 Unscoped (possible future work)
 
 - Add an "Undo" button.
-- Work on "security" type features such as ensuring that players request actions on behalf of others
+- Work on "security" type features such as ensuring that players cannot request actions on behalf of others

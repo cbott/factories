@@ -38,7 +38,6 @@ export const gamestate = reactive({
     this.socket = io('http://localhost:3000')
     this.socket.emit('join-game', username)
     this.playerID = username
-    this.initialized = true
 
     this.socket.on('game-state', (state) => {
       this.state = state
@@ -47,6 +46,7 @@ export const gamestate = reactive({
         // Convert hand to Map object for ease of use later on. We cannot directly send and receive Maps
         this.hand = new Map(Object.entries(state.players[this.playerID].hand))
       }
+      this.initialized = true
     })
 
     this.socket.on('disconnect', () => {
@@ -111,10 +111,53 @@ export const gamestate = reactive({
     this.socket.emit('pickup-from-marketplace', cardID)
   },
 
+  /**
+   * Activate a Contractor card from the marketplace
+   *
+   * @param {int} cardTool - The tool symbol above the Contractor to hire.
+   * @param {int} cardIDToDiscard - The ID of a Blueprint card in the player's hand to discard.
+   * @param {string|null} otherPlayerID - Optionally another player to be a target of the contractor action.
+   */
+  hireContractor(cardTool, cardIDToDiscard, otherPlayerID) {
+    console.log(
+      'Hiring contractor',
+      cardTool,
+      'by discarding card',
+      cardIDToDiscard,
+      'and targeting player',
+      otherPlayerID,
+    )
+    this.socket.emit('hire-contractor', cardTool, cardIDToDiscard, otherPlayerID)
+  },
+
   // Roll all available dice
   rollDice() {
     console.log('Rolling Dice')
     this.socket.emit('roll-dice')
+  },
+
+  /**
+   * Select specific values for up to 4 dice for a given player at the start of the Work phase.
+   * This is the action associated with the "Foreman" contractor card
+   *
+   * @param {Array<int>} diceSelection - An array of integers representing the selected dice values.
+   * @returns {boolean} - True if the dice were set, false otherwise.
+   */
+  chooseDice(diceSelection) {
+    console.log('Choosing dice', diceSelection)
+    this.socket.emit('choose-dice', diceSelection)
+  },
+
+  /**
+   * Gain a die with a specific value
+   * This is the actions associated with the "Specialist" contractor card
+   *
+   * @param {int} value - The value of the die to add.
+   * @returns {boolean} - True if the die was added, false otherwise.
+   */
+  gainDiceValue(value) {
+    console.log('Gaining die', value)
+    this.socket.emit('gain-dice-value', value)
   },
 
   /**
