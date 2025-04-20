@@ -4,7 +4,7 @@
     <button @click="submitUsername">Connect</button>
   </div>
 
-  <template v-if="gamestate.initialized">
+  <template v-else>
     <div class="infobar">
       <div style="display: flex">
         <p>{{ gamestate.state.workPhase ? 'Work' : 'Market' }} Phase</p>
@@ -12,7 +12,7 @@
           <button @click="gamestate.requestChangePhase">Change Phase (debug)</button>
         </div>
         <div style="margin-left: 10px">
-          <button @click="openEndTurnDialog" :disabled="disableEndTurn">End Turn</button>
+          <button @click="confirmEndTurn" :disabled="disableEndTurn">End Turn</button>
         </div>
       </div>
 
@@ -39,10 +39,12 @@
           </div>
           <PlayerHand />
           <Compound :playerID="gamestate.playerID" />
-          <ModalWindow />
         </div>
       </div>
     </div>
+    <ModalTemplate v-if="showModal" @submit="submitModal" @cancel="cancelModal">
+      <EndTurn :result="modalResult" />
+    </ModalTemplate>
   </template>
 </template>
 
@@ -53,9 +55,10 @@ import { gamestate, Actions } from './GameState.js'
 // Components
 import Compound from './Compound.vue'
 import DiceArea from './DiceArea.vue'
+import EndTurn from './EndTurn.vue'
 import Headquarters from './Headquarters.vue'
 import Marketplace from './Marketplace.vue'
-import ModalWindow from './ModalWindow.vue'
+import ModalTemplate from './ModalTemplate.vue'
 import OtherPlayers from './OtherPlayers.vue'
 import PlayerHand from './PlayerHand.vue'
 
@@ -64,9 +67,10 @@ export default {
   components: {
     Compound,
     DiceArea,
+    EndTurn,
     Headquarters,
     Marketplace,
-    ModalWindow,
+    ModalTemplate,
     OtherPlayers,
     PlayerHand,
   },
@@ -74,6 +78,12 @@ export default {
     return {
       gamestate,
       usernameInput: '',
+      showModal: false,
+      modalResult: {
+        cards: [],
+        energy: 0,
+        metal: 0,
+      },
     }
   },
   computed: {
@@ -91,12 +101,17 @@ export default {
     submitUsername() {
       gamestate.openSocket(this.usernameInput)
     },
-    openEndTurnDialog() {
-      gamestate.activeAction = Actions.selectTurnEndResources
+    confirmEndTurn() {
+      this.modalResult = { cards: [], energy: 0, metal: 0 }
+      this.showModal = true
     },
-  },
-  mounted() {
-    // gamestate.openSocket()
+    cancelModal() {
+      this.showModal = false
+    },
+    submitModal() {
+      this.showModal = false
+      gamestate.requestEndTurn(this.modalResult.cards, this.modalResult.energy, this.modalResult.metal)
+    },
   },
 }
 </script>

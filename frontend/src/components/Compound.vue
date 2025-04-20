@@ -21,11 +21,16 @@
       />
     </div>
   </div>
+  <ModalTemplate v-if="showModal" @submit="submitModal" @cancel="cancelModal" submitText="Activate">
+    <ActivateCard :result="modalResult" :cardToActivate="cardToActivate" />
+  </ModalTemplate>
 </template>
 
 <script>
-import { Actions, gamestate } from './GameState.js'
+import { gamestate } from './GameState.js'
+import ActivateCard from './ActivateCard.vue'
 import Card from './Card.vue'
+import ModalTemplate from './ModalTemplate.vue'
 
 export default {
   props: {
@@ -35,7 +40,9 @@ export default {
     },
   },
   components: {
+    ActivateCard,
     Card,
+    ModalTemplate,
   },
   computed: {
     energy() {
@@ -75,6 +82,14 @@ export default {
   data() {
     return {
       gamestate,
+      showModal: false,
+      modalResult: {
+        dice: [],
+        cards: [],
+        energy: 0,
+        reward: '',
+      },
+      cardToActivate: null,
     }
   },
   methods: {
@@ -82,8 +97,23 @@ export default {
       if (!card.activatable || card.alreadyActivated || !this.isMainPlayer) {
         return
       }
-      gamestate.activeAction = Actions.activateCard
-      gamestate.activeActionTarget = card
+      this.cardToActivate = card
+      this.modalResult = { dice: [], cards: [], energy: 0, reward: '' }
+      this.showModal = true
+    },
+    cancelModal() {
+      this.showModal = false
+    },
+    submitModal() {
+      gamestate.activateCard(
+        this.cardToActivate.id,
+        this.modalResult.dice,
+        this.modalResult.cards,
+        this.modalResult.energy,
+        this.modalResult.reward,
+      )
+      this.showModal = false
+      this.cardToActivate = null
     },
   },
 }

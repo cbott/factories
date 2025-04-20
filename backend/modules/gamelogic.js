@@ -401,15 +401,14 @@ export class GameState {
   /**
    * Requests that a player be marked as having completed the work phase
    *
-   * @param {string} playerID - The ID of the player to mark work phase complete for
-   * @param {Array<cards.BlueprintCard>} cards - Any cards to discard
-   * @param {int} energy - The number of energy to discard
-   * @param {int} metal - The number of metal to discard
-   * @returns {boolean} - Whether the player's work phase was successfully marked as complete
+   * @param {string} playerID - The ID of the player to mark work phase complete for.
+   * @param {Array<int>} cards - Array of Blueprint card IDs to discard from hand, if needed.
+   * @param {int} energy - The number of energy to discard.
+   * @param {int} metal - The number of metal to discard.
+   * @returns {boolean} - Whether the player's work phase was successfully marked as complete.
    */
   endTurn(playerID, cards, energy, metal) {
-    if (!this.workPhase) {
-      console.log('Cannot end turn outside of Work phase')
+    if (!this._workPhaseActionValid(playerID)) {
       return false
     }
 

@@ -11,10 +11,6 @@ export const Actions = Object.freeze({
   selectMatchingTool: 'selectMatchingTool',
   // Select where to move a die to after selecting the die to move
   selectDieTarget: 'selectDieTarget',
-  // Select the inputs or outputs required to activate a card in the compound
-  activateCard: 'activateCard',
-  // Select cards, metal, or energy to discard to get below resource limits to end your turn
-  selectTurnEndResources: 'selectTurnEndResources',
 })
 
 export const gamestate = reactive({
@@ -96,7 +92,7 @@ export const gamestate = reactive({
   /**
    * Request the server to mark player's work phase as complete
    *
-   * @param {Array} cards - The list of cards do discard to end the turn.
+   * @param {Array<int>} cards - The list of cards to discard to end the turn.
    * @param {int} energy - The amount of energy to discard to end the turn.
    * @param {int} metal - The amount of metal to discard to end the turn.
    */
@@ -184,11 +180,14 @@ export const gamestate = reactive({
     this.socket.emit('add-to-compound-with-discard', cardIDToMove, cardIDToDiscard)
   },
 
-  // Activate a card from the player's compound
-  // diceSelection: Array<int> with indices into the player's dice array
-  // cardSelection: Array<int> list of cardIDs, which should be in the player's hand
-  // energySelection: int - number of energy to use for activation (applies to Golem only)
-  // rewardSelection: string - one of 'Card', 'Metal', 'Energy' to select the reward when there is a choice
+  /**
+   * Activate a card from the player's compound.
+   *
+   * @param {Array<int>} diceSelection - Indices into the player's dice array.
+   * @param {Array<int>} cardSelection - List of card IDs, which should be in the player's hand.
+   * @param {int} energySelection - Number of energy to use for activation (applies to Golem only).
+   * @param {string} rewardSelection - One of 'Card', 'Metal', or 'Energy' to select the reward when there is a choice.
+   */
   activateCard(cardIDToActivate, diceSelection, cardSelection, energySelection, rewardSelection) {
     console.log(
       'Activate card',

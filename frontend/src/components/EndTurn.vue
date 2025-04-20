@@ -23,44 +23,41 @@
     <p>Select Resources To Discard</p>
     <div class="selection-area">
       <p style="margin-right: 5px">Discard</p>
-      <select name="energy" v-model="this.selectedEnergy">
+      <select name="energy" v-model="this.result.energy">
         <option v-for="n in gamestate.playerEnergy() + 1" :key="n" :value="n - 1">{{ n - 1 }}</option>
       </select>
       <p>⚡</p>
       <span style="margin-left: 20px"></span>
       <p style="margin-right: 5px">Discard</p>
-      <select name="metal" v-model="this.selectedMetal">
+      <select name="metal" v-model="this.result.metal">
         <option v-for="n in gamestate.playerMetal() + 1" :key="n" :value="n - 1">{{ n - 1 }}</option>
       </select>
       <p>🔩</p>
     </div>
     <p style="margin-top: 10px">Total Selected: {{ resourcesSelected }} / {{ totalResources - 12 }} needed</p>
   </div>
-
-  <button @click="cancel()">Cancel</button>
-  <button style="margin-left: 10px" @click="endTurn()">End Turn</button>
 </template>
 
 <script>
 // Game state
-import { gamestate, Actions } from './GameState.js'
+import { gamestate } from './GameState.js'
 import Card from './Card.vue'
 
 // Exports
 export default {
+  props: {
+    result: {
+      type: Object,
+      required: true,
+    },
+  },
   components: {
     Card,
   },
   mounted() {},
   data() {
-    let selectedCards = []
-    let selectedEnergy = 0
-    let selectedMetal = 0
     return {
       gamestate,
-      selectedCards,
-      selectedEnergy,
-      selectedMetal,
     }
   },
   computed: {
@@ -78,39 +75,24 @@ export default {
      * @returns {int} The total of selected energy and metal resources.
      */
     resourcesSelected() {
-      return this.selectedEnergy + this.selectedMetal
+      return this.result.energy + this.result.metal
     },
   },
   methods: {
-    cancel() {
-      gamestate.activeAction = Actions.none
-      gamestate.activeActionTarget = null
-      this.selectedCards = []
-      this.selectedEnergy = 0
-      this.selectedMetal = 0
-    },
-    endTurn() {
-      this.gamestate.requestEndTurn(this.selectedCards, this.selectedEnergy, this.selectedMetal)
-      this.cancel()
-    },
     isSelectedCard(cardID) {
-      return this.selectedCards.includes(parseInt(cardID, 10))
+      return this.result.cards.includes(parseInt(cardID, 10))
     },
     /**
      * Select cards to be discarded
-     *
-     * TODO: can we share this between EndTurn and ActivateCard?
      */
     selectCard(cardID) {
       if (this.isSelectedCard(cardID)) {
         // If already selected, deselect it
-        this.selectedCards = this.selectedCards.filter((id) => id !== parseInt(cardID, 10))
+        this.result.cards = this.result.cards.filter((id) => id !== parseInt(cardID, 10))
       } else {
-        this.selectedCards.push(parseInt(cardID, 10))
+        this.result.cards.push(parseInt(cardID, 10))
       }
     },
   },
 }
 </script>
-
-<style scoped></style>
