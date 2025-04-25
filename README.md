@@ -21,7 +21,6 @@ Serve UI from frontend/ with
 
 Scoped
 
-- (feature) Implement replicator and black market blueprints
 - (dev) Resolve remaining TODO items in code
 - (dev) Implement server-side logging with consistent formatting
 - (dev) Save game state to persistent storage to allow for resuming a game after a crash or a server reset

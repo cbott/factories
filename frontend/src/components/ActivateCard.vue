@@ -35,7 +35,7 @@
     </div>
   </div>
 
-  <div v-if="requiresCardSelection" class="card-select-area">
+  <div v-if="requiresCardSelectionNum > 0" class="card-select-area">
     <p>Select Blueprint cards from your hand</p>
     <div class="selection-area">
       <Card
@@ -50,11 +50,11 @@
     </div>
   </div>
 
-  <div v-if="requiresEnergySelection" class="resource-select-area">
-    <p>Select 1-{{ golemEnergyOptions }} Energy</p>
+  <div v-if="requiresEnergySelectionNum > 0" class="resource-select-area">
+    <p>Select up to {{ requiresEnergySelectionNum }} Energy to gain</p>
     <div class="selection-area">
       <select name="energy" v-model="this.result.energy">
-        <option v-for="n in golemEnergyOptions" :key="n" :value="n">{{ n }}</option>
+        <option v-for="n in requiresEnergySelectionNum" :key="n" :value="n">{{ n }}</option>
       </select>
     </div>
   </div>
@@ -97,8 +97,8 @@ export default {
       gamestate,
       recipe: '',
       requiresDiceSelection: false,
-      requiresCardSelection: false,
-      requiresEnergySelection: false,
+      requiresCardSelectionNum: 0,
+      requiresEnergySelectionNum: 0,
       requiresRewardSelection: false,
       requiresMarketplaceSelection: false,
     }
@@ -111,17 +111,12 @@ export default {
     }
     this.recipe = requirements.recipe
     this.requiresDiceSelection = requirements.requiresDiceSelection
-    this.requiresCardSelection = requirements.requiresCardSelection
-    this.requiresEnergySelection = requirements.requiresEnergySelection
+    this.requiresCardSelectionNum = requirements.requiresCardSelectionNum
+    this.requiresEnergySelectionNum = requirements.requiresEnergySelectionNum
     this.requiresRewardSelection = requirements.requiresRewardSelection
     this.requiresMarketplaceSelection = requirements.requiresMarketplaceSelection
   },
   computed: {
-    // TODO: reduce duplication with Compound
-    golemEnergyOptions() {
-      // Golem can use up to 6 energy
-      return Math.min(6, gamestate.playerEnergy())
-    },
     // Returns the current player's dice array
     // TODO: reduce duplication with DiceArea
     myDice() {
@@ -156,8 +151,8 @@ export default {
         // If already selected, deselect it
         this.result.replicate = null
         this.requiresDiceSelection = false
-        this.requiresCardSelection = false
-        this.requiresEnergySelection = false
+        this.requiresCardSelectionNum = 0
+        this.requiresEnergySelectionNum = 0
         this.requiresRewardSelection = false
       } else {
         let marketplaceCard = gamestate.state.marketplace.blueprints.find((c) => c.id === cardID)
@@ -169,8 +164,8 @@ export default {
         let requirements = this.getSelectionRequirements(marketplaceCard)
         console.log('New requirements', requirements)
         this.requiresDiceSelection = requirements.requiresDiceSelection
-        this.requiresCardSelection = requirements.requiresCardSelection
-        this.requiresEnergySelection = requirements.requiresEnergySelection
+        this.requiresCardSelectionNum = requirements.requiresCardSelectionNum
+        this.requiresEnergySelectionNum = requirements.requiresEnergySelectionNum
         this.requiresRewardSelection = requirements.requiresRewardSelection
       }
     },
@@ -192,7 +187,21 @@ export default {
       if (this.isSelectedCard(cardID)) {
         // If already selected, deselect it
         this.result.cards = this.result.cards.filter((id) => id !== parseInt(cardID, 10))
+        // Golem and Black Market are the only ones requiring this, so safe to clear selection
+        this.requiresEnergySelectionNum = 0
+      } else if (this.requiresCardSelectionNum === 1) {
+        // If only one card is required, replace the current selection
+        this.result.cards = [parseInt(cardID, 10)]
+        if (this.cardToActivate.name === 'Black Market') {
+          // Black Market requires energy selection if the card selected has a cost of 4 or more
+          if (gamestate.hand.get(cardID).cost_energy + gamestate.hand.get(cardID).cost_metal > 4) {
+            this.requiresEnergySelectionNum = gamestate.hand.get(cardID).cost_energy
+          } else {
+            this.requiresEnergySelectionNum = 0
+          }
+        }
       } else {
+        // Otherwise, add the card to the selection
         this.result.cards.push(parseInt(cardID, 10))
       }
     },
@@ -202,8 +211,8 @@ export default {
     getSelectionRequirements(card) {
       let recipe = 'No Recipe'
       let requiresDiceSelection = false
-      let requiresCardSelection = false
-      let requiresEnergySelection = false
+      let requiresCardSelectionNum = 0
+      let requiresEnergySelectionNum = 0
       let requiresRewardSelection = false
       let requiresMarketplaceSelection = false
 
@@ -224,7 +233,7 @@ export default {
           break
         case 'Black Market':
           requiresDiceSelection = true
-          requiresCardSelection = true
+          requiresCardSelectionNum = 1
           break
         case 'Concrete Plant':
           requiresDiceSelection = true
@@ -242,7 +251,7 @@ export default {
           requiresDiceSelection = true
           break
         case 'Golem':
-          requiresEnergySelection = true
+          requiresEnergySelectionNum = Math.min(6, gamestate.playerEnergy())
           break
         case 'Gymnasium':
           requiresDiceSelection = true
@@ -252,7 +261,7 @@ export default {
           requiresRewardSelection = true
           break
         case 'Incinerator':
-          requiresCardSelection = true
+          requiresCardSelectionNum = 1
           break
         case 'Laboratory':
           break
@@ -277,10 +286,10 @@ export default {
           requiresDiceSelection = true
           break
         case 'Recycling Plant':
-          requiresCardSelection = true
+          requiresCardSelectionNum = 2
           break
         case 'Refinery':
-          requiresCardSelection = true
+          requiresCardSelectionNum = 1
           break
         case 'Replicator':
           requiresMarketplaceSelection = true
@@ -296,7 +305,7 @@ export default {
           break
         case 'Trash Compactor':
           requiresDiceSelection = true
-          requiresCardSelection = true
+          requiresCardSelectionNum = 2
           break
         case 'Warehouse':
           requiresDiceSelection = true
@@ -308,8 +317,8 @@ export default {
       return {
         recipe: recipe,
         requiresDiceSelection: requiresDiceSelection,
-        requiresCardSelection: requiresCardSelection,
-        requiresEnergySelection: requiresEnergySelection,
+        requiresCardSelectionNum: requiresCardSelectionNum,
+        requiresEnergySelectionNum: requiresEnergySelectionNum,
         requiresRewardSelection: requiresRewardSelection,
         requiresMarketplaceSelection: requiresMarketplaceSelection,
       }

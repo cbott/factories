@@ -1027,13 +1027,10 @@ export class GameState {
       case 'Black Market': {
         // [?] + 🟦 -> ⚡+🔩* (gain up to 4 resources equal to the build cost of the discarded 🟦)
         console.log('Black Market')
-        // TODO: implement resource selection, for now you just get 2 of each
         if (activateCards.checkDieValue(player.dice, diceSelection, [1, 2, 3, 4, 5, 6]) === null) {
           console.log('Invalid dice selection')
           return false
         }
-        // TODO: handle card validation better so we don't perform two checks here
-        // and we don't seem to use the cards from getCards so that might be unnecessary
         if (!checkArrayValuesUnique(cardSelection, 1)) {
           console.log('Invalid card selection')
           return false
@@ -1043,10 +1040,30 @@ export class GameState {
           console.log('Expected 1 card selection, got', cards.length)
           return false
         }
+
+        let energyToGain = cards[0].cost_energy
+        let metalToGain = cards[0].cost_metal
+
+        if (energyToGain + metalToGain > 4) {
+          if (!Number.isInteger(energySelection) || energySelection > energyToGain || energySelection < 0) {
+            console.log('Invalid energy selection', energySelection, 'exceeds', energyToGain)
+            return false
+          }
+          // Try to maximize the resources given to the player
+          // First give all requested energy
+          energyToGain = energySelection
+          // Then give as much metal as the card allows up until 4 total energy+metal
+          metalToGain = Math.min(metalToGain, 4 - energyToGain)
+          // If the player under-requested energy, give it back
+          if (energyToGain + metalToGain < 4) {
+            energyToGain = 4 - metalToGain
+          }
+        }
+
         activateCards.removeIndicesFromArray(player.dice, diceSelection)
         this._discardFromHand(playerID, cardSelection[0])
-        player.energy += 2
-        player.metal += 2
+        player.energy += energyToGain
+        player.metal += metalToGain
         break
       }
 
