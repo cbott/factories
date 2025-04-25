@@ -1,8 +1,25 @@
 <template>
   <h2>Activate Card</h2>
   <p>Card: {{ cardToActivate.name }}</p>
-  <p>Recipe: {{ this.getRecipe.recipe }}</p>
-  <div v-if="this.getRecipe.requiresDiceSelection" class="dice-select-area">
+  <p>Recipe: {{ recipe }}</p>
+
+  <div v-if="requiresMarketplaceSelection" class="card-select-area">
+    <p>Select a Blueprint card from the Marketplace</p>
+    <div class="selection-area">
+      <Card
+        v-for="card in gamestate.state.marketplace.blueprints"
+        :key="card.id"
+        :card="card"
+        :class="{
+          'valid-div': isSelectedMarketplace(card.id),
+        }"
+        :isDisabled="!card.activatable || card.name === 'Replicator'"
+        @click="selectMarketplace(card.id)"
+      />
+    </div>
+  </div>
+
+  <div v-if="requiresDiceSelection" class="dice-select-area">
     <p>Select your dice</p>
     <div class="selection-area">
       <div
@@ -18,8 +35,8 @@
     </div>
   </div>
 
-  <div v-if="this.getRecipe.requiresCardSelection" class="card-select-area">
-    <p>Select your cards</p>
+  <div v-if="requiresCardSelection" class="card-select-area">
+    <p>Select Blueprint cards from your hand</p>
     <div class="selection-area">
       <Card
         v-for="[cardID, card] in gamestate.hand"
@@ -33,7 +50,7 @@
     </div>
   </div>
 
-  <div v-if="this.getRecipe.requiresEnergySelection" class="resource-select-area">
+  <div v-if="requiresEnergySelection" class="resource-select-area">
     <p>Select 1-{{ golemEnergyOptions }} Energy</p>
     <div class="selection-area">
       <select name="energy" v-model="this.result.energy">
@@ -42,7 +59,7 @@
     </div>
   </div>
 
-  <div v-if="this.getRecipe.requiresRewardSelection" class="resource-select-area">
+  <div v-if="requiresRewardSelection" class="resource-select-area">
     <p>Select Reward</p>
     <div class="selection-area">
       <div v-for="n in rewardOptions" :key="n">
@@ -78,18 +95,120 @@ export default {
   data() {
     return {
       gamestate,
+      recipe: '',
+      requiresDiceSelection: false,
+      requiresCardSelection: false,
+      requiresEnergySelection: false,
+      requiresRewardSelection: false,
+      requiresMarketplaceSelection: false,
     }
   },
+  mounted() {
+    console.log('New Card in Activate!!!')
+    let requirements = this.getSelectionRequirements(this.cardToActivate)
+    if (requirements === null) {
+      return
+    }
+    this.recipe = requirements.recipe
+    this.requiresDiceSelection = requirements.requiresDiceSelection
+    this.requiresCardSelection = requirements.requiresCardSelection
+    this.requiresEnergySelection = requirements.requiresEnergySelection
+    this.requiresRewardSelection = requirements.requiresRewardSelection
+    this.requiresMarketplaceSelection = requirements.requiresMarketplaceSelection
+  },
   computed: {
-    getRecipe() {
+    // TODO: reduce duplication with Compound
+    golemEnergyOptions() {
+      // Golem can use up to 6 energy
+      return Math.min(6, gamestate.playerEnergy())
+    },
+    // Returns the current player's dice array
+    // TODO: reduce duplication with DiceArea
+    myDice() {
+      if (gamestate.state.players == null) {
+        return []
+      }
+      return gamestate.state.players[gamestate.playerID]?.dice || []
+    },
+    rewardOptions() {
+      if (this.cardToActivate.name === 'Harvester') {
+        return ['Metal', 'Energy']
+      }
+      return ['Card', 'Metal', 'Energy']
+    },
+  },
+  methods: {
+    isSelectedMarketplace(cardID) {
+      return this.result.replicate === cardID
+    },
+    isSelectedDice(diceIndex) {
+      return this.result.dice.includes(diceIndex)
+    },
+    isSelectedCard(cardID) {
+      return this.result.cards.includes(parseInt(cardID, 10))
+    },
+    /**
+     * Selects a Blueprint card from the Marketplace to be activated by the Replicator
+     */
+    selectMarketplace(cardID) {
+      console.log('selectMarketplace', cardID)
+      if (this.isSelectedMarketplace(cardID)) {
+        // If already selected, deselect it
+        this.result.replicate = null
+        this.requiresDiceSelection = false
+        this.requiresCardSelection = false
+        this.requiresEnergySelection = false
+        this.requiresRewardSelection = false
+      } else {
+        let marketplaceCard = gamestate.state.marketplace.blueprints.find((c) => c.id === cardID)
+        if (!marketplaceCard.activatable || marketplaceCard.name === 'Replicator') {
+          return
+        }
+        this.result.replicate = cardID
+        console.log('Picked card', marketplaceCard)
+        let requirements = this.getSelectionRequirements(marketplaceCard)
+        console.log('New requirements', requirements)
+        this.requiresDiceSelection = requirements.requiresDiceSelection
+        this.requiresCardSelection = requirements.requiresCardSelection
+        this.requiresEnergySelection = requirements.requiresEnergySelection
+        this.requiresRewardSelection = requirements.requiresRewardSelection
+      }
+    },
+    /**
+     * Select a die to be used for activating this card
+     */
+    selectDice(diceIndex) {
+      if (this.isSelectedDice(diceIndex)) {
+        // If already selected, deselect it
+        this.result.dice = this.result.dice.filter((id) => id !== diceIndex)
+      } else {
+        this.result.dice.push(diceIndex)
+      }
+    },
+    /**
+     * Select a card to be used for activating this card
+     */
+    selectCard(cardID) {
+      if (this.isSelectedCard(cardID)) {
+        // If already selected, deselect it
+        this.result.cards = this.result.cards.filter((id) => id !== parseInt(cardID, 10))
+      } else {
+        this.result.cards.push(parseInt(cardID, 10))
+      }
+    },
+    /**
+     * Determine the selection requirements based on the provided card
+     */
+    getSelectionRequirements(card) {
       let recipe = 'No Recipe'
       let requiresDiceSelection = false
       let requiresCardSelection = false
       let requiresEnergySelection = false
       let requiresRewardSelection = false
+      let requiresMarketplaceSelection = false
 
-      recipe = this.cardToActivate.recipe
-      switch (this.cardToActivate.name) {
+      recipe = card.recipe
+      switch (card.name) {
         case 'Aluminum Factory':
           requiresDiceSelection = true
           break
@@ -164,6 +283,7 @@ export default {
           requiresCardSelection = true
           break
         case 'Replicator':
+          requiresMarketplaceSelection = true
           break
         case 'Robot':
           break
@@ -181,6 +301,8 @@ export default {
         case 'Warehouse':
           requiresDiceSelection = true
           break
+        default:
+          return null
       }
 
       return {
@@ -189,58 +311,7 @@ export default {
         requiresCardSelection: requiresCardSelection,
         requiresEnergySelection: requiresEnergySelection,
         requiresRewardSelection: requiresRewardSelection,
-      }
-    },
-    // TODO: reduce duplication with Compound
-    golemEnergyOptions() {
-      if (gamestate.state.players == null) {
-        return 0
-      }
-      // Golem can use up to 6 energy
-      return Math.min(6, gamestate.state.players[gamestate.playerID].energy)
-    },
-    // Returns the current player's dice array
-    // TODO: reduce duplication with DiceArea
-    myDice() {
-      if (gamestate.state.players == null) {
-        return []
-      }
-      return gamestate.state.players[gamestate.playerID]?.dice || []
-    },
-    rewardOptions() {
-      if (this.cardToActivate.name === 'Harvester') {
-        return ['Metal', 'Energy']
-      }
-      return ['Card', 'Metal', 'Energy']
-    },
-  },
-  methods: {
-    isSelectedDice(diceIndex) {
-      return this.result.dice.includes(diceIndex)
-    },
-    isSelectedCard(cardID) {
-      return this.result.cards.includes(parseInt(cardID, 10))
-    },
-    /**
-     * Select a die to be used for activating this card
-     */
-    selectDice(diceIndex) {
-      if (this.isSelectedDice(diceIndex)) {
-        // If already selected, deselect it
-        this.result.dice = this.result.dice.filter((id) => id !== diceIndex)
-      } else {
-        this.result.dice.push(diceIndex)
-      }
-    },
-    /**
-     * Select a card to be used for activating this card
-     */
-    selectCard(cardID) {
-      if (this.isSelectedCard(cardID)) {
-        // If already selected, deselect it
-        this.result.cards = this.result.cards.filter((id) => id !== parseInt(cardID, 10))
-      } else {
-        this.result.cards.push(parseInt(cardID, 10))
+        requiresMarketplaceSelection: requiresMarketplaceSelection,
       }
     },
   },

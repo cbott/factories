@@ -183,15 +183,18 @@ export const gamestate = reactive({
   /**
    * Activate a card from the player's compound.
    *
+   * @param {int} cardID - The ID of the card to be activated.
    * @param {Array<int>} diceSelection - Indices into the player's dice array.
    * @param {Array<int>} cardSelection - List of card IDs, which should be in the player's hand.
    * @param {int} energySelection - Number of energy to use for activation (applies to Golem only).
    * @param {string} rewardSelection - One of 'Card', 'Metal', or 'Energy' to select the reward when there is a choice.
+   * @param {int} cardToReplicate - If activating a Replicator, the ID of a Blueprint card in the marketplace.
+   *
    */
-  activateCard(cardIDToActivate, diceSelection, cardSelection, energySelection, rewardSelection) {
+  activateCard(cardID, diceSelection, cardSelection, energySelection, rewardSelection, cardToReplicate) {
     console.log(
       'Activate card',
-      cardIDToActivate,
+      cardID,
       'with dice selection',
       diceSelection,
       'card selection',
@@ -200,7 +203,17 @@ export const gamestate = reactive({
       energySelection,
       'reward selection',
       rewardSelection,
+      'replicate card',
+      cardToReplicate,
     )
-    this.socket.emit('activate-card', cardIDToActivate, diceSelection, cardSelection, energySelection, rewardSelection)
+    this.socket.emit(
+      'activate-card',
+      cardID,
+      diceSelection,
+      cardSelection,
+      energySelection,
+      rewardSelection,
+      cardToReplicate,
+    )
   },
 })

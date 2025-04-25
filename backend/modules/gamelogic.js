@@ -867,7 +867,7 @@ export class GameState {
   }
 
   /**
-   * Activates a card from the player's compound
+   * Activates a Blueprint card from the player's compound
    *
    * @param {string} playerID - The ID of the player attempting to activate the card.
    * @param {int} cardID - The ID of the card to be activated.
@@ -875,9 +875,10 @@ export class GameState {
    * @param {Array<int>} cardSelection - The IDs of other cards selected by the player for this action.
    * @param {int} energySelection - The number of energy selected by the player for this action.
    * @param {String} rewardSelection - One of 'Card', 'Energy', 'Metal' to earn by activating the card.
+   * @param {int} cardToReplicate - If activating a Replicator, the ID of a Blueprint card in the marketplace.
    * @returns {boolean} Whether or not the card was successfully activated.
    */
-  activateCard(playerID, cardID, diceSelection, cardSelection, energySelection, rewardSelection) {
+  activateCard(playerID, cardID, diceSelection, cardSelection, energySelection, rewardSelection, cardToReplicate) {
     if (!this._workPhaseActionValid(playerID)) {
       return false
     }
@@ -894,7 +895,35 @@ export class GameState {
     }
     // Attempt to activate the card, using up the player's resources
     console.log('Activating card ID', cardID, 'for player', playerID)
-    if (!this._activate(playerID, card, diceSelection, cardSelection, energySelection, rewardSelection)) {
+
+    let cardToActivate = card
+    let withReplicator = false
+    if (card.name === 'Replicator') {
+      // Check that this cardID is in the marketplace
+      if (!Number.isInteger(cardToReplicate)) {
+        console.log('Invalid card ID', cardToReplicate, 'sent to Replicator')
+        return false
+      }
+      let newCard = this.marketplace.blueprints.find((c) => c.id === cardToReplicate)
+      if (!newCard) {
+        console.log('Card ID', newCard, 'not found in marketplace')
+        return false
+      }
+      cardToActivate = newCard
+      withReplicator = true
+    }
+
+    if (
+      !this._activate(
+        playerID,
+        cardToActivate,
+        diceSelection,
+        cardSelection,
+        energySelection,
+        rewardSelection,
+        withReplicator
+      )
+    ) {
       return false
     }
     console.log('Successfully activated card ID', cardID)
@@ -912,9 +941,10 @@ export class GameState {
    * @param {Array<int>} cardSelection - The IDs of other cards selected by the player for this action.
    * @param {int} energySelection - The number of energy selected by the player for this action.
    * @param {String} rewardSelection - One of 'Card', 'Energy', 'Metal' to earn by activating the card.
+   * @param {boolean} withReplicator - Whether the card is being activated through a Replicator.
    * @returns {boolean} Whether or not the card was successfully activated.
    */
-  _activate(playerID, card, diceSelection, cardSelection, energySelection, rewardSelection) {
+  _activate(playerID, card, diceSelection, cardSelection, energySelection, rewardSelection, withReplicator) {
     // This function should not worry about game state
     // It should just check and update the player's resources basically
     if (!card.activatable) {
@@ -922,6 +952,16 @@ export class GameState {
     }
 
     let player = this.players[playerID]
+
+    let availableEnergy = player.energy
+    if (withReplicator) {
+      // Replicator costs 1 energy to activate another card
+      if (availableEnergy < 1) {
+        console.log('Insufficient energy to use Replicator')
+        return false
+      }
+      availableEnergy -= 1
+    }
 
     switch (card.name) {
       case 'Aluminum Factory':
@@ -934,7 +974,7 @@ export class GameState {
         }
 
         // Confirm that we have 5 energy
-        if (player.energy < 5) {
+        if (availableEnergy < 5) {
           console.log('Insufficient energy')
           return false
         }
@@ -960,7 +1000,7 @@ export class GameState {
       case 'Battery Factory':
         // ⚡4 -> 📦
         console.log('Battery Factory')
-        if (player.energy < 4) {
+        if (availableEnergy < 4) {
           console.log('Insufficient energy')
           return false
         }
@@ -976,7 +1016,7 @@ export class GameState {
           console.log('Invalid dice selection')
           return false
         }
-        if (player.energy < 1) {
+        if (availableEnergy < 1) {
           return false
         }
         activateCards.removeIndicesFromArray(player.dice, diceSelection)
@@ -1037,7 +1077,7 @@ export class GameState {
           console.log('Invalid dice selection')
           return false
         }
-        if (player.energy < 1) {
+        if (availableEnergy < 1) {
           return false
         }
         player.energy -= 1
@@ -1054,7 +1094,7 @@ export class GameState {
           console.log('Invalid dice selection')
           return false
         }
-        if (player.energy < 1) {
+        if (availableEnergy < 1) {
           return false
         }
         player.energy -= 1
@@ -1070,7 +1110,7 @@ export class GameState {
           console.log('Invalid dice selection')
           return false
         }
-        if (player.energy < value) {
+        if (availableEnergy < value) {
           return false
         }
         activateCards.removeIndicesFromArray(player.dice, diceSelection)
@@ -1086,7 +1126,7 @@ export class GameState {
           console.log('Invalid dice selection')
           return false
         }
-        if (player.energy < 2) {
+        if (availableEnergy < 2) {
           return false
         }
         activateCards.removeIndicesFromArray(player.dice, diceSelection)
@@ -1098,7 +1138,7 @@ export class GameState {
       case 'Golem':
         // ⚡X -> [X] gain an extra [?] with a value of X this turn
         console.log('Golem')
-        if (!isValidDiceValue(energySelection) || player.energy < energySelection) {
+        if (!isValidDiceValue(energySelection) || availableEnergy < energySelection) {
           console.log('Invalid energy selection', energySelection)
           return false
         }
@@ -1114,7 +1154,7 @@ export class GameState {
           console.log('Invalid dice selection')
           return false
         }
-        if (player.energy < 1) {
+        if (availableEnergy < 1) {
           return false
         }
         player.energy -= 1
@@ -1257,7 +1297,7 @@ export class GameState {
           console.log('Expected 2 card selection, got', cardSelection.length)
           return false
         }
-        if (player.energy < 2) {
+        if (availableEnergy < 2) {
           console.log('Insufficient energy')
           return false
         }
@@ -1281,7 +1321,7 @@ export class GameState {
           console.log('Expected 1 card selection, got', cardSelection.length)
           return false
         }
-        if (player.energy < 3) {
+        if (availableEnergy < 3) {
           console.log('Insufficient energy')
           return false
         }
@@ -1290,20 +1330,6 @@ export class GameState {
         player.metal += 3
         break
       }
-
-      case 'Replicator':
-        // ⚡ -> Use a 🟦 in the MARKETPLACE (activation costs still apply)
-        console.log('Replicator')
-        // TODO: implement marketplace card activation, for now do nothing but use energy
-        // one way to do this would be to have a "used by replicator" flag where the client could
-        // send a normal activate-card request with that set, then the server can check that flag,
-        // see if the player actually has a replicator, and if so activate the card like normal, just
-        // set the replicator as alreadyActivated instead of the marketplace card
-        if (player.energy < 1) {
-          return false
-        }
-        player.energy -= 1
-        break
 
       case 'Robot':
         // 🔩 -> Roll an extra [?] this turn
@@ -1368,6 +1394,11 @@ export class GameState {
       default:
         console.log('Cannot activate unknown card', card.name)
         return false
+    }
+
+    if (withReplicator) {
+      // Spend cost of the Replicator
+      player.energy -= 1
     }
 
     // TODO: should we ignore if extra selections are specified?

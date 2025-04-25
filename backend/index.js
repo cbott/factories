@@ -90,22 +90,26 @@ io.on('connection', (socket) => {
   })
 
   // Activate a card in the player's compound
-  socket.on('activate-card', (cardID, diceSelection, cardSelection, energySelection, rewardSelection) => {
-    if (
-      gameState.activateCard(
-        socketMapping.get(socket.id),
-        cardID,
-        diceSelection,
-        cardSelection,
-        energySelection,
-        rewardSelection
-      )
-    ) {
-      broadcastGameState()
-    } else {
-      console.log('Failed to activate card')
+  socket.on(
+    'activate-card',
+    (cardID, diceSelection, cardSelection, energySelection, rewardSelection, cardToReplicate) => {
+      if (
+        gameState.activateCard(
+          socketMapping.get(socket.id),
+          cardID,
+          diceSelection,
+          cardSelection,
+          energySelection,
+          rewardSelection,
+          cardToReplicate
+        )
+      ) {
+        broadcastGameState()
+      } else {
+        console.log('Failed to activate card')
+      }
     }
-  })
+  )
 
   // Roll all of the player's available dice
   socket.on('roll-dice', () => {

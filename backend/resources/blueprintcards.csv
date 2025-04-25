@@ -24,7 +24,7 @@ Obelisk,hammer,monument,2,3,1,5,FALSE,Monument
 Power Plant,gear,utility,1,3,0,2,TRUE,[X] -> ⚡X
 Recycling Plant,gear,production,1,2,0,3,TRUE,🟦2 + ⚡2 -> 📦 + 🟦
 Refinery,wrench,utility,1,1,3,2,TRUE,🟦 + ⚡3 -> 🔩3
-Replicator,shovel,special,1,2,2,2,TRUE,(NOT IMPLEMENTED)⚡ -> Use a 🟦 in the MARKETPLACE (activation costs still apply)
+Replicator,shovel,special,1,2,2,20,TRUE,⚡ -> Use a 🟦 in the MARKETPLACE (activation costs still apply)
 Robot,hammer,special,0,1,1,3,TRUE,🔩 -> Roll an extra [?] this turn
 Scrap Yard,wrench,special,0,1,2,2,FALSE,Gain 🔩1 after building a card
 Solar Array,gear,special,0,1,2,2,FALSE,Gain ⚡2 after building a card

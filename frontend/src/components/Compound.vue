@@ -88,6 +88,7 @@ export default {
         cards: [],
         energy: 0,
         reward: '',
+        replicate: null,
       },
       cardToActivate: null,
     }
@@ -98,7 +99,7 @@ export default {
         return
       }
       this.cardToActivate = card
-      this.modalResult = { dice: [], cards: [], energy: 0, reward: '' }
+      this.modalResult = { dice: [], cards: [], energy: 0, reward: '', replicate: null }
       this.showModal = true
     },
     cancelModal() {
@@ -111,6 +112,7 @@ export default {
         this.modalResult.cards,
         this.modalResult.energy,
         this.modalResult.reward,
+        this.modalResult.replicate,
       )
       this.showModal = false
       this.cardToActivate = null
