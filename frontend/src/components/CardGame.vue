@@ -50,7 +50,7 @@
 
 <script>
 // Game state
-import { gamestate, Actions } from './GameState.js'
+import { gamestate, Actions } from '../GameState.js'
 
 // Components
 import Compound from './Compound.vue'

@@ -15,6 +15,11 @@ const io = new Server(server, {
   },
 })
 
+if (process.env.NODE_ENV === 'production') {
+  console.log('Serving static files from frontend/dist')
+  app.use('/', express.static('../frontend/dist/'))
+}
+
 //////////////////////////////////
 let gameState = new gamelogic.GameState()
 let socketMapping = new Map()

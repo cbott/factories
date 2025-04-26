@@ -40,7 +40,7 @@
 
 <script>
 // Game state
-import { gamestate } from './GameState.js'
+import { gamestate } from '../GameState.js'
 import Card from './Card.vue'
 
 // Exports

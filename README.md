@@ -17,6 +17,16 @@ Serve UI from frontend/ with
 
 > npm run dev
 
+Build `dist` folder from frontend/ with
+
+> npm run build
+
+| Environment Variable | Configuration                                  | Default   |
+| -------------------- | ---------------------------------------------- | --------- |
+| IP                   | The IP address of the server (dev only)        | localhost |
+| PORT                 | Port for backend server                        | 3000      |
+| NODE_ENV             | Set to 'production' to serve prebuilt frontend | undefined |
+
 ## Remaining Work
 
 Scoped

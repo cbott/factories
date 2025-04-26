@@ -27,7 +27,7 @@
 </template>
 
 <script>
-import { gamestate } from './GameState.js'
+import { gamestate } from '../GameState.js'
 import ActivateCard from './ActivateCard.vue'
 import Card from './Card.vue'
 import ModalTemplate from './ModalTemplate.vue'

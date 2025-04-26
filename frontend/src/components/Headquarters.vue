@@ -23,7 +23,7 @@
 </template>
 
 <script>
-import { gamestate, Actions } from './GameState.js'
+import { gamestate, Actions } from '../GameState.js'
 
 export default {
   components: {},

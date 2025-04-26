@@ -16,7 +16,7 @@
 </template>
 
 <script>
-import { gamestate, Actions } from './GameState.js'
+import { gamestate, Actions } from '../GameState.js'
 import Card from './Card.vue'
 
 export default {

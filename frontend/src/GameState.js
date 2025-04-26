@@ -30,8 +30,20 @@ export const gamestate = reactive({
   //  Methods
   openSocket(username) {
     // Open a connection to the server
-    // TODO: update to handle different server IPs
-    this.socket = io('http://localhost:3000')
+    const VITE_ENV = import.meta.env.MODE
+
+    if (VITE_ENV === 'production') {
+      // In production we will be serving the frontend from the same server
+      console.log('Connecting to production server')
+      this.socket = io()
+    } else {
+      // For development we will run frontend from the separate Vite server
+      const IP = import.meta.env.IP || 'localhost'
+      const PORT = import.meta.env.PORT || 3000
+      console.log('Connecting to server at', `http://${IP}:${PORT}`)
+      this.socket = io(`http://${IP}:${PORT}`)
+    }
+
     this.socket.emit('join-game', username)
     this.playerID = username
 

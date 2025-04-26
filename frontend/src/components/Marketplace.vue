@@ -51,7 +51,7 @@
 </template>
 
 <script>
-import { gamestate } from './GameState.js'
+import { gamestate } from '../GameState.js'
 import Card from './Card.vue'
 import ContractorCard from './ContractorCard.vue'
 import HireContractor from './HireContractor.vue'
