@@ -1,6 +1,6 @@
 <!-- Headquarters.vue -->
 <template>
-  <div class="headquarters-area">
+  <div class="area headquarters-area">
     <p class="header">HEADQUARTERS</p>
 
     <div
@@ -18,7 +18,12 @@
           <p>{{ diceval }}</p>
         </div>
       </div>
+
+      <p>{{ floorInstructions[floorname] }}</p>
     </div>
+    <p>Match Bonus</p>
+    <p>[X]=[X] 🡆 +1 EXTRA</p>
+    <p>[X]=[X]=[X] 🡆 +2 EXTRA</p>
   </div>
 </template>
 
@@ -26,11 +31,17 @@
 import { gamestate, Actions } from '../GameState.js'
 
 export default {
-  components: {},
   computed: {
     // Returns the current player's headquarters map
     headquartersContents() {
       return gamestate.state.players[gamestate.playerID].headquarters
+    },
+    floorInstructions() {
+      return {
+        research: '[?] 🡆 🟦',
+        generate: '[X] = [1] | [2] | [3] 🡆 ⚡X',
+        mine: '[4] | [5] | [6] 🡆 🔩',
+      }
     },
   },
   data() {
@@ -97,9 +108,9 @@ export default {
 
 <style scoped>
 .headquarters-area {
-  border: 2px solid red;
+  border-color: red;
   width: 300px;
-  margin: 10px;
+  padding: 0px;
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -107,8 +118,8 @@ export default {
 }
 
 .floor {
-  border: 1px solid black;
-  height: 80px;
+  border: 2px solid #a9bcc5;
+  margin: 5px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -119,10 +130,6 @@ export default {
   width: 140px;
   display: flex;
   flex-direction: row;
-}
-
-.header {
-  background-color: white;
-  border: 3px solid black;
+  min-height: 50px;
 }
 </style>

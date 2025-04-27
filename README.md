@@ -31,7 +31,6 @@ Build `dist` folder from frontend/ with
 
 Scoped
 
-- (feature) Indicate headquarters requirements/rewards on UI
 - (dev) Save game state to persistent storage to allow for resuming a game after a crash or a server reset
 - (feature) Implement end and win condition (12 goods or 10 cards in compound)
 - (dev) Implement server-side logging with consistent formatting
