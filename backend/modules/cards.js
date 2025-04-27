@@ -46,7 +46,6 @@ export class BlueprintCard {
     this.activatable = activatable
     this.recipe = recipe
     // Whether or not card was activated this round (applies to cards in compound only)
-    // TODO: determine if it would make more sense to track this in Player instead
     this.alreadyActivated = false
   }
 }

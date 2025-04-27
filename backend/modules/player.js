@@ -1,7 +1,7 @@
 export const STARTING_DICE = 4
 export const STARTING_HAND_SIZE = 4
-const STARTING_ENERGY = 20
-const STARTING_METAL = 10
+const STARTING_ENERGY = 2
+const STARTING_METAL = 1
 
 /**
  * Represents a player in the game.

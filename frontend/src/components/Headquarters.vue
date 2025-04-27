@@ -30,10 +30,7 @@ export default {
   computed: {
     // Returns the current player's headquarters map
     headquartersContents() {
-      if (gamestate.state.players == null) {
-        return {}
-      }
-      return gamestate.state.players[gamestate.playerID]?.headquarters || {}
+      return gamestate.state.players[gamestate.playerID].headquarters
     },
   },
   data() {
@@ -65,7 +62,6 @@ export default {
      *                           currently selecting a die target or if the floor is invalid.
      */
     isValidDieTarget(floor) {
-      // TODO: can this implementation be shared between frontend and backend?
       if (gamestate.activeAction !== Actions.selectDieTarget) {
         // Only return validity if we're actively looking for a target to place a die
         return null

@@ -31,15 +31,14 @@ Build `dist` folder from frontend/ with
 
 Scoped
 
-- (dev) Resolve remaining TODO items in code
-- (dev) Implement server-side logging with consistent formatting
+- (feature) Add color to blueprint card header based on card type to help distinguish them
+- (feature) Indicate headquarters requirements/rewards on UI
 - (dev) Save game state to persistent storage to allow for resuming a game after a crash or a server reset
 - (feature) Implement end and win condition (12 goods or 10 cards in compound)
+- (dev) Implement server-side logging with consistent formatting
 - (feature) Add messages from server to individual clients such as error responses
 - (feature) Add a sound effect for rolling dice
 - (bugfix) Card tooltips get cut off if they are too close to the edge of the screen
-- (feature) Indicate headquarters requirements/rewards on UI
-- (feature) Add color to blueprint card header based on card type to help distinguish them
 
 Unscoped (possible future work)
 

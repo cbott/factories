@@ -874,7 +874,7 @@ export class GameState {
    * @param {Array<int>} diceSelection - The dice indices selected by the player for this action.
    * @param {Array<int>} cardSelection - The IDs of other cards selected by the player for this action.
    * @param {int} energySelection - The number of energy selected by the player for this action.
-   * @param {String} rewardSelection - One of 'Card', 'Energy', 'Metal' to earn by activating the card.
+   * @param {String} rewardSelection - One of 'Card', 'Energy', 'Metal', 'n' (dice val) to earn by activating the card.
    * @param {int} cardToReplicate - If activating a Replicator, the ID of a Blueprint card in the marketplace.
    * @returns {boolean} Whether or not the card was successfully activated.
    */
@@ -940,7 +940,7 @@ export class GameState {
    * @param {Array<int>} diceSelection - The dice indices selected by the player for this action.
    * @param {Array<int>} cardSelection - The IDs of other cards selected by the player for this action.
    * @param {int} energySelection - The number of energy selected by the player for this action.
-   * @param {String} rewardSelection - One of 'Card', 'Energy', 'Metal' to earn by activating the card.
+   * @param {String} rewardSelection - One of 'Card', 'Energy', 'Metal', 'n' (dice val) to earn by activating the card.
    * @param {boolean} withReplicator - Whether the card is being activated through a Replicator.
    * @returns {boolean} Whether or not the card was successfully activated.
    */
@@ -963,10 +963,10 @@ export class GameState {
       availableEnergy -= 1
     }
 
+    console.log('Card name:', card.name)
     switch (card.name) {
       case 'Aluminum Factory':
         // [X]=[X] + ⚡5 -> 📦2 + 🔩
-        console.log('Aluminum Factory')
         // Confirm that we have 2 dice of equal value
         if (activateCards.checkDiceEqual(player.dice, diceSelection, 2) === null) {
           console.log('Invalid dice selection')
@@ -987,7 +987,6 @@ export class GameState {
 
       case 'Assembly Line':
         // [X]+[X+1]+[X+2] -> 📦2
-        console.log('Assembly Line')
         // Confirm we have 3 dice with incrementing values
         if (!activateCards.checkDiceSeries(player.dice, diceSelection, 3)) {
           console.log('Invalid dice selection')
@@ -999,7 +998,6 @@ export class GameState {
 
       case 'Battery Factory':
         // ⚡4 -> 📦
-        console.log('Battery Factory')
         if (availableEnergy < 4) {
           console.log('Insufficient energy')
           return false
@@ -1011,7 +1009,6 @@ export class GameState {
 
       case 'Biolab':
         // [1] + ⚡ -> 📦
-        console.log('Biolab')
         if (activateCards.checkDieValue(player.dice, diceSelection, [1]) === null) {
           console.log('Invalid dice selection')
           return false
@@ -1026,7 +1023,6 @@ export class GameState {
 
       case 'Black Market': {
         // [?] + 🟦 -> ⚡+🔩* (gain up to 4 resources equal to the build cost of the discarded 🟦)
-        console.log('Black Market')
         if (activateCards.checkDieValue(player.dice, diceSelection, [1, 2, 3, 4, 5, 6]) === null) {
           console.log('Invalid dice selection')
           return false
@@ -1069,7 +1065,6 @@ export class GameState {
 
       case 'Concrete Plant': {
         // [X]=[X] + 🔩X -> 📦2
-        console.log('Concrete Plant')
         // Confirm that we have 2 dice of equal value
         let value = activateCards.checkDiceEqual(player.dice, diceSelection, 2)
         if (value === null) {
@@ -1088,7 +1083,6 @@ export class GameState {
 
       case 'Dojo': {
         // ⚡ -> [?] flip
-        console.log('Dojo')
         let value = activateCards.checkDieValue(player.dice, diceSelection, [1, 2, 3, 4, 5, 6])
         if (value === null) {
           console.log('Invalid dice selection')
@@ -1104,8 +1098,6 @@ export class GameState {
 
       case 'Fitness Center': {
         // ⚡ -> [-1]
-        console.log('Fitness Center')
-
         let value = activateCards.checkDieValue(player.dice, diceSelection, [2, 3, 4, 5, 6])
         if (value === null) {
           console.log('Invalid dice selection')
@@ -1121,7 +1113,6 @@ export class GameState {
 
       case 'Foundry': {
         // [X] + ⚡X -> 🔩X
-        console.log('Foundry')
         let value = activateCards.checkDieValue(player.dice, diceSelection, [1, 2, 3, 4, 5, 6])
         if (value === null) {
           console.log('Invalid dice selection')
@@ -1138,7 +1129,6 @@ export class GameState {
 
       case 'Fulfillment Center':
         // [4] + ⚡2 -> 📦 + 🔩
-        console.log('Fulfillment Center')
         if (activateCards.checkDieValue(player.dice, diceSelection, [4]) === null) {
           console.log('Invalid dice selection')
           return false
@@ -1154,7 +1144,6 @@ export class GameState {
 
       case 'Golem':
         // ⚡X -> [X] gain an extra [?] with a value of X this turn
-        console.log('Golem')
         if (!isValidDiceValue(energySelection) || availableEnergy < energySelection) {
           console.log('Invalid energy selection', energySelection)
           return false
@@ -1165,7 +1154,6 @@ export class GameState {
 
       case 'Gymnasium': {
         // ⚡ -> [+1]
-        console.log('Gymnasium')
         let value = activateCards.checkDieValue(player.dice, diceSelection, [1, 2, 3, 4, 5])
         if (value === null) {
           console.log('Invalid dice selection')
@@ -1182,7 +1170,6 @@ export class GameState {
 
       case 'Harvester':
         // [X]=[X] -> 🔩4 OR [X]=[X] -> ⚡7
-        console.log('Harvester')
         if (activateCards.checkDiceEqual(player.dice, diceSelection, 2) === null) {
           console.log('Invalid dice selection')
           return false
@@ -1202,7 +1189,6 @@ export class GameState {
 
       case 'Incinerator': {
         // 🟦 + 🔩 -> ⚡6
-        console.log('Incinerator')
         if (!checkArrayValuesUnique(cardSelection, 1)) {
           console.log('Invalid card selection')
           return false
@@ -1226,7 +1212,6 @@ export class GameState {
 
       case 'Manufactory':
         // [X]=[X] -> 📦 + 🔩2 OR 🟦2 OR ⚡3
-        console.log('Manufactory')
         if (activateCards.checkDiceEqual(player.dice, diceSelection, 2) === null) {
           console.log('Invalid dice selection')
           return false
@@ -1237,6 +1222,10 @@ export class GameState {
         } else if (rewardSelection === 'Energy') {
           player.energy += 3
         } else if (rewardSelection === 'Card') {
+          if (this.deck.length + this.discard.length < 2) {
+            console.log('There are not 2 Blueprints available to draw, choose a different reward')
+            return false
+          }
           for (let i = 0; i < 2; i++) {
             this._drawBlueprint(playerID)
           }
@@ -1246,26 +1235,29 @@ export class GameState {
         }
 
         activateCards.removeIndicesFromArray(player.dice, diceSelection)
-        // TODO: handle if the deck is empty and cards were selected?
         this._manufactureGoods(playerID, 1)
         break
 
       case 'Mega Factory':
         // [X]=[X]=[X] -> 📦2 + [?]* Gain an extra [?] of any value this turn
-        console.log('Mega Factory')
-        // TODO: implement reward selection, for now just give a [6]
         if (activateCards.checkDiceEqual(player.dice, diceSelection, 3) === null) {
           console.log('Invalid dice selection')
           return false
         }
+
+        let diceValToGain = parseInt(rewardSelection, 10)
+        if (!isValidDiceValue(diceValToGain)) {
+          console.log('Invalid die value', diceValToGain, 'selected')
+          return false
+        }
+
         activateCards.removeIndicesFromArray(player.dice, diceSelection)
         this._manufactureGoods(playerID, 2)
-        player.dice.push(6)
+        player.dice.push(diceValToGain)
         break
 
       case 'Motherlode':
         // [1] | [2] | [3] -> 🔩 OR [4] | [5] | [6] -> 🔩2
-        console.log('Motherlode')
         if (activateCards.checkDieValue(player.dice, diceSelection, [1, 2, 3])) {
           player.metal += 1
         } else if (activateCards.checkDieValue(player.dice, diceSelection, [4, 5, 6])) {
@@ -1279,7 +1271,6 @@ export class GameState {
 
       case 'Nuclear Plant':
         // [6] -> 📦 + ⚡
-        console.log('Nuclear Plant')
         if (activateCards.checkDieValue(player.dice, diceSelection, [6]) === null) {
           console.log('Invalid dice selection')
           return false
@@ -1291,7 +1282,6 @@ export class GameState {
 
       case 'Power Plant': {
         // [X] -> ⚡X
-        console.log('Power Plant')
         let value = activateCards.checkDieValue(player.dice, diceSelection, [1, 2, 3, 4, 5, 6])
         if (value === null) {
           console.log('Invalid dice selection')
@@ -1304,7 +1294,6 @@ export class GameState {
 
       case 'Recycling Plant': {
         // 🟦2 + ⚡2 -> 📦 + 🟦
-        console.log('Recycling Plant')
         if (!checkArrayValuesUnique(cardSelection, 2)) {
           console.log('Invalid card selection')
           return false
@@ -1328,7 +1317,6 @@ export class GameState {
 
       case 'Refinery': {
         // 🟦 + ⚡3 -> 🔩3
-        console.log('Refinery')
         if (!checkArrayValuesUnique(cardSelection, 1)) {
           console.log('Invalid card selection')
           return false
@@ -1350,7 +1338,6 @@ export class GameState {
 
       case 'Robot':
         // 🔩 -> Roll an extra [?] this turn
-        console.log('Robot')
         if (player.metal < 1) {
           return false
         }
@@ -1359,7 +1346,6 @@ export class GameState {
 
       case 'Temp Agency': {
         // ⚡ -> choose 1 or more unplaced [?] and reroll them
-        console.log('Temp Agency')
         if (!activateCards.checkDiceValid(player.dice, diceSelection)) {
           console.log('Invalid dice selection')
           return false
@@ -1375,7 +1361,6 @@ export class GameState {
 
       case 'Trash Compactor': {
         // [X]=[X] + 🟦2 -> 📦2
-        console.log('Trash Compactor')
         if (activateCards.checkDiceEqual(player.dice, diceSelection, 2) === null) {
           console.log('Invalid dice selection')
           return false
@@ -1398,7 +1383,6 @@ export class GameState {
 
       case 'Warehouse':
         // [?]+[?]+[?] sum must be 14+ -> 📦2 + ⚡2
-        console.log('Warehouse')
         if (!activateCards.checkDiceSum(player.dice, diceSelection, 3, 14)) {
           console.log('Invalid dice selection')
           return false
@@ -1418,9 +1402,6 @@ export class GameState {
       player.energy -= 1
     }
 
-    // TODO: should we ignore if extra selections are specified?
-    // i.e. if only dice are needed but cardSelection is not []?
-    // Could check in each card activation that only required inputs are present
     return true
   }
 }

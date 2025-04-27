@@ -40,27 +40,15 @@ export default {
   computed: {
     // Returns the current player's dice array
     myDice() {
-      if (!gamestate.initialized) {
-        return []
-      }
-      return gamestate.state.players[gamestate.playerID]?.dice || []
+      return gamestate.state.players[gamestate.playerID].dice
     },
     unrolledDice() {
-      if (!gamestate.initialized) {
-        return 0
-      }
-      return gamestate.state.players[gamestate.playerID]?.numDice || 0
+      return gamestate.state.players[gamestate.playerID].numDice
     },
     canSelectDice() {
-      if (!gamestate.initialized) {
-        return false
-      }
       return gamestate.state.players[gamestate.playerID].selectableDice
     },
     hasBonusDie() {
-      if (!gamestate.initialized) {
-        return false
-      }
       return gamestate.state.players[gamestate.playerID].bonusDie
     },
   },

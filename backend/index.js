@@ -29,7 +29,7 @@ let socketMapping = new Map()
  * Send the current game state to all connected clients
  */
 function broadcastGameState() {
-  // TODO: eventually we may want to send different information to different players
+  // TODO: handle messages to individual players
   // with socket.emit('game-state', gameState)
   io.emit('game-state', gameState.publicState)
 }
@@ -89,7 +89,6 @@ io.on('connection', (socket) => {
       console.log('Built Successfully')
       broadcastGameState()
     } else {
-      // TODO: handle else case, return error to client
       console.log('Failed to build card')
     }
   })
@@ -171,9 +170,7 @@ io.on('connection', (socket) => {
 
   // Switch between Market phase and Work phase
   socket.on('change-phase', () => {
-    // TODO: eventually, transition from Market to Work phase should be automatic
-    // TODO: transition from Work to Market phase may require players to discard excess resources
-    // so this function may need to accept parameters to allow that
+    // DEBUG ONLY
     gameState.changePhase()
     broadcastGameState()
   })

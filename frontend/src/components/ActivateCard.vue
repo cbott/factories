@@ -23,7 +23,7 @@
     <p>Select your dice</p>
     <div class="selection-area">
       <div
-        v-for="(diceval, index) in myDice"
+        v-for="(diceval, index) in gamestate.state.players[gamestate.playerID].dice"
         class="die"
         :class="{
           'valid-div': isSelectedDice(index),
@@ -51,7 +51,7 @@
   </div>
 
   <div v-if="requiresEnergySelectionNum > 0" class="resource-select-area">
-    <p>Select up to {{ requiresEnergySelectionNum }} Energy to gain</p>
+    <p>Select up to {{ requiresEnergySelectionNum }} Energy</p>
     <div class="selection-area">
       <select name="energy" v-model="this.result.energy">
         <option v-for="n in requiresEnergySelectionNum" :key="n" :value="n">{{ n }}</option>
@@ -117,19 +117,15 @@ export default {
     this.requiresMarketplaceSelection = requirements.requiresMarketplaceSelection
   },
   computed: {
-    // Returns the current player's dice array
-    // TODO: reduce duplication with DiceArea
-    myDice() {
-      if (gamestate.state.players == null) {
-        return []
-      }
-      return gamestate.state.players[gamestate.playerID]?.dice || []
-    },
     rewardOptions() {
       if (this.cardToActivate.name === 'Harvester') {
         return ['Metal', 'Energy']
+      } else if (this.cardToActivate.name === 'Manufactory') {
+        return ['Card', 'Metal', 'Energy']
+      } else if (this.cardToActivate.name === 'Mega Factory') {
+        return ['1', '2', '3', '4', '5', '6']
       }
-      return ['Card', 'Metal', 'Energy']
+      return []
     },
   },
   methods: {
@@ -271,6 +267,7 @@ export default {
           break
         case 'Mega Factory':
           requiresDiceSelection = true
+          requiresRewardSelection = true
           break
         case 'Megalith':
           break
