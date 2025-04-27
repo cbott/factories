@@ -133,7 +133,9 @@ export default {
 
 .score {
   display: flex;
+  font-size: 1.2em;
 }
+
 .score > p {
   margin-left: 5px;
 }

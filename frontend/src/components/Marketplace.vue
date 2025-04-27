@@ -52,6 +52,7 @@
 
 <script>
 import { gamestate } from '../GameState.js'
+import { getToolImage } from '../util.js'
 import Card from './Card.vue'
 import ContractorCard from './ContractorCard.vue'
 import HireContractor from './HireContractor.vue'
@@ -67,6 +68,7 @@ export default {
   data() {
     return {
       gamestate,
+      getToolImage,
       showModal: false,
       selectedContractorTool: null,
       modalResult: {
@@ -85,20 +87,6 @@ export default {
   methods: {
     addToHand(cardID) {
       gamestate.pickUpFromMarketplace(cardID)
-    },
-    getToolImage(tool) {
-      switch (tool) {
-        case 'hammer':
-          return '/hammer.png'
-        case 'wrench':
-          return '/wrench.png'
-        case 'gear':
-          return '/gear.png'
-        case 'shovel':
-          return '/shovel.png'
-        default:
-          return ''
-      }
     },
     /**
      * Begin the process of hiring a contractor

@@ -90,6 +90,7 @@ export const gamestate = reactive({
     }
     return this.state.players[this.playerID].metal
   },
+
   // Fill marketplace with cards
   fillMarketplace() {
     this.socket.emit('fill-marketplace')
