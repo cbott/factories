@@ -1,6 +1,7 @@
 /**
  * Core logic for the game
  */
+import * as fs from 'fs'
 
 import * as cards from './cards.js'
 import * as player from './player.js'
@@ -27,6 +28,7 @@ export class GameState {
     this.players = {}
     this.workPhase = false
     this.currentPlayerID = null
+    this.savefile = null
   }
 
   /**
@@ -36,6 +38,41 @@ export class GameState {
     this.deck = await cards.buildDeck(cards.BLUEPRINT_DEFINITION_CSV, 'blueprint')
     this.contractors = await cards.buildDeck(cards.CONTRACTOR_DEFINITION_CSV, 'contractor')
     this.fillMarketplace()
+  }
+
+  /**
+   * Loads the game state from a file
+   *
+   * @param {string} filename - The name of the file to load the game state from.
+   * @return {GameState} - The loaded game.
+   */
+  static fromFile(filename) {
+    let game = new GameState()
+    let gamedata = JSON.parse(fs.readFileSync(filename))
+
+    game.deck = gamedata.deck
+    game.contractors = gamedata.contractors
+    game.discard = gamedata.discard
+    game.contractorDiscard = gamedata.contractorDiscard
+    game.marketplace = gamedata.marketplace
+    game.players = gamedata.players
+    game.workPhase = gamedata.workPhase
+    game.currentPlayerID = gamedata.currentPlayerID
+    game.savefile = filename
+
+    return game
+  }
+
+  /**
+   * Saves the game state to a file
+   */
+  saveToFile() {
+    if (!this.savefile) {
+      return
+    }
+    console.log('Saving game state to', this.savefile)
+    let data = JSON.stringify(this)
+    fs.writeFileSync(this.savefile, data)
   }
 
   /**
@@ -361,6 +398,8 @@ export class GameState {
       this.workPhase = true
     }
     console.log('Work phase has been set to', this.workPhase)
+    // Save game state at the start of each phase
+    this.saveToFile()
     return true
   }
 

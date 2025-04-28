@@ -11,7 +11,7 @@ https://vuejs.org/guide/quick-start
 
 Run game server from backend/ with
 
-> npm start
+> npm start [savefile.json]
 
 Serve UI from frontend/ with
 
@@ -31,7 +31,6 @@ Build `dist` folder from frontend/ with
 
 Scoped
 
-- (dev) Save game state to persistent storage to allow for resuming a game after a crash or a server reset
 - (feature) Implement end and win condition (12 goods or 10 cards in compound)
 - (dev) Implement server-side logging with consistent formatting
 - (feature) Add messages from server to individual clients such as error responses

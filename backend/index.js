@@ -1,12 +1,35 @@
 // node modules
 import express from 'express'
+import * as fs from 'fs'
 import http from 'http'
 import { Server } from 'socket.io'
 
 // custom modules
 import * as gamelogic from './modules/gamelogic.js'
 
-// Set up server
+////////// Game State Setup //////////
+let savefile = process.argv[2]
+
+let gameState
+if (!savefile || !fs.existsSync(savefile)) {
+  gameState = new gamelogic.GameState()
+  gameState
+    .init()
+    .then(() => {
+      console.log('Initialized new game')
+    })
+    .catch((error) => {
+      console.error('Failed to initialize game state:', error)
+    })
+  if (savefile) {
+    console.log('Setting save location:', savefile)
+    gameState.savefile = savefile
+  }
+} else {
+  console.log('Loading existing game from file', savefile)
+  gameState = gamelogic.GameState.fromFile(savefile)
+}
+//////////// Server Setup ////////////
 const app = express()
 const server = http.createServer(app)
 const io = new Server(server, {
@@ -20,10 +43,10 @@ if (process.env.NODE_ENV === 'production') {
   app.use('/', express.static('../frontend/dist/'))
 }
 
-//////////////////////////////////
-let gameState = new gamelogic.GameState()
+const PORT = process.env.PORT || 3000
+server.listen(PORT, () => console.log(`Server listening on port ${PORT}`))
 let socketMapping = new Map()
-//////////////////////////////////
+//////////////////////////////////////
 
 /**
  * Send the current game state to all connected clients
@@ -202,13 +225,3 @@ io.on('connection', (socket) => {
     broadcastGameState()
   })
 })
-
-const PORT = process.env.PORT || 3000
-gameState
-  .init()
-  .then(() => {
-    server.listen(PORT, () => console.log(`Server listening on port ${PORT}`))
-  })
-  .catch((error) => {
-    console.error('Failed to initialize game state:', error)
-  })
