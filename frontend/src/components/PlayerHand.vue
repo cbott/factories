@@ -49,7 +49,6 @@ export default {
         // next the player has to select a card with a matching tool
         gamestate.activeAction = Actions.selectMatchingTool
         gamestate.activeActionTarget = cardID
-        console.log('Selected card with tool:', gamestate.hand.get(cardID).tool)
       } else if (gamestate.activeAction === Actions.selectMatchingTool) {
         // If the player clicks the same card again, cancel out of selection mode
         if (cardID === gamestate.activeActionTarget) {
@@ -58,13 +57,11 @@ export default {
           return
         }
         // Check if the card has a matching tool
-        console.log('checking for matching tool', this.activeCardTool)
         if (gamestate.hand.get(cardID).tool === this.activeCardTool) {
           // The card has a matching tool, add it to the compound
           gamestate.addToCompoundWithDiscard(gamestate.activeActionTarget, cardID)
           gamestate.activeAction = Actions.none
           gamestate.activeActionTarget = null
-          console.log('found matching tool')
         }
       }
     },

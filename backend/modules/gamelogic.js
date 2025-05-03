@@ -28,6 +28,8 @@ export class GameState {
     this.players = {}
     this.workPhase = false
     this.currentPlayerID = null
+    this.playersMeetingEndCriteria = {}
+    this.finalRound = false
     this.savefile = null
   }
 
@@ -58,6 +60,7 @@ export class GameState {
     game.players = gamedata.players
     game.workPhase = gamedata.workPhase
     game.currentPlayerID = gamedata.currentPlayerID
+    game.finalRound = gamedata.finalRound
     game.savefile = filename
 
     return game
@@ -88,6 +91,7 @@ export class GameState {
       currentPlayerID: this.currentPlayerID,
       deckSize: this.deck.length,
       discardSize: this.discard.length,
+      finalRound: this.finalRound,
     }
   }
 
@@ -98,16 +102,13 @@ export class GameState {
    */
   addPlayer(playerID) {
     this.players[playerID] = new player.Player()
-    for (let i = 0; i < player.STARTING_HAND_SIZE; i++) {
+    for (let i = 0; i < constants.STARTING_HAND_SIZE; i++) {
       this._drawBlueprint(playerID)
     }
 
     if (this.currentPlayerID === null) {
       this.currentPlayerID = playerID
     }
-    // for (let i = 0; i < 5; i++) {
-    //   this.players[playerID].compound.push(this._getNextBlueprintFromDeck())
-    // }
   }
 
   /**
@@ -148,6 +149,31 @@ export class GameState {
 
     console.log('Advancing player token from', this.currentPlayerID, 'to', nextPlayerID)
     this.currentPlayerID = nextPlayerID
+  }
+
+  /**
+   * Checks which players have met the end game conditions.
+   * The game ends if a player has either:
+   * - Accumulated a number of goods greater than or equal to the defined threshold.
+   * - Constructed a number of buildings greater than or equal to the defined threshold.
+   *
+   * @returns {Object} - Players meeting end conditions.
+   */
+  _checkEndConditions() {
+    let atGoodsThreshold = []
+    let atBuildingsThreshold = []
+
+    for (const playerID of Object.keys(this.players)) {
+      if (this.players[playerID].goods >= constants.END_GAME_TRIGGER_GOODS) {
+        atGoodsThreshold.push(playerID)
+        this.finalRound = true
+      }
+      if (this.players[playerID].compound.length >= constants.END_GAME_TRIGGER_BUILDINGS) {
+        atBuildingsThreshold.push(playerID)
+        this.finalRound = true
+      }
+    }
+    return { goods: atGoodsThreshold, buildings: atBuildingsThreshold }
   }
 
   /**
@@ -444,28 +470,29 @@ export class GameState {
    * @param {Array<int>} cards - Array of Blueprint card IDs to discard from hand, if needed.
    * @param {int} energy - The number of energy to discard.
    * @param {int} metal - The number of metal to discard.
-   * @returns {boolean} - Whether the player's work phase was successfully marked as complete.
+   * @returns {Object|Error} - End game conditions.
    */
   endTurn(playerID, cards, energy, metal) {
     if (!this._workPhaseActionValid(playerID)) {
-      return false
+      // TODO: proper error responses
+      return new Error('End Turn Error')
     }
 
     // Check that resource discard selection is valid
     if (this.players[playerID].energy < energy || energy < 0) {
       console.log('Player does not have', energy, 'energy to discard')
-      return false
+      return new Error('End Turn Error')
     }
     if (this.players[playerID].metal < metal || metal < 0) {
       console.log('Player does not have', metal, 'metal to discard')
-      return false
+      return new Error('End Turn Error')
     }
 
     // Check that resource discards are sufficient
     let currentResources = this.players[playerID].energy + this.players[playerID].metal
     if (currentResources - metal - energy > constants.END_WORK_MAX_RESOURCES) {
       console.log('Player has', currentResources, 'resources, must discard down to', constants.END_WORK_MAX_RESOURCES)
-      return false
+      return new Error('End Turn Error')
     }
 
     let nCardsInHand = Object.keys(this.players[playerID].hand).length
@@ -474,12 +501,12 @@ export class GameState {
       // Check that player provided acceptable list of cards to discard
       if (!checkArrayValuesUnique(cards, nDiscardsNeeded)) {
         console.log('Player must discard', nDiscardsNeeded, 'unique cards from hand')
-        return false
+        return new Error('End Turn Error')
       }
       for (let cardID of cards) {
         if (!this.players[playerID].hand[cardID]) {
           console.log('Card ID', cardID, 'not found in player hand')
-          return false
+          return new Error('End Turn Error')
         }
       }
     }
@@ -496,9 +523,14 @@ export class GameState {
 
     if (this._checkAllPlayersFinishedWork()) {
       this.changePhase()
+      if (this.finalRound) {
+        // We were already on the last round of the game, so we're done now
+        return { end: true }
+      }
+      return this._checkEndConditions()
     }
 
-    return true
+    return {}
   }
 
   /**

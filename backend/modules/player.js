@@ -1,7 +1,4 @@
-export const STARTING_DICE = 4
-export const STARTING_HAND_SIZE = 4
-const STARTING_ENERGY = 2
-const STARTING_METAL = 1
+import * as constants from './constants.js'
 
 /**
  * Represents a player in the game.
@@ -17,14 +14,14 @@ export class Player {
     // Rolled dice that have not yet been used
     this.dice = []
     // Number of dice available to roll, can be increased with contractor cards
-    this.numDice = STARTING_DICE
+    this.numDice = constants.STARTING_DICE
     // Whether the player can manually select dice values (Foreman contractor card)
     this.selectableDice = false
     // Whether the player can gain an extra dice of their choice (Specialist contractor card)
     this.bonusDie = false
     // Resources
-    this.energy = STARTING_ENERGY // ⚡
-    this.metal = STARTING_METAL // 🔩
+    this.energy = constants.STARTING_ENERGY // ⚡
+    this.metal = constants.STARTING_METAL // 🔩
     this.prestige = 0 // 🏆
     this.goods = 0 // 📦
     // Dice played in the Headquarters
@@ -48,7 +45,7 @@ export class Player {
     this.headquarters.research = []
     this.headquarters.generate = []
     this.headquarters.mine = []
-    this.numDice = STARTING_DICE
+    this.numDice = constants.STARTING_DICE
     this.selectableDice = false
     this.bonusDie = false
     this.compound.forEach((card) => {

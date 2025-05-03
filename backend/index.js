@@ -6,6 +6,7 @@ import { Server } from 'socket.io'
 
 // custom modules
 import * as gamelogic from './modules/gamelogic.js'
+import { rankPlayers } from './modules/helpers.js'
 
 ////////// Game State Setup //////////
 let savefile = process.argv[2]
@@ -55,6 +56,16 @@ function broadcastGameState() {
   // TODO: handle messages to individual players
   // with socket.emit('game-state', gameState)
   io.emit('game-state', gameState.publicState)
+}
+
+/**
+ * Send a message to all connected clients
+ *
+ * @param {string} message - The message to send
+ */
+function broadcastMessage(message) {
+  console.log('Broadcasting message:', message)
+  io.emit('message', message)
 }
 
 io.on('connection', (socket) => {
@@ -200,8 +211,26 @@ io.on('connection', (socket) => {
 
   // End a player's Work phase
   socket.on('end-turn', (cards, energy, metal) => {
-    gameState.endTurn(socketMapping.get(socket.id), cards, energy, metal)
-    broadcastGameState()
+    let result = gameState.endTurn(socketMapping.get(socket.id), cards, energy, metal)
+    if (result instanceof Error) {
+      console.log('Failed to end turn:', result.message)
+      // TODO: send error message to this client
+    } else {
+      if (result.end === true) {
+        broadcastMessage(rankPlayers(gameState.players))
+      } else if (result.goods && result.buildings) {
+        // End condition has been met
+        let message = 'Final Round!'
+        if (result.goods.length) {
+          message += ` These players hit the Goods trigger: ${result.goods.join(', ')}`
+        }
+        if (result.buildings.length) {
+          message += ` These players hit the Buildings trigger: ${result.buildings.join(', ')}`
+        }
+        broadcastMessage(message)
+      }
+      broadcastGameState()
+    }
   })
 
   // Remove a player from the game

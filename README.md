@@ -31,7 +31,6 @@ Build `dist` folder from frontend/ with
 
 Scoped
 
-- (feature) Implement end and win condition (12 goods or 10 cards in compound)
 - (dev) Implement server-side logging with consistent formatting
 - (feature) Add messages from server to individual clients such as error responses
 - (feature) Add a sound effect for rolling dice

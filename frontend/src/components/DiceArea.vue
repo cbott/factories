@@ -88,7 +88,6 @@ export default {
     chooseAllDice() {
       this.showModal = true
       this.diceToSelect = Math.min(4, gamestate.state.players[gamestate.playerID].numDice)
-      console.log('Selecting', this.diceToSelect, 'dice')
     },
     chooseOneDice() {
       this.showModal = true

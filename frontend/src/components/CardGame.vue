@@ -7,9 +7,12 @@
   <template v-else>
     <div class="infobar">
       <div style="display: flex">
-        <p>{{ gamestate.state.workPhase ? 'Work' : 'Market' }} Phase</p>
+        <p>
+          {{ gamestate.state.workPhase ? 'Work' : 'Market' }} Phase
+          {{ gamestate.state.finalRound ? '(Final Round)' : '' }}
+        </p>
         <div style="margin-left: 10px">
-          <button @click="gamestate.requestChangePhase">Change Phase (debug)</button>
+          <button @click="gamestate.requestChangePhase" disabled>Change Phase (debug)</button>
         </div>
         <div style="margin-left: 10px">
           <button @click="confirmEndTurn" :disabled="disableEndTurn">End Turn</button>
@@ -44,6 +47,17 @@
     </div>
     <ModalTemplate v-if="showModal" @submit="submitModal" @cancel="cancelModal">
       <EndTurn :result="modalResult" />
+    </ModalTemplate>
+
+    <ModalTemplate
+      v-if="gamestate.messageQueue.length > 0"
+      :showSubmit="false"
+      cancelText="Alright"
+      @cancel="closeMessage"
+    >
+      <div class="message">
+        <p>{{ gamestate.messageQueue[0] }}</p>
+      </div>
     </ModalTemplate>
   </template>
 </template>
@@ -111,6 +125,9 @@ export default {
     submitModal() {
       this.showModal = false
       gamestate.requestEndTurn(this.modalResult.cards, this.modalResult.energy, this.modalResult.metal)
+    },
+    closeMessage() {
+      gamestate.messageQueue.shift()
     },
   },
 }

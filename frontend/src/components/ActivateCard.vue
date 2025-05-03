@@ -104,7 +104,6 @@ export default {
     }
   },
   mounted() {
-    console.log('New Card in Activate!!!')
     let requirements = this.getSelectionRequirements(this.cardToActivate)
     if (requirements === null) {
       return
@@ -142,7 +141,6 @@ export default {
      * Selects a Blueprint card from the Marketplace to be activated by the Replicator
      */
     selectMarketplace(cardID) {
-      console.log('selectMarketplace', cardID)
       if (this.isSelectedMarketplace(cardID)) {
         // If already selected, deselect it
         this.result.replicate = null
@@ -156,9 +154,7 @@ export default {
           return
         }
         this.result.replicate = cardID
-        console.log('Picked card', marketplaceCard)
         let requirements = this.getSelectionRequirements(marketplaceCard)
-        console.log('New requirements', requirements)
         this.requiresDiceSelection = requirements.requiresDiceSelection
         this.requiresCardSelectionNum = requirements.requiresCardSelectionNum
         this.requiresEnergySelectionNum = requirements.requiresEnergySelectionNum

@@ -26,6 +26,7 @@ export const gamestate = reactive({
   hand: new Map(), // Initialize hand as an empty Map
   activeAction: Actions.none, // Current step of a multi-step action
   activeActionTarget: null, // This will track the dice or card being used in the multi-step action
+  messageQueue: [], // Queue of messages to display to the user
 
   //  Methods
   openSocket(username) {
@@ -55,6 +56,11 @@ export const gamestate = reactive({
         this.hand = new Map(Object.entries(state.players[this.playerID].hand))
       }
       this.initialized = true
+    })
+
+    this.socket.on('message', (message) => {
+      console.log('Message:', message)
+      this.messageQueue.push(message)
     })
 
     this.socket.on('disconnect', () => {
