@@ -2,7 +2,7 @@
  * Collection of helper functions for activating unique Blueprints
  */
 import { BlueprintCard } from './cards.js'
-import { checkArrayValuesUnique } from './helpers.js'
+import { checkArrayValuesUnique, isValidDiceValue } from './helpers.js'
 
 /**
  * Get the selected dice values from the dice array, specified by index
@@ -94,6 +94,11 @@ export function checkDiceEqual(diceArray, diceSelection, numDice) {
     return null
   }
 
+  if (!isValidDiceValue(values[0])) {
+    console.log('invalid dice value', values[0])
+    return null
+  }
+
   return values[0]
 }
 
@@ -118,6 +123,10 @@ export function checkDiceSeries(diceArray, diceSelection, numDice) {
   // Check that selected dice have incrementing values
   values.sort()
   for (let i = 1; i < values.length; i++) {
+    if (!isValidDiceValue(values[i])) {
+      console.log(value[i], 'is not a valid dice value')
+      return false
+    }
     if (values[i] !== values[i - 1] + 1) {
       console.log('Dice values do not form a series')
       return false

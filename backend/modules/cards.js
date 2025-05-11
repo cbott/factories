@@ -107,7 +107,8 @@ function buildBlueprintDeckFromDefinitions(cardDefinitions) {
       id++
     }
   }
-  return shuffleArray(deck)
+  shuffleArray(deck)
+  return deck
 }
 
 /**
@@ -136,7 +137,8 @@ function buildContractorDeckFromDefinitions(cardDefinitions) {
       id++
     }
   }
-  return shuffleArray(deck)
+  shuffleArray(deck)
+  return deck
 }
 
 /**
@@ -244,14 +246,12 @@ export function calculatePrestige(arr) {
  * Shuffles the elements of an array in place using the Fisher-Yates algorithm.
  *
  * @param {Array} array - The array to shuffle.
- * @returns {Array} The shuffled array.
  */
 export function shuffleArray(array) {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1))
     ;[array[i], array[j]] = [array[j], array[i]]
   }
-  return array
 }
 
 /**
@@ -268,8 +268,12 @@ export function getNextCardFromDeck(deck, discard) {
       // No cards left in the deck or discard pile
       return null
     }
-    deck = shuffleArray(discard)
-    discard = []
+    for (let card of discard) {
+      deck.push(card)
+    }
+    // Because we want to modify discard which was passed by reference `discard = []` will not work correctly
+    discard.length = 0
+    shuffleArray(deck)
   }
   return deck.pop()
 }

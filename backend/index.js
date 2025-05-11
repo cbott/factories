@@ -217,8 +217,9 @@ io.on('connection', (socket) => {
       // TODO: send error message to this client
     } else {
       if (result.end === true) {
+        // Game has ended
         broadcastMessage(rankPlayers(gameState.players))
-      } else if (result.goods && result.buildings) {
+      } else if (result.goods && result.buildings && (result.goods.length || result.buildings.length)) {
         // End condition has been met
         let message = 'Final Round!'
         if (result.goods.length) {

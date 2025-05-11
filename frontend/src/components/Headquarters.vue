@@ -22,8 +22,8 @@
       <p>{{ floorInstructions[floorname] }}</p>
     </div>
     <p>Match Bonus</p>
-    <p>[X]=[X] 🡆 +1 EXTRA</p>
-    <p>[X]=[X]=[X] 🡆 +2 EXTRA</p>
+    <p>[X]=[X] ➜ +1 EXTRA</p>
+    <p>[X]=[X]=[X] ➜ +2 EXTRA</p>
   </div>
 </template>
 
@@ -38,9 +38,9 @@ export default {
     },
     floorInstructions() {
       return {
-        research: '[?] 🡆 🟦',
-        generate: '[X] = [1] | [2] | [3] 🡆 ⚡X',
-        mine: '[4] | [5] | [6] 🡆 🔩',
+        research: '[?] ➜ 🟦',
+        generate: '[X] = [1] | [2] | [3] ➜ ⚡X',
+        mine: '[4] | [5] | [6] ➜ 🔩',
       }
     },
   },
@@ -78,6 +78,14 @@ export default {
         return null
       }
 
+      // Get dice value from index
+      const value = gamestate.state.players[gamestate.playerID].dice[gamestate.activeActionTarget]
+
+      if (value === undefined) {
+        // If an invalid die is selected it cannot be placed anywhere
+        return null
+      }
+
       if (this.headquartersContents[floor]?.length >= 3) {
         // At most a floor can hold 3 dice
         return false
@@ -87,9 +95,6 @@ export default {
         // Any dice value can be placed in research
         return true
       }
-
-      // Get dice value from index
-      const value = gamestate.state.players[gamestate.playerID].dice[gamestate.activeActionTarget]
 
       if (floor === 'generate') {
         return value <= 3

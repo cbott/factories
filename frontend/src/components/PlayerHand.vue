@@ -27,7 +27,7 @@ export default {
     // The tool of the currently active card
     activeCardTool() {
       if (gamestate.activeAction === Actions.selectMatchingTool) {
-        return gamestate.hand.get(gamestate.activeActionTarget).tool
+        return gamestate.hand.get(gamestate.activeActionTarget)?.tool || ''
       }
       return ''
     },
@@ -44,25 +44,25 @@ export default {
      * @param {int} cardID - The ID of the card to select.
      */
     playCard(cardID) {
-      if (gamestate.activeAction === Actions.none) {
-        // No active action, this is the first card selected
+      if (this.activeCardTool === '') {
+        // The player is selecting the card they want to build
         // next the player has to select a card with a matching tool
         gamestate.activeAction = Actions.selectMatchingTool
         gamestate.activeActionTarget = cardID
-      } else if (gamestate.activeAction === Actions.selectMatchingTool) {
-        // If the player clicks the same card again, cancel out of selection mode
-        if (cardID === gamestate.activeActionTarget) {
-          gamestate.activeAction = Actions.none
-          gamestate.activeActionTarget = null
-          return
-        }
-        // Check if the card has a matching tool
-        if (gamestate.hand.get(cardID).tool === this.activeCardTool) {
-          // The card has a matching tool, add it to the compound
-          gamestate.addToCompoundWithDiscard(gamestate.activeActionTarget, cardID)
-          gamestate.activeAction = Actions.none
-          gamestate.activeActionTarget = null
-        }
+        return
+      }
+      // If the player clicks the same card again, cancel out of selection mode
+      if (cardID === gamestate.activeActionTarget) {
+        gamestate.activeAction = Actions.none
+        gamestate.activeActionTarget = null
+        return
+      }
+      // Check if the card has a matching tool
+      if (gamestate.hand.get(cardID).tool === this.activeCardTool) {
+        // The card has a matching tool, add it to the compound
+        gamestate.addToCompoundWithDiscard(gamestate.activeActionTarget, cardID)
+        gamestate.activeAction = Actions.none
+        gamestate.activeActionTarget = null
       }
     },
     /**

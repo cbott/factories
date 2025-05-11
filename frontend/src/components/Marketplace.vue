@@ -1,9 +1,10 @@
 <!-- Marketplace.vue -->
 <template>
-  <div class="area marketplace" :class="{ 'inactive-area': !isMarketplaceAvailable }">
-    <p>
-      Marketplace (Deck has {{ gamestate.state.deckSize }} cards, Discard has {{ gamestate.state.discardSize }} cards)
-    </p>
+  <div class="area marketplace">
+    <div v-if="!isMarketplaceAvailable" class="marketplace-overlay"></div>
+    <div class="marketplace-header">
+      <p>MARKETPLACE {{ currentPlayerText }}</p>
+    </div>
     <div class="marketplace-container">
       <div class="horiz-layout">
         <div class="card-area">
@@ -14,13 +15,20 @@
             :class="{
               'valid-div-hover': isMarketplaceAvailable,
             }"
-            @click="addToHand(card.id)"
+            @click="selectBlueprint(card.id)"
           />
         </div>
         <div class="refresh-buttons">
-          <button @click="gamestate.fillMarketplace">Fill Marketplace</button>
-          <button @click="gamestate.refreshMarketplace('blueprint', 'energy')">Refresh (⚡)</button>
-          <button @click="gamestate.refreshMarketplace('blueprint', 'metal')">Refresh (🔩)</button>
+          <button @click="gamestate.refreshMarketplace('blueprint', 'energy')" :disabled="energyRefreshDisabled">
+            Refresh (⚡)
+          </button>
+          <button @click="gamestate.refreshMarketplace('blueprint', 'metal')" :disabled="metalRefreshDisabled">
+            Refresh (🔩)
+          </button>
+        </div>
+        <div class="deck-size">
+          <p>Deck: {{ gamestate.state.deckSize }}</p>
+          <p>Discard: {{ gamestate.state.discardSize }}</p>
         </div>
       </div>
       <div class="horiz-layout">
@@ -39,8 +47,16 @@
           </div>
         </div>
         <div class="refresh-buttons">
-          <button @click="gamestate.refreshMarketplace('contractor', 'energy')">Refresh (⚡)</button>
-          <button @click="gamestate.refreshMarketplace('contractor', 'metal')">Refresh (🔩)</button>
+          <button @click="gamestate.refreshMarketplace('contractor', 'energy')" :disabled="energyRefreshDisabled">
+            Refresh (⚡)
+          </button>
+          <button @click="gamestate.refreshMarketplace('contractor', 'metal')" :disabled="metalRefreshDisabled">
+            Refresh (🔩)
+          </button>
+        </div>
+        <div class="deck-size">
+          <p>Deck: {{ gamestate.state.contractorSize }}</p>
+          <p>Discard: {{ gamestate.state.contractorDiscardSize }}</p>
         </div>
       </div>
     </div>
@@ -83,10 +99,39 @@ export default {
     isMarketplaceAvailable() {
       return gamestate.state.workPhase === false && gamestate.state.currentPlayerID === gamestate.playerID
     },
+    currentPlayerText() {
+      if (gamestate.state.workPhase) {
+        return ''
+      }
+      if (gamestate.state.currentPlayerID === gamestate.playerID) {
+        return '- Your Turn'
+      }
+      return `- ${gamestate.state.currentPlayerID}'s Turn`
+    },
+    refreshDisabled() {
+      if (!this.isMarketplaceAvailable || gamestate.state.players[gamestate.playerID].workDone.hasRefreshedCards) {
+        return true
+      }
+      return null
+    },
+    energyRefreshDisabled() {
+      if (gamestate.playerEnergy() < 1) {
+        return true
+      }
+      return this.refreshDisabled
+    },
+    metalRefreshDisabled() {
+      if (gamestate.playerMetal() < 1) {
+        return true
+      }
+      return this.refreshDisabled
+    },
   },
   methods: {
-    addToHand(cardID) {
-      gamestate.pickUpFromMarketplace(cardID)
+    selectBlueprint(cardID) {
+      if (this.isMarketplaceAvailable) {
+        gamestate.pickUpFromMarketplace(cardID)
+      }
     },
     /**
      * Begin the process of hiring a contractor
@@ -94,9 +139,10 @@ export default {
      * @param contractor {ContractorCard} The contractor card to be selected
      */
     selectContractor(contractorTool) {
-      // if (this.isMarketplaceAvailable) {}
-      this.selectedContractorTool = contractorTool
-      this.showModal = true
+      if (this.isMarketplaceAvailable) {
+        this.selectedContractorTool = contractorTool
+        this.showModal = true
+      }
     },
     clearResult() {
       this.modalResult = {
@@ -126,6 +172,11 @@ export default {
 .marketplace {
   border-color: green;
   min-height: 200px;
+  position: relative;
+}
+
+.marketplace-header {
+  text-align: center;
 }
 
 .marketplace-container {
@@ -145,6 +196,13 @@ export default {
   width: 120px;
 }
 
+.deck-size {
+  padding: 25px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
 .card-with-marker {
   display: flex;
   flex-direction: column;
@@ -154,5 +212,16 @@ export default {
 .tool-label {
   width: 40px;
   text-align: center;
+}
+
+.marketplace-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.2); /* Semi-transparent gray */
+  z-index: 1; /* Ensure it appears above the content but below tooltips and modal window */
+  pointer-events: none; /* Prevent interaction with the overlay */
 }
 </style>

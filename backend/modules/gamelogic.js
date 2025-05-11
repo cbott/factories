@@ -28,7 +28,6 @@ export class GameState {
     this.players = {}
     this.workPhase = false
     this.currentPlayerID = null
-    this.playersMeetingEndCriteria = {}
     this.finalRound = false
     this.savefile = null
   }
@@ -91,6 +90,8 @@ export class GameState {
       currentPlayerID: this.currentPlayerID,
       deckSize: this.deck.length,
       discardSize: this.discard.length,
+      contractorSize: this.contractors.length,
+      contractorDiscardSize: this.contractorDiscard.length,
       finalRound: this.finalRound,
     }
   }
@@ -658,6 +659,8 @@ export class GameState {
       }
     }
 
+    console.log('Activating contractor card', contractorCard.name)
+
     switch (contractorCard.name) {
       case 'Architect':
         // Draw 3🟦 and then pick an opponent to draw 1🟦
@@ -710,6 +713,7 @@ export class GameState {
           console.log('No cards left in deck')
           return false
         }
+        console.log('Collecting resources from', card)
         this.players[playerID].metal += card.cost_metal
         this.players[playerID].energy += card.cost_energy
         this.discard.push(card)
@@ -836,6 +840,10 @@ export class GameState {
    * @returns {boolean} True if the marketplace was refreshed successfully, false otherwise.
    */
   refreshMarketplace(playerID, cardType, resource) {
+    if (!this._marketPhaseActionValid(playerID)) {
+      return false
+    }
+
     if (this.players[playerID].workDone.hasRefreshedCards) {
       console.log('Player has already refreshed cards this round')
       return false
@@ -885,7 +893,7 @@ export class GameState {
     }
 
     // Verify that the player actually has this die
-    if (typeof dieIndex !== 'number' || dieIndex > this.players[playerID].dice.length || dieIndex < 0) {
+    if (!Number.isInteger(dieIndex) || dieIndex >= this.players[playerID].dice.length || dieIndex < 0) {
       console.log('Invalid die index', dieIndex, 'requested. Player has', this.players[playerID].dice.length, 'dice')
       return false
     }
@@ -1073,7 +1081,6 @@ export class GameState {
           console.log('Insufficient energy')
           return false
         }
-        activateCards.removeIndicesFromArray(player.dice, diceSelection)
         player.energy -= 4
         this._manufactureGoods(playerID, 1)
         break
@@ -1085,6 +1092,7 @@ export class GameState {
           return false
         }
         if (availableEnergy < 1) {
+          console.log('Insufficient energy')
           return false
         }
         activateCards.removeIndicesFromArray(player.dice, diceSelection)
@@ -1144,6 +1152,7 @@ export class GameState {
         }
         // Confirm that we have X metal
         if (player.metal < value) {
+          console.log('Player does not have', value, 'metal to spend')
           return false
         }
         activateCards.removeIndicesFromArray(player.dice, diceSelection)
@@ -1160,6 +1169,7 @@ export class GameState {
           return false
         }
         if (availableEnergy < 1) {
+          console.log('Player does not have 1 energy')
           return false
         }
         player.energy -= 1
@@ -1175,6 +1185,7 @@ export class GameState {
           return false
         }
         if (availableEnergy < 1) {
+          console.log('Player does not have 1 energy')
           return false
         }
         player.energy -= 1
@@ -1190,6 +1201,7 @@ export class GameState {
           return false
         }
         if (availableEnergy < value) {
+          console.log('Player does not have', value, 'energy to spend')
           return false
         }
         activateCards.removeIndicesFromArray(player.dice, diceSelection)
@@ -1205,6 +1217,7 @@ export class GameState {
           return false
         }
         if (availableEnergy < 2) {
+          console.log('Player does not have 2 energy to spend')
           return false
         }
         activateCards.removeIndicesFromArray(player.dice, diceSelection)
@@ -1231,6 +1244,7 @@ export class GameState {
           return false
         }
         if (availableEnergy < 1) {
+          console.log('Player does not have 1 energy')
           return false
         }
         player.energy -= 1
@@ -1410,8 +1424,10 @@ export class GameState {
       case 'Robot':
         // 🔩 -> Roll an extra [?] this turn
         if (player.metal < 1) {
+          console.log('Insufficient metal')
           return false
         }
+        player.metal -= 1
         player.dice.push(randomDice())
         break
 

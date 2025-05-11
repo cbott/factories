@@ -21,7 +21,13 @@
       />
     </div>
   </div>
-  <ModalTemplate v-if="showModal" @submit="submitModal" @cancel="cancelModal" submitText="Activate">
+  <ModalTemplate
+    v-if="showModal"
+    @submit="submitModal"
+    @cancel="cancelModal"
+    submitText="Activate"
+    :showSubmit="this.modalResult.ok"
+  >
     <ActivateCard :result="modalResult" :cardToActivate="cardToActivate" />
   </ModalTemplate>
 </template>
@@ -89,6 +95,7 @@ export default {
         energy: 0,
         reward: '',
         replicate: null,
+        ok: false,
       },
       cardToActivate: null,
     }
@@ -99,7 +106,7 @@ export default {
         return
       }
       this.cardToActivate = card
-      this.modalResult = { dice: [], cards: [], energy: 0, reward: '', replicate: null }
+      this.modalResult = { dice: [], cards: [], energy: 0, reward: '', replicate: null, ok: false }
       this.showModal = true
     },
     cancelModal() {

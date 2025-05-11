@@ -19,7 +19,7 @@
     </div>
   </div>
 
-  <div v-if="requiresDiceSelection" class="dice-select-area">
+  <div v-if="requiresDiceSelectionNum > 0" class="dice-select-area">
     <p>Select your dice</p>
     <div class="selection-area">
       <div
@@ -53,7 +53,7 @@
   <div v-if="requiresEnergySelectionNum > 0" class="resource-select-area">
     <p>Select up to {{ requiresEnergySelectionNum }} Energy</p>
     <div class="selection-area">
-      <select name="energy" v-model="this.result.energy">
+      <select name="energy" v-model="this.result.energy" @change="checkSelections">
         <option v-for="n in requiresEnergySelectionNum" :key="n" :value="n">{{ n }}</option>
       </select>
     </div>
@@ -96,7 +96,7 @@ export default {
     return {
       gamestate,
       recipe: '',
-      requiresDiceSelection: false,
+      requiresDiceSelectionNum: 0,
       requiresCardSelectionNum: 0,
       requiresEnergySelectionNum: 0,
       requiresRewardSelection: false,
@@ -109,11 +109,13 @@ export default {
       return
     }
     this.recipe = requirements.recipe
-    this.requiresDiceSelection = requirements.requiresDiceSelection
+    this.requiresDiceSelectionNum = requirements.requiresDiceSelectionNum
     this.requiresCardSelectionNum = requirements.requiresCardSelectionNum
     this.requiresEnergySelectionNum = requirements.requiresEnergySelectionNum
     this.requiresRewardSelection = requirements.requiresRewardSelection
     this.requiresMarketplaceSelection = requirements.requiresMarketplaceSelection
+
+    this.checkSelections()
   },
   computed: {
     rewardOptions() {
@@ -144,7 +146,7 @@ export default {
       if (this.isSelectedMarketplace(cardID)) {
         // If already selected, deselect it
         this.result.replicate = null
-        this.requiresDiceSelection = false
+        this.requiresDiceSelectionNum = 0
         this.requiresCardSelectionNum = 0
         this.requiresEnergySelectionNum = 0
         this.requiresRewardSelection = false
@@ -155,11 +157,13 @@ export default {
         }
         this.result.replicate = cardID
         let requirements = this.getSelectionRequirements(marketplaceCard)
-        this.requiresDiceSelection = requirements.requiresDiceSelection
+        this.requiresDiceSelectionNum = requirements.requiresDiceSelectionNum
         this.requiresCardSelectionNum = requirements.requiresCardSelectionNum
         this.requiresEnergySelectionNum = requirements.requiresEnergySelectionNum
         this.requiresRewardSelection = requirements.requiresRewardSelection
       }
+
+      this.checkSelections()
     },
     /**
      * Select a die to be used for activating this card
@@ -168,9 +172,14 @@ export default {
       if (this.isSelectedDice(diceIndex)) {
         // If already selected, deselect it
         this.result.dice = this.result.dice.filter((id) => id !== diceIndex)
+      } else if (this.requiresDiceSelectionNum === 1) {
+        // If only one die is required, replace the current selection
+        this.result.dice = [diceIndex]
       } else {
         this.result.dice.push(diceIndex)
       }
+
+      this.checkSelections()
     },
     /**
      * Select a card to be used for activating this card
@@ -196,13 +205,27 @@ export default {
         // Otherwise, add the card to the selection
         this.result.cards.push(parseInt(cardID, 10))
       }
+
+      this.checkSelections()
+    },
+    /**
+     * Checks whether the necessary selections have been made and sets the result `ok` property
+     */
+    checkSelections() {
+      let okDice = this.result.dice.length === this.requiresDiceSelectionNum
+      let okCards = this.result.cards.length === this.requiresCardSelectionNum
+      let okEnergy = this.result.energy !== 0 || this.requiresEnergySelectionNum === 0
+      let okReward = this.result.reward !== null || !this.requiresRewardSelection
+      let okReplicate = this.result.replicate !== null || !this.requiresMarketplaceSelection
+
+      this.result.ok = okDice && okCards && okEnergy && okReward && okReplicate
     },
     /**
      * Determine the selection requirements based on the provided card
      */
     getSelectionRequirements(card) {
       let recipe = 'No Recipe'
-      let requiresDiceSelection = false
+      let requiresDiceSelectionNum = 0
       let requiresCardSelectionNum = 0
       let requiresEnergySelectionNum = 0
       let requiresRewardSelection = false
@@ -211,45 +234,45 @@ export default {
       recipe = card.recipe
       switch (card.name) {
         case 'Aluminum Factory':
-          requiresDiceSelection = true
+          requiresDiceSelectionNum = 2
           break
         case 'Assembly Line':
-          requiresDiceSelection = true
+          requiresDiceSelectionNum = 3
           break
         case 'Battery Factory':
           break
         case 'Beacon':
           break
         case 'Biolab':
-          requiresDiceSelection = true
+          requiresDiceSelectionNum = 1
           break
         case 'Black Market':
-          requiresDiceSelection = true
+          requiresDiceSelectionNum = 1
           requiresCardSelectionNum = 1
           break
         case 'Concrete Plant':
-          requiresDiceSelection = true
+          requiresDiceSelectionNum = 2
           break
         case 'Dojo':
-          requiresDiceSelection = true
+          requiresDiceSelectionNum = 1
           break
         case 'Fitness Center':
-          requiresDiceSelection = true
+          requiresDiceSelectionNum = 1
           break
         case 'Foundry':
-          requiresDiceSelection = true
+          requiresDiceSelectionNum = 1
           break
         case 'Fulfillment Center':
-          requiresDiceSelection = true
+          requiresDiceSelectionNum = 1
           break
         case 'Golem':
           requiresEnergySelectionNum = Math.min(6, gamestate.playerEnergy())
           break
         case 'Gymnasium':
-          requiresDiceSelection = true
+          requiresDiceSelectionNum = 1
           break
         case 'Harvester':
-          requiresDiceSelection = true
+          requiresDiceSelectionNum = 2
           requiresRewardSelection = true
           break
         case 'Incinerator':
@@ -258,25 +281,25 @@ export default {
         case 'Laboratory':
           break
         case 'Manufactory':
-          requiresDiceSelection = true
+          requiresDiceSelectionNum = 2
           requiresRewardSelection = true
           break
         case 'Mega Factory':
-          requiresDiceSelection = true
+          requiresDiceSelectionNum = 3
           requiresRewardSelection = true
           break
         case 'Megalith':
           break
         case 'Motherlode':
-          requiresDiceSelection = true
+          requiresDiceSelectionNum = 1
           break
         case 'Nuclear Plant':
-          requiresDiceSelection = true
+          requiresDiceSelectionNum = 1
           break
         case 'Obelisk':
           break
         case 'Power Plant':
-          requiresDiceSelection = true
+          requiresDiceSelectionNum = 1
           break
         case 'Recycling Plant':
           requiresCardSelectionNum = 2
@@ -294,14 +317,14 @@ export default {
         case 'Solar Array':
           break
         case 'Temp Agency':
-          requiresDiceSelection = true
+          requiresDiceSelectionNum = 1
           break
         case 'Trash Compactor':
-          requiresDiceSelection = true
+          requiresDiceSelectionNum = 2
           requiresCardSelectionNum = 2
           break
         case 'Warehouse':
-          requiresDiceSelection = true
+          requiresDiceSelectionNum = 3
           break
         default:
           return null
@@ -309,7 +332,7 @@ export default {
 
       return {
         recipe: recipe,
-        requiresDiceSelection: requiresDiceSelection,
+        requiresDiceSelectionNum: requiresDiceSelectionNum,
         requiresCardSelectionNum: requiresCardSelectionNum,
         requiresEnergySelectionNum: requiresEnergySelectionNum,
         requiresRewardSelection: requiresRewardSelection,
