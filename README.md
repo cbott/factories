@@ -4,6 +4,8 @@ Online multiplayer board game
 
 For a much better game than this, check out _Fantastic Factories_
 
+![Factories Game Screenshot](docs/factories.png 'Screenshot of Factories Game')
+
 ## Development
 
 This project utilizes Vue.js for frontend rendering
