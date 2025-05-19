@@ -51,15 +51,11 @@ export class GameState {
     let game = new GameState()
     let gamedata = JSON.parse(fs.readFileSync(filename))
 
-    game.deck = gamedata.deck
-    game.contractors = gamedata.contractors
-    game.discard = gamedata.discard
-    game.contractorDiscard = gamedata.contractorDiscard
-    game.marketplace = gamedata.marketplace
-    game.players = gamedata.players
-    game.workPhase = gamedata.workPhase
-    game.currentPlayerID = gamedata.currentPlayerID
-    game.finalRound = gamedata.finalRound
+    Object.assign(game, gamedata)
+
+    game.players = Object.fromEntries(
+      Object.entries(gamedata.players).map(([playerID, playerData]) => [playerID, player.Player.fromJSON(playerData)])
+    )
     game.savefile = filename
 
     return game

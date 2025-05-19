@@ -38,6 +38,18 @@ export class Player {
   }
 
   /**
+   * Creates a new Player instance from a JSON object.
+   *
+   * @param {Object} json - The JSON object containing player data.
+   * @returns {Player} A new Player instance populated with the data from the JSON object.
+   */
+  static fromJSON(json) {
+    const player = new Player()
+    Object.assign(player, json)
+    return player
+  }
+
+  /**
    * Clear the player's hand and headquarters for the start of the next round.
    */
   resetRound() {

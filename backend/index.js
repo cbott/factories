@@ -118,7 +118,7 @@ io.on('connection', (socket) => {
       'discarding',
       cardIDToDiscard,
       'and targeting player',
-      otherPlayerID
+      otherPlayerID,
     )
     gameState.hireContractor(socketMapping.get(socket.id), cardTool, cardIDToDiscard, otherPlayerID)
     broadcastGameState()
@@ -147,14 +147,14 @@ io.on('connection', (socket) => {
           cardSelection,
           energySelection,
           rewardSelection,
-          cardToReplicate
+          cardToReplicate,
         )
       ) {
         broadcastGameState()
       } else {
         console.log('Failed to activate card')
       }
-    }
+    },
   )
 
   // Roll all of the player's available dice
