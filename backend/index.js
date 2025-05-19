@@ -221,7 +221,7 @@ io.on('connection', (socket) => {
   socket.on('end-turn', (cards, energy, metal) => {
     let result = gameState.endTurn(socketMapping.get(socket.id), cards, energy, metal)
     if (result instanceof gamelogic.GameError) {
-      socket.emit('message', 'Error: ' + result.message)
+      socket.emit('error', result.message)
     } else {
       if (result.end === true) {
         // Game has ended

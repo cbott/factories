@@ -52,11 +52,12 @@
     <ModalTemplate
       v-if="gamestate.messageQueue.length > 0"
       :showSubmit="false"
+      :variant="gamestate.messageQueue[0].type"
       cancelText="Alright"
       @cancel="closeMessage"
     >
       <div class="message">
-        <p>{{ gamestate.messageQueue[0] }}</p>
+        <p>{{ gamestate.messageQueue[0].message }}</p>
       </div>
     </ModalTemplate>
   </template>
