@@ -148,6 +148,8 @@ export const gamestate = reactive({
   // Roll all available dice
   rollDice() {
     console.log('Rolling Dice')
+    let diceSound = new Audio('dice.mp3')
+    diceSound.play()
     this.socket.emit('roll-dice')
   },
 
