@@ -61,7 +61,7 @@
       </div>
     </div>
   </div>
-  <ModalTemplate v-if="showModal" @submit="submitModal" @cancel="cancelModal" :showSubmit="this.modalResult.ok">
+  <ModalTemplate v-if="showModal" @submit="submitModal" @cancel="cancelModal" :showSubmit="modalResult.ok">
     <HireContractor :result="modalResult" :contractorTool="selectedContractorTool" />
   </ModalTemplate>
 </template>

@@ -26,7 +26,7 @@
     @submit="submitModal"
     @cancel="cancelModal"
     submitText="Activate"
-    :showSubmit="this.modalResult.ok"
+    :showSubmit="modalResult.ok"
   >
     <ActivateCard :result="modalResult" :cardToActivate="cardToActivate" />
   </ModalTemplate>

@@ -72,6 +72,20 @@ io.on('connection', (socket) => {
   console.log(`User connected: ${socket.id}`)
 
   socket.on('join-game', (username) => {
+    // Prevent user from passing invalid usernames
+    if (username.length < 1) {
+      console.log('Unable to add player with empty username')
+      return
+    }
+    if (username.length > 15) {
+      console.log('Username cannot be longer than 15 characters')
+      return
+    }
+    if (gameState.players[username] !== undefined && !gameState.players.hasOwnProperty(username)) {
+      console.log('Reserved name:', username)
+      return
+    }
+
     console.log('Assigning username', username, 'to socket', socket.id)
     socketMapping.set(socket.id, username)
 
