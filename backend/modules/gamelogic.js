@@ -9,7 +9,7 @@ import * as activateCards from './activateCards.js'
 import * as constants from './constants.js'
 import { checkArrayValuesUnique, isValidDiceValue, randomDice } from './helpers.js'
 
-class GameError extends Error {}
+export class GameError extends Error {}
 
 export class GameState {
   constructor() {
