@@ -1,5 +1,5 @@
-import { promises as fs } from 'fs'
-import { parse } from 'csv-parse'
+import * as fs from 'fs'
+import { parse } from 'csv-parse/sync'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
@@ -174,30 +174,22 @@ function castCSVValue(value, context) {
  * @param {string} cardType - The type of card to build (one of 'blueprint', 'contractor').
  * @returns {Array<BlueprintCard>} An array of BlueprintCard objects representing the shuffled deck.
  */
-export async function buildDeck(cardDefinitionFile, cardType) {
+export function buildDeck(cardDefinitionFile, cardType) {
   const buildFunc = cardType === 'blueprint' ? buildBlueprintDeckFromDefinitions : buildContractorDeckFromDefinitions
-  const data = await fs.readFile(cardDefinitionFile, 'utf8')
-  return new Promise((resolve, reject) => {
-    parse(
-      data,
-      {
-        cast: (value, context) => {
-          return castCSVValue(value, context)
-        },
-        columns: true,
-      },
-      (err, cardDefinitions) => {
-        if (err) {
-          console.error('Error parsing the CSV file:', err)
-          reject(err)
-        } else {
-          let deck = buildFunc(cardDefinitions)
-          console.log('Created deck of', deck.length, 'cards from file', BLUEPRINT_DEFINITION_CSV)
-          resolve(deck)
-        }
-      }
-    )
+
+  const data = fs.readFileSync(cardDefinitionFile, 'utf8')
+  let cardDefinitions = parse(data, {
+    cast: (value, context) => {
+      return castCSVValue(value, context)
+    },
+    columns: true,
   })
+
+  // throw new Error(`Failed to parse CSV file: ${err}`)
+
+  let deck = buildFunc(cardDefinitions)
+  console.log('Created deck of', deck.length, 'cards from file', cardDefinitionFile)
+  return deck
 }
 
 /**

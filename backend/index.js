@@ -14,14 +14,8 @@ let savefile = process.argv[2]
 let gameState
 if (!savefile || !fs.existsSync(savefile)) {
   gameState = new gamelogic.GameState()
-  gameState
-    .init()
-    .then(() => {
-      console.log('Initialized new game')
-    })
-    .catch((error) => {
-      console.error('Failed to initialize game state:', error)
-    })
+  gameState.init()
+  console.log('Initialized new game')
   if (savefile) {
     console.log('Setting save location:', savefile)
     gameState.savefile = savefile

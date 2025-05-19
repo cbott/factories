@@ -35,9 +35,9 @@ export class GameState {
   /**
    * Initializes the game state
    */
-  async init() {
-    this.deck = await cards.buildDeck(cards.BLUEPRINT_DEFINITION_CSV, 'blueprint')
-    this.contractors = await cards.buildDeck(cards.CONTRACTOR_DEFINITION_CSV, 'contractor')
+  init() {
+    this.deck = cards.buildDeck(cards.BLUEPRINT_DEFINITION_CSV, 'blueprint')
+    this.contractors = cards.buildDeck(cards.CONTRACTOR_DEFINITION_CSV, 'contractor')
     this.fillMarketplace()
   }
 
