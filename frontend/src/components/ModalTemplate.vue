@@ -1,6 +1,9 @@
 <template>
   <div id="overlay"></div>
-  <div id="modal">
+  <div id="modal" :style="variantStyle">
+    <div v-if="variantIcon" class="modal-top-icon">
+      {{ variantIcon }}
+    </div>
     <div class="modal-contents">
       <slot></slot>
     </div>
@@ -15,6 +18,12 @@
 <script>
 // Game state
 import { gamestate } from '../GameState.js'
+
+const VARIANTS = {
+  info: { icon: '🛈', color: 'cyan' },
+  warning: { icon: '⚠', color: 'gold' },
+  error: { icon: '⛔', color: 'red' },
+}
 
 // Exports
 export default {
@@ -31,6 +40,23 @@ export default {
     showSubmit: {
       type: Boolean,
       default: true,
+    },
+    variant: {
+      type: String,
+      default: '',
+    },
+  },
+  computed: {
+    variantIcon() {
+      return VARIANTS[this.variant]?.icon
+    },
+    variantStyle() {
+      if (!VARIANTS[this.variant]) return {}
+
+      return {
+        color: VARIANTS[this.variant].color,
+        borderColor: VARIANTS[this.variant].color,
+      }
     },
   },
   data() {
@@ -73,6 +99,13 @@ export default {
   z-index: 1001; /* Higher than the overlay */
   width: 90%;
   border: 5px solid gold;
+}
+
+.modal-top-icon {
+  font-size: 48px;
+  font-weight: bold;
+  text-align: center;
+  margin-top: -20px;
 }
 
 .modal-contents {

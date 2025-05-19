@@ -60,7 +60,12 @@ export const gamestate = reactive({
 
     this.socket.on('message', (message) => {
       console.log('Message:', message)
-      this.messageQueue.push(message)
+      this.messageQueue.push({ type: 'info', message })
+    })
+
+    this.socket.on('error', (message) => {
+      console.log('Error:', message)
+      this.messageQueue.push({ type: 'error', message })
     })
 
     this.socket.on('disconnect', () => {
