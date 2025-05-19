@@ -9,6 +9,8 @@ import * as activateCards from './activateCards.js'
 import * as constants from './constants.js'
 import { checkArrayValuesUnique, isValidDiceValue, randomDice } from './helpers.js'
 
+class GameError extends Error {}
+
 export class GameState {
   constructor() {
     this.deck = []
@@ -471,25 +473,23 @@ export class GameState {
    */
   endTurn(playerID, cards, energy, metal) {
     if (!this._workPhaseActionValid(playerID)) {
-      // TODO: proper error responses
-      return new Error('End Turn Error')
+      return new GameError('Action can only be performed during Work phase')
     }
 
     // Check that resource discard selection is valid
     if (this.players[playerID].energy < energy || energy < 0) {
-      console.log('Player does not have', energy, 'energy to discard')
-      return new Error('End Turn Error')
+      return new GameError(`Player does not have ${energy} energy to discard`)
     }
     if (this.players[playerID].metal < metal || metal < 0) {
-      console.log('Player does not have', metal, 'metal to discard')
-      return new Error('End Turn Error')
+      return new GameError(`Player does not have ${metal} metal to discard`)
     }
 
     // Check that resource discards are sufficient
     let currentResources = this.players[playerID].energy + this.players[playerID].metal
     if (currentResources - metal - energy > constants.END_WORK_MAX_RESOURCES) {
-      console.log('Player has', currentResources, 'resources, must discard down to', constants.END_WORK_MAX_RESOURCES)
-      return new Error('End Turn Error')
+      return new GameError(
+        `Player has ${currentResources} resources, must discard down to ${constants.END_WORK_MAX_RESOURCES}`,
+      )
     }
 
     let nCardsInHand = Object.keys(this.players[playerID].hand).length
@@ -497,13 +497,11 @@ export class GameState {
     if (nDiscardsNeeded > 0) {
       // Check that player provided acceptable list of cards to discard
       if (!checkArrayValuesUnique(cards, nDiscardsNeeded)) {
-        console.log('Player must discard', nDiscardsNeeded, 'unique cards from hand')
-        return new Error('End Turn Error')
+        return new GameError(`Player must discard ${nDiscardsNeeded} unique cards from hand`)
       }
       for (let cardID of cards) {
         if (!this.players[playerID].hand[cardID]) {
-          console.log('Card ID', cardID, 'not found in player hand')
-          return new Error('End Turn Error')
+          return new GameError(`Card ID ${cardID} not found in player hand`)
         }
       }
     }
