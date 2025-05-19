@@ -1,9 +1,11 @@
 <template>
   <h2>End Your Work Phase</h2>
-  <p>Discard down to 12 total resources (metal and energy resources combined) and 10 cards in hand</p>
-  <p>{{ gamestate.hand.size }} / 10 Cards</p>
-  <p>{{ totalResources }} / 12 Resources</p>
-
+  <p>
+    <span v-if="gamestate.hand.size <= 10" class="check">&check;</span> Discard down to 10 cards in hand ({{
+      gamestate.hand.size
+    }}
+    / 10)
+  </p>
   <div v-if="gamestate.hand.size > 10" class="card-select-area">
     <p>Select Cards To Discard</p>
     <div class="selection-area">
@@ -19,6 +21,12 @@
     </div>
   </div>
 
+  <p>
+    <span v-if="totalResources <= 12" class="check">&check;</span> Discard down to 12 total resources ({{
+      totalResources
+    }}
+    / 12)
+  </p>
   <div v-if="totalResources > 12" class="resource-select-area">
     <p>Select Resources To Discard</p>
     <div class="selection-area">
@@ -96,3 +104,10 @@ export default {
   },
 }
 </script>
+
+<style scoped>
+.check {
+  color: green;
+  font-weight: bold;
+}
+</style>

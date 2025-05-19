@@ -35,7 +35,6 @@ Scoped
 - (feature) Add messages from server to individual clients such as error responses
 - (feature) Add messages to players when they receive resources from Contractor cards
 - (bugfix) Card tooltips get cut off if they are too close to the edge of the screen
-- (bugfix) Improve unclear wording of instructions in the modal dialogue for ending your turn
 
 Unscoped (possible future work)
 
