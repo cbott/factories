@@ -220,9 +220,8 @@ io.on('connection', (socket) => {
   // End a player's Work phase
   socket.on('end-turn', (cards, energy, metal) => {
     let result = gameState.endTurn(socketMapping.get(socket.id), cards, energy, metal)
-    if (result instanceof Error) {
-      console.log('Failed to end turn:', result.message)
-      // TODO: send error message to this client
+    if (result instanceof gamelogic.GameError) {
+      socket.emit('message', 'Error: ' + result.message)
     } else {
       if (result.end === true) {
         // Game has ended
