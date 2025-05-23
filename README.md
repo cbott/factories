@@ -34,7 +34,6 @@ Build `dist` folder from frontend/ with
 Scoped
 
 - (dev) Implement server-side logging with consistent formatting
-- (feature) Add messages from server to individual clients such as error responses
 - (feature) Add messages to players when they receive resources from Contractor cards
 - (bugfix) Card tooltips get cut off if they are too close to the edge of the screen
 

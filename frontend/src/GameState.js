@@ -58,13 +58,18 @@ export const gamestate = reactive({
       this.initialized = true
     })
 
-    this.socket.on('message', (message) => {
-      console.log('Message:', message)
+    this.socket.on('info', (message) => {
+      console.log('Info Message:', message)
       this.messageQueue.push({ type: 'info', message })
     })
 
+    this.socket.on('warning', (message) => {
+      console.log('Warning Message:', message)
+      this.messageQueue.push({ type: 'warning', message })
+    })
+
     this.socket.on('error', (message) => {
-      console.log('Error:', message)
+      console.log('Error Message:', message)
       this.messageQueue.push({ type: 'error', message })
     })
 
