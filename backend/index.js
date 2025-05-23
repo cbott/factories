@@ -47,8 +47,6 @@ let socketMapping = new Map()
  * Send the current game state to all connected clients
  */
 function broadcastGameState() {
-  // TODO: handle messages to individual players
-  // with socket.emit('game-state', gameState)
   io.emit('game-state', gameState.publicState)
 }
 
@@ -56,14 +54,29 @@ function broadcastGameState() {
  * Send a message to all connected clients
  *
  * @param {string} message - The message to send
+ * @param {string} type - The type of message (info, warning, error)
  */
-function broadcastMessage(message) {
-  console.log('Broadcasting message:', message)
-  io.emit('message', message)
+function broadcastMessage(message, type = 'info') {
+  console.log(`Broadcasting ${type} message: ${message}`)
+  io.emit(type, message)
 }
 
 io.on('connection', (socket) => {
   console.log(`User connected: ${socket.id}`)
+  /**
+   * Checks the result of a game action and emits an error message if it is a GameError
+   *
+   * @param {any} result - The result of the game action
+   * @returns {boolean} - True if the result is not a GameError, false otherwise
+   */
+  function check(result) {
+    if (result instanceof gamelogic.GameError) {
+      socket.emit('error', result.message)
+      console.log('GameError:', result.message)
+      return false
+    }
+    return true
+  }
 
   socket.on('join-game', (username) => {
     // Prevent user from passing invalid usernames
@@ -140,29 +153,27 @@ io.on('connection', (socket) => {
     'activate-card',
     (cardID, diceSelection, cardSelection, energySelection, rewardSelection, cardToReplicate) => {
       if (
-        gameState.activateCard(
-          socketMapping.get(socket.id),
-          cardID,
-          diceSelection,
-          cardSelection,
-          energySelection,
-          rewardSelection,
-          cardToReplicate,
+        check(
+          gameState.activateCard(
+            socketMapping.get(socket.id),
+            cardID,
+            diceSelection,
+            cardSelection,
+            energySelection,
+            rewardSelection,
+            cardToReplicate,
+          ),
         )
       ) {
         broadcastGameState()
-      } else {
-        console.log('Failed to activate card')
       }
     },
   )
 
   // Roll all of the player's available dice
   socket.on('roll-dice', () => {
-    if (gameState.rollDice(socketMapping.get(socket.id))) {
+    if (check(gameState.rollDice(socketMapping.get(socket.id)))) {
       broadcastGameState()
-    } else {
-      console.log('Failed to roll dice')
     }
   })
 
@@ -220,9 +231,7 @@ io.on('connection', (socket) => {
   // End a player's Work phase
   socket.on('end-turn', (cards, energy, metal) => {
     let result = gameState.endTurn(socketMapping.get(socket.id), cards, energy, metal)
-    if (result instanceof gamelogic.GameError) {
-      socket.emit('error', result.message)
-    } else {
+    if (check(result)) {
       if (result.end === true) {
         // Game has ended
         broadcastMessage(rankPlayers(gameState.players))
@@ -235,7 +244,7 @@ io.on('connection', (socket) => {
         if (result.buildings.length) {
           message += ` These players hit the Buildings trigger: ${result.buildings.join(', ')}`
         }
-        broadcastMessage(message)
+        broadcastMessage(message, 'warning')
       }
       broadcastGameState()
     }

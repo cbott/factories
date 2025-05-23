@@ -22,7 +22,7 @@ import { gamestate } from '../GameState.js'
 const VARIANTS = {
   info: { icon: '🛈', color: 'cyan' },
   warning: { icon: '⚠', color: 'gold' },
-  error: { icon: '⛔', color: 'red' },
+  error: { icon: '❌', color: 'red' },
 }
 
 // Exports
@@ -54,7 +54,6 @@ export default {
       if (!VARIANTS[this.variant]) return {}
 
       return {
-        color: VARIANTS[this.variant].color,
         borderColor: VARIANTS[this.variant].color,
       }
     },
