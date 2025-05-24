@@ -31,10 +31,6 @@ Build `dist` folder from frontend/ with
 
 ## Remaining Work
 
-Scoped
-
-- (bugfix) Card tooltips get cut off if they are too close to the edge of the screen
-
 Unscoped (possible future work)
 
 - Add an "Undo" button

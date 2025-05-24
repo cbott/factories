@@ -111,3 +111,21 @@ body {
   display: flex;
   align-items: center;
 }
+
+/**
+ * Tooltip customization
+ *
+ * See https://floating-vue.starpad.dev/guide/css
+ */
+
+.v-popper--theme-tooltip.v-popper__popper--hidden {
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.v-popper--theme-tooltip.v-popper__popper--shown {
+  visibility: visible;
+  opacity: 1;
+  transition: opacity 0.3s;
+}

@@ -1,12 +1,9 @@
 <!-- Component representing a single Contractor card -->
 <template>
-  <div class="tooltip">
-    <div class="card contractorcard">
-      <p class="name">{{ card.name }}</p>
-      <p class="recipe">{{ card.short_recipe }}</p>
-      <p class="cost-label" style="display: inline-block">⚡{{ card.cost_energy }}</p>
-    </div>
-    <span class="tooltiptext">{{ card.recipe }}</span>
+  <div class="card contractorcard" v-tooltip="card.recipe">
+    <p class="name">{{ card.name }}</p>
+    <p class="recipe">{{ card.short_recipe }}</p>
+    <p class="cost-label" style="display: inline-block">⚡{{ card.cost_energy }}</p>
   </div>
 </template>
 
