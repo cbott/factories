@@ -2,7 +2,7 @@
 <template>
   <div class="area dice-area" :class="{ 'inactive-area': gamestate.state.workPhase !== true }">
     <button v-if="canSelectDice" @click="chooseAllDice">Select Dice</button>
-    <button v-else @click="gamestate.rollDice" :disabled="disableRoll">Roll Dice ({{ unrolledDice }})</button>
+    <button v-else @click="gamestate.rollDice" :disabled="!unrolledDice">Roll Dice ({{ unrolledDice }})</button>
     <button v-if="hasBonusDie" @click="chooseOneDice">Choose 1 Value</button>
     <div
       v-for="(diceval, index) in myDice"
@@ -50,12 +50,6 @@ export default {
     },
     hasBonusDie() {
       return gamestate.state.players[gamestate.playerID].bonusDie
-    },
-    disableRoll() {
-      if (this.unrolledDice > 0) {
-        return null
-      }
-      return true
     },
   },
   data() {

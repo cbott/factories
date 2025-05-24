@@ -67,7 +67,7 @@ io.on('connection', (socket) => {
    * Checks the result of a game action and emits an error message if it is a GameError
    *
    * @param {any} result - The result of the game action
-   * @returns {boolean} - True if the result is not a GameError, false otherwise
+   * @returns {boolean} - False if result is a GameError, otherwise boolean value of result
    */
   function check(result) {
     if (result instanceof gamelogic.GameError) {
@@ -75,7 +75,7 @@ io.on('connection', (socket) => {
       console.log('GameError:', result.message)
       return false
     }
-    return true
+    return Boolean(result)
   }
 
   socket.on('join-game', (username) => {
@@ -119,8 +119,9 @@ io.on('connection', (socket) => {
   // Pick a Blueprint card from the marketplace
   socket.on('pickup-from-marketplace', (cardID) => {
     console.log('Picking up from marketplace', cardID)
-    gameState.pickupFromMarketplace(socketMapping.get(socket.id), cardID)
-    broadcastGameState()
+    if (check(gameState.pickupFromMarketplace(socketMapping.get(socket.id), cardID))) {
+      broadcastGameState()
+    }
   })
 
   // Pick a Contractor card from the marketplace
@@ -133,18 +134,17 @@ io.on('connection', (socket) => {
       'and targeting player',
       otherPlayerID,
     )
-    gameState.hireContractor(socketMapping.get(socket.id), cardTool, cardIDToDiscard, otherPlayerID)
-    broadcastGameState()
+    if (check(gameState.hireContractor(socketMapping.get(socket.id), cardTool, cardIDToDiscard, otherPlayerID))) {
+      broadcastGameState()
+    }
   })
 
   // Move a card from the player's hand to their compound, discarding an approprate tool card
   socket.on('add-to-compound-with-discard', (cardIDToMove, cardIDToDiscard) => {
     console.log('Playing card', cardIDToMove, 'by discarding card', cardIDToDiscard)
-    if (gameState.buildCard(socketMapping.get(socket.id), cardIDToMove, cardIDToDiscard)) {
+    if (check(gameState.buildCard(socketMapping.get(socket.id), cardIDToMove, cardIDToDiscard))) {
       console.log('Built Successfully')
       broadcastGameState()
-    } else {
-      console.log('Failed to build card')
     }
   })
 
@@ -180,20 +180,16 @@ io.on('connection', (socket) => {
   // Select values for up to 4 dice at the start of the turn instead of rolling
   socket.on('choose-dice', (diceSelection) => {
     console.log('Choosing dice', diceSelection)
-    if (gameState.chooseDice(socketMapping.get(socket.id), diceSelection)) {
+    if (check(gameState.chooseDice(socketMapping.get(socket.id), diceSelection))) {
       broadcastGameState()
-    } else {
-      console.log('Failed to choose dice')
     }
   })
 
   // Gain a die with a specific value
   socket.on('gain-dice-value', (value) => {
     console.log('Gaining dice value', value)
-    if (gameState.gainDiceValue(socketMapping.get(socket.id), value)) {
+    if (check(gameState.gainDiceValue(socketMapping.get(socket.id), value))) {
       broadcastGameState()
-    } else {
-      console.log('Failed to gain dice value')
     }
   })
 
@@ -205,19 +201,15 @@ io.on('connection', (socket) => {
    */
 
   socket.on('refresh-marketplace', (cardType, resource) => {
-    if (gameState.refreshMarketplace(socketMapping.get(socket.id), cardType, resource)) {
+    if (check(gameState.refreshMarketplace(socketMapping.get(socket.id), cardType, resource))) {
       broadcastGameState()
-    } else {
-      console.log('Failed to refresh marketplace')
     }
   })
 
   // Move a die from the player's dice pool to the headquarters
   socket.on('place-die-in-headquarters', (dieIndex, floor) => {
-    if (gameState.placeDieInHeadquarters(socketMapping.get(socket.id), dieIndex, floor)) {
+    if (check(gameState.placeDieInHeadquarters(socketMapping.get(socket.id), dieIndex, floor))) {
       broadcastGameState()
-    } else {
-      console.log('Failed to place die in headquarters')
     }
   })
 

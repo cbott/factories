@@ -107,7 +107,7 @@ export default {
         return true
       }
       if (gamestate.state.workPhase && !gamestate.state.players[gamestate.playerID].workDone.hasFinishedWork) {
-        return null
+        return false
       }
       return true
     },
