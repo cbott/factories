@@ -33,8 +33,6 @@ Build `dist` folder from frontend/ with
 
 Scoped
 
-- (dev) Implement server-side logging with consistent formatting
-- (feature) Add messages to players when they receive resources from Contractor cards
 - (bugfix) Card tooltips get cut off if they are too close to the edge of the screen
 
 Unscoped (possible future work)
@@ -45,3 +43,4 @@ Unscoped (possible future work)
 - Add a "help" button that pulls up the rulebook
 - Change dice to have dots rather than numbers
 - When activating cards, the frontend should indicate which dice are valid to select (gray out invalid choices)
+- Add a server-side logging framework

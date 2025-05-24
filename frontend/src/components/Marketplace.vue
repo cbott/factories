@@ -109,10 +109,7 @@ export default {
       return `- ${gamestate.state.currentPlayerID}'s Turn`
     },
     refreshDisabled() {
-      if (!this.isMarketplaceAvailable || gamestate.state.players[gamestate.playerID].workDone.hasRefreshedCards) {
-        return true
-      }
-      return null
+      return !this.isMarketplaceAvailable || gamestate.state.players[gamestate.playerID].workDone.hasRefreshedCards
     },
     energyRefreshDisabled() {
       if (gamestate.playerEnergy() < 1) {

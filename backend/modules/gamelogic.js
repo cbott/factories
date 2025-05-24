@@ -596,7 +596,7 @@ export class GameState {
    * @param {int} cardTool - The tool of the Contractor card that is to be picked up.
    * @param {int} cardIDToDiscard - The ID of a Blueprint card in the player's hand to discard.
    * @param {string|null} otherPlayerID - Optionally another player to be a target of the contractor action.
-   * @returns {true|GameError} - Whether the Contractor card was successfully used.
+   * @returns {Object|GameError} - Object with message for otherPlayer if successful, otherwise a GameError.
    */
   hireContractor(playerID, cardTool, cardIDToDiscard, otherPlayerID) {
     if (!this._marketPhaseActionValid(playerID)) {
@@ -640,6 +640,7 @@ export class GameState {
     }
 
     console.log('Activating contractor card', contractorCard.name)
+    let otherPlayerMessage = ''
 
     switch (contractorCard.name) {
       case 'Architect':
@@ -647,11 +648,13 @@ export class GameState {
         for (let i = 0; i < 3; i++) {
           this._drawBlueprint(playerID)
         }
+        otherPlayerMessage = `${playerID} sent you 1🟦 Blueprint card!`
         this._drawBlueprint(otherPlayerID)
         break
       case 'Electrician':
         // Gain 5⚡ and then pick an opponent to gain 2⚡
         this.players[playerID].energy += 5
+        otherPlayerMessage = `${playerID} sent you 2⚡ Energy!`
         this.players[otherPlayerID].energy += 2
         break
       case 'Engineer': {
@@ -699,6 +702,7 @@ export class GameState {
       case 'Miner':
         // Gain 3🔩 and then pick an opponent to gain 1🔩
         this.players[playerID].metal += 3
+        otherPlayerMessage = `${playerID} sent you 1🔩 Metal!`
         this.players[otherPlayerID].metal += 1
         break
       case 'Specialist':
@@ -716,7 +720,7 @@ export class GameState {
     this.contractorDiscard.push(contractorCard)
     this._completePlayerMarketPhase(playerID)
 
-    return true
+    return { message: otherPlayerMessage }
   }
 
   /**

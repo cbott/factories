@@ -61,6 +61,22 @@ function broadcastMessage(message, type = 'info') {
   io.emit(type, message)
 }
 
+/**
+ * Send a message to a single player
+ *
+ * @param {string} message - The message to send to the player
+ * @param {string} playerID - The ID (username) of the player to send the message to
+ * @param {string} type - The type of message (info, warning, error)
+ */
+function playerMessage(message, playerID, type = 'info') {
+  for (const [socketID, name] of socketMapping.entries()) {
+    if (name === playerID) {
+      console.log(`Sending ${type} message to ${name} (${socketID}): ${message}`)
+      io.sockets.sockets.get(socketID).emit(type, message)
+    }
+  }
+}
+
 io.on('connection', (socket) => {
   console.log(`User connected: ${socket.id}`)
   /**
@@ -123,8 +139,15 @@ io.on('connection', (socket) => {
       'and targeting player',
       otherPlayerID,
     )
-    if (check(gameState.hireContractor(socketMapping.get(socket.id), cardTool, cardIDToDiscard, otherPlayerID))) {
+
+    let result = gameState.hireContractor(socketMapping.get(socket.id), cardTool, cardIDToDiscard, otherPlayerID)
+    if (check(result)) {
       broadcastGameState()
+
+      if (result.message) {
+        // The contractor card has a message for us to send to the other player
+        playerMessage(result.message, otherPlayerID, 'info')
+      }
     }
   })
 
