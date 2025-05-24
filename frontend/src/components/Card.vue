@@ -3,9 +3,10 @@
   <div class="tooltip">
     <div :class="{ disabled: isDisabled }" class="card blueprintcard">
       <p class="name" :style="{ backgroundColor: color }">{{ card.name }}</p>
-      🔩{{ card.cost_metal }}{{ card.name == 'Megalith' ? '*' : '' }} ⚡{{ card.cost_energy }} 🏆{{
-        card.prestige !== null ? card.prestige : '?'
-      }}
+      🔩{{ card.cost_metal }}{{ card.name == 'Megalith' ? '*' : '' }} ⚡{{ card.cost_energy }}
+      <div class="icon-row">
+        <img class="icon" src="/prestige.png" />{{ card.prestige !== null ? card.prestige : '*' }}
+      </div>
       <img class="tool-label" :src="getToolImage(card.tool)" :alt="card.tool" />
     </div>
     <span class="tooltiptext">{{ card.recipe }}</span>

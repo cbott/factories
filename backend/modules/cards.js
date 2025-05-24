@@ -101,8 +101,8 @@ function buildBlueprintDeckFromDefinitions(cardDefinitions) {
           cardType.cost_energy,
           cardType.activatable,
           cardType.recipe,
-          cardType.copies
-        )
+          cardType.copies,
+        ),
       )
       id++
     }
@@ -131,8 +131,8 @@ function buildContractorDeckFromDefinitions(cardDefinitions) {
           cardType.cost_energy,
           cardType.short_recipe,
           cardType.recipe,
-          cardType.copies
-        )
+          cardType.copies,
+        ),
       )
       id++
     }

@@ -4,7 +4,7 @@
     <div class="score">
       <p>🔩x{{ metal }}</p>
       <p>⚡x{{ energy }}</p>
-      <p>🏆x{{ prestige }}</p>
+      <div class="icon-row"><img class="icon" src="/prestige.png" />x{{ prestige }}</div>
       <p>📦x{{ goods }}</p>
     </div>
     <div class="card-area">
@@ -143,7 +143,7 @@ export default {
   font-size: 1.2em;
 }
 
-.score > p {
+.score > * {
   margin-left: 5px;
 }
 </style>
