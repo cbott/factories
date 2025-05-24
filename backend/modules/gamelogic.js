@@ -240,32 +240,28 @@ export class GameState {
    * @param {string} playerID - The ID of the player attempting to build the card.
    * @param {int} cardIDToBuild - The ID of the card the player wants to build.
    * @param {int} cardIDToDiscard - The ID of the card the player wants to discard.
-   * @returns {boolean} - Returns true if the card was successfully built, otherwise false.
+   * @returns {true|GameError} - True if the card was successfully built, otherwise GameError.
    */
   buildCard(playerID, cardIDToBuild, cardIDToDiscard) {
     if (!this._workPhaseActionValid(playerID)) {
-      return false
+      return new GameError('Blueprint cards can only be built during the Work phase')
     }
 
     if (cardIDToBuild === cardIDToDiscard) {
-      console.log('Card ID', cardIDToBuild, 'selected to build and discard are the same')
-      return false
+      return new GameError(`Card ID ${cardIDToBuild} selected to build and discard are the same`)
     }
 
     let hand = this.players[playerID].hand
     let cardToBuild = hand[cardIDToBuild]
 
     if (!hand[cardIDToBuild]) {
-      console.log('Card ID', cardIDToBuild, 'selected to build but is not in player hand')
-      return false
+      return new GameError(`Card ID ${cardIDToBuild} selected to build but is not in player hand`)
     }
     if (!hand[cardIDToDiscard]) {
-      console.log('Card ID', cardIDToDiscard, 'selected to discard but is not in player hand')
-      return false
+      return new GameError(`Card ID ${cardIDToDiscard} selected to discard but is not in player hand`)
     }
     if (cardToBuild.tool !== hand[cardIDToDiscard].tool) {
-      console.log('Card to build and discard do not have matching tools')
-      return false
+      return new GameError(`Card to build and discard do not have matching tools`)
     }
 
     // Check player resources
@@ -276,16 +272,14 @@ export class GameState {
     }
 
     if (metalCost > this.players[playerID].metal) {
-      console.log('Player does not have enough metal to build card')
-      return false
+      return new GameError(`Player needs ${metalCost} metal to build this card`)
     } else if (cardToBuild.cost_energy > this.players[playerID].energy) {
-      console.log('Player does not have enough energy to build card')
-      return false
+      return new GameError(`Player needs ${cardToBuild.cost_energy} energy to build this card`)
     }
 
     // Build the card
     if (!this._moveToCompound(playerID, cardToBuild)) {
-      return false
+      return new GameError(`Player already has card ${cardToBuild.name} in compound`)
     }
 
     // Spend resources
@@ -469,7 +463,7 @@ export class GameState {
    * @param {Array<int>} cards - Array of Blueprint card IDs to discard from hand, if needed.
    * @param {int} energy - The number of energy to discard.
    * @param {int} metal - The number of metal to discard.
-   * @returns {Object|Error} - End game conditions.
+   * @returns {Object|GameError} - End game conditions.
    */
   endTurn(playerID, cards, energy, metal) {
     if (!this._workPhaseActionValid(playerID)) {
@@ -529,7 +523,7 @@ export class GameState {
   }
 
   /**
-   * Fills the marketplace with cards from the deck
+   * Fills the marketplace with Blueprint and Contractor cards from the deck
    *
    * @returns {boolean} - True if the marketplace was filled successfully, false otherwise.
    */
@@ -580,16 +574,15 @@ export class GameState {
    *
    * @param {string} playerID - The ID of the player attempting to pick up the card.
    * @param {int} cardID - The ID of the card to be picked up from the marketplace.
-   * @returns {boolean} - Whether the card was successfully picked up or activated.
+   * @returns {true|GameError} - Whether the card was successfully picked up or activated.
    */
   pickupFromMarketplace(playerID, cardID) {
     if (!this._marketPhaseActionValid(playerID)) {
-      return false
+      return new GameError('Cards can only be picked up during the Market phase')
     }
     const card = cards.removeCardByID(this.marketplace.blueprints, cardID)
     if (card === null) {
-      console.log('Card ID', cardID, 'not found in marketplace')
-      return false
+      return new GameError(`Card ID ${cardID} not found in marketplace`)
     }
     this.players[playerID].hand[cardID] = card
     this._completePlayerMarketPhase(playerID)
@@ -603,53 +596,46 @@ export class GameState {
    * @param {int} cardTool - The tool of the Contractor card that is to be picked up.
    * @param {int} cardIDToDiscard - The ID of a Blueprint card in the player's hand to discard.
    * @param {string|null} otherPlayerID - Optionally another player to be a target of the contractor action.
-   * @returns {boolean} - Whether the Contractor card was successfully used.
+   * @returns {true|GameError} - Whether the Contractor card was successfully used.
    */
   hireContractor(playerID, cardTool, cardIDToDiscard, otherPlayerID) {
     if (!this._marketPhaseActionValid(playerID)) {
-      return false
+      return new GameError('Cards can only be picked up during the Market phase')
     }
 
     if (!constants.TOOLS.includes(cardTool)) {
-      console.log('Invalid tool', cardTool, 'selected for contractor')
-      return false
+      return new GameError(`Invalid tool ${cardTool} selected for contractor`)
     }
 
     let contractorCard = this.marketplace.contractors[cardTool]
 
     if (contractorCard === null) {
       // There shouldn't really be a situation where this happens
-      console.log('Contractor card', cardTool, 'not found in marketplace')
-      return false
+      return new GameError(`Contractor card ${cardTool} not found in marketplace`)
     }
 
     // Check that player has sufficient energy to hire
     if (this.players[playerID].energy < contractorCard.cost_energy) {
-      console.log('Player does not have', this.players[playerID].energy, 'energy to hire contractor')
-      return false
+      return new GameError(`Player does not have ${contractorCard.cost_energy} energy to hire contractor`)
     }
 
     // Check that player has the card they intend to discard
     if (!this.players[playerID].hand[cardIDToDiscard]) {
-      console.log('Card ID', cardIDToDiscard, 'not found in player hand')
-      return false
+      return new GameError(`Card ID ${cardIDToDiscard} not found in player hand`)
     }
 
     // Check that the player is discarding the correct tool
     if (this.players[playerID].hand[cardIDToDiscard].tool !== cardTool) {
-      console.log('Card selected for discard', cardIDToDiscard, 'does not match tool', cardTool)
-      return false
+      return new GameError(`Card selected for discard ${cardIDToDiscard} does not match tool "${cardTool}"`)
     }
 
     // Check that another player is selected for Contractors that require it
     if (['Architect', 'Electrician', 'Miner'].includes(contractorCard.name)) {
       if (otherPlayerID === null) {
-        console.log('Contractor', contractorCard.name, 'requires another player to be selected')
-        return false
+        return new GameError(`Contractor ${contractorCard.name} requires another player to be selected`)
       }
       if (!this.players[otherPlayerID]) {
-        console.log('Other player ID', otherPlayerID, 'not found')
-        return false
+        return new GameError(`Other player ID "${otherPlayerID}" not found`)
       }
     }
 
@@ -677,8 +663,7 @@ export class GameState {
         for (let i = 0; i < max_retries; i++) {
           const card = this._getNextBlueprintFromDeck()
           if (card === null) {
-            console.log('No cards left in deck')
-            return false
+            return new GameError('There are no Blueprint cards left in deck')
           }
           if (this._moveToCompound(playerID, card)) {
             success = true
@@ -687,8 +672,7 @@ export class GameState {
           this.discard.push(card)
         }
         if (!success) {
-          console.log('No cards left in deck that can be built')
-          return false
+          return new GameError('There are no Blueprint cards left in deck that can be built')
         }
         break
       }
@@ -704,8 +688,7 @@ export class GameState {
         // Draw and reveal a 🟦. Gain 🔩 and ⚡ equal to its BUILD cost. Discard the 🟦
         const card = this._getNextBlueprintFromDeck()
         if (card === null) {
-          console.log('No cards left in deck')
-          return false
+          return new GameError('There are no Blueprint cards left in deck')
         }
         console.log('Collecting resources from', card)
         this.players[playerID].metal += card.cost_metal
@@ -740,7 +723,7 @@ export class GameState {
    * Rolls dice for a given player during the Work phase.
    *
    * @param {string} playerID - The ID of the player rolling the dice.
-   * @returns {boolean|GameError} - True if the dice were rolled successfully, otherwise a GameError.
+   * @returns {true|GameError} - True if the dice were rolled successfully, otherwise a GameError.
    */
   rollDice(playerID) {
     if (!this._workPhaseActionValid(playerID)) {
@@ -768,30 +751,26 @@ export class GameState {
    *
    * @param {string} playerID - The ID of the player selecting the dice.
    * @param {Array<int>} diceSelection - An array of integers representing the selected dice values.
-   * @returns {boolean} - True if the dice were set, false otherwise.
+   * @returns {true|GameError} - Whether dice values were selected successfully.
    */
   chooseDice(playerID, diceSelection) {
     // The rules specify that this should be done "at the start of the next work phase"
     // We aren't strictly enforcing that, mainly just ensuring it is done before dice are rolled
     // though with robot/golem there are still some work-arounds to that
     if (!this._workPhaseActionValid(playerID)) {
-      console.log('Action can only be performed during Work phase')
-      return false
+      return new GameError('Dice can only be selected during the Work phase')
     }
 
     if (!this.players[playerID].selectableDice) {
-      console.log('Player', playerID, 'is not allowed to select dice')
-      return false
+      return new GameError(`Player ${playerID} is not allowed to select dice`)
     }
 
     if (diceSelection.length > Math.min(4, this.players[playerID].numDice)) {
-      console.log('Player can only select up to', Math.min(4, this.players[playerID].numDice), 'dice')
-      return false
+      return new GameError(`Player can only select up to ${Math.min(4, this.players[playerID].numDice)} dice`)
     }
 
     if (diceSelection.some((value) => !isValidDiceValue(value))) {
-      console.log('Invalid die values selected:', diceSelection)
-      return false
+      return new GameError(`Invalid die values selected: ${diceSelection}`)
     }
 
     this.players[playerID].dice = diceSelection
@@ -806,22 +785,19 @@ export class GameState {
    *
    * @param {string} playerID - The ID of the player selecting the die.
    * @param {int} value - The value of the die to add.
-   * @returns {boolean} - True if the die was added, false otherwise.
+   * @returns {true|GameError} - Whether a die with the specified value was added successfully.
    */
   gainDiceValue(playerID, value) {
     if (!this._workPhaseActionValid(playerID)) {
-      console.log('Action can only be performed during Work phase')
-      return false
+      return new GameError('Dice can only be selected during the Work phase')
     }
 
     if (!this.players[playerID].bonusDie) {
-      console.log('Player', playerID, 'does not have a bonus die this round')
-      return false
+      return new GameError(`Player ${playerID} does not have a bonus die this round`)
     }
 
     if (!isValidDiceValue(value)) {
-      console.log('Invalid die value selected:', value)
-      return false
+      return new GameError(`Invalid die value selected: ${value}`)
     }
 
     this.players[playerID].bonusDie = false
@@ -839,29 +815,25 @@ export class GameState {
    */
   refreshMarketplace(playerID, cardType, resource) {
     if (!this._marketPhaseActionValid(playerID)) {
-      return false
+      return new GameError('Marketplace can only be refreshed during the Market phase')
     }
 
     if (this.players[playerID].workDone.hasRefreshedCards) {
-      console.log('Player has already refreshed cards this round')
-      return false
+      return new GameError('Player has already refreshed cards this round')
     }
 
     if (resource === 'metal') {
       if (this.players[playerID].metal < 1) {
-        console.log('Player does not have enough metal to refresh marketplace')
-        return false
+        return new GameError('Player does not have enough metal to refresh marketplace')
       }
       this.players[playerID].metal -= 1
     } else if (resource === 'energy') {
       if (this.players[playerID].energy < 1) {
-        console.log('Player does not have enough energy to refresh marketplace')
-        return false
+        return new GameError('Player does not have enough energy to refresh marketplace')
       }
       this.players[playerID].energy -= 1
     } else {
-      console.log('Invalid resource', resource, 'requested for refreshing marketplace')
-      return false
+      return new GameError(`Invalid resource "${resource}" requested for refreshing marketplace`)
     }
 
     if (cardType === 'blueprint') {
@@ -869,8 +841,7 @@ export class GameState {
     } else if (cardType === 'contractor') {
       this._clearMarketplaceContractors()
     } else {
-      console.log('Invalid card type', cardType, 'requested for refreshing marketplace')
-      return false
+      return new GameError(`Invalid card type "${cardType}" requested for refreshing marketplace`)
     }
     this.players[playerID].workDone.hasRefreshedCards = true
     this.fillMarketplace()
@@ -883,29 +854,28 @@ export class GameState {
    * @param {string} playerID - The ID of the player.
    * @param {int} dieIndex - The index of the die in the player's dice pool.
    * @param {string} floor - The floor in the headquarters where the die should be placed. Valid values are 'generate', 'mine', and 'research'.
-   * @returns {boolean} - Returns true if the die was successfully placed, otherwise false.
+   * @returns {true|GameError} - Whether the die was successfully placed.
    */
   placeDieInHeadquarters(playerID, dieIndex, floor) {
     if (!this._workPhaseActionValid(playerID)) {
-      return false
+      return new GameError('Dice can only be placed during the Work phase')
     }
 
     // Verify that the player actually has this die
     if (!Number.isInteger(dieIndex) || dieIndex >= this.players[playerID].dice.length || dieIndex < 0) {
-      console.log('Invalid die index', dieIndex, 'requested. Player has', this.players[playerID].dice.length, 'dice')
-      return false
+      return new GameError(
+        `Invalid die index ${dieIndex} requested. Player has ${this.players[playerID].dice.length} dice`,
+      )
     }
 
     // Verify that this is a valid floor
     if (!(floor in this.players[playerID].headquarters)) {
-      console.log('Invalid floor', floor, 'requested')
-      return false
+      return new GameError(`Invalid floor "${floor}" requested`)
     }
 
     // Verify that this floor is not full
     if (this.players[playerID].headquarters.length >= 3) {
-      console.log('Floor', floor, 'is full')
-      return false
+      return new GameError(`Floor "${floor}" is full`)
     }
 
     // Get dice value from index
@@ -913,8 +883,7 @@ export class GameState {
 
     // Only dice 1-3 can be used for "generate", Only dice 4-6 can be used for "mine"
     if ((floor === 'generate' && die > 3) || (floor === 'mine' && die < 4)) {
-      console.log('Die value', die, 'cannot be placed in', floor)
-      return false
+      return new GameError(`Die value ${die} cannot be placed in "${floor}"`)
     }
 
     // Remove die from player's dice pool and add it to the headquarters
@@ -953,7 +922,7 @@ export class GameState {
    * @param {int} energySelection - The number of energy selected by the player for this action.
    * @param {String} rewardSelection - One of 'Card', 'Energy', 'Metal', 'n' (dice val) to earn by activating the card.
    * @param {int} cardToReplicate - If activating a Replicator, the ID of a Blueprint card in the marketplace.
-   * @returns {boolean|GameError} Whether or not the card was successfully activated.
+   * @returns {true|GameError} Whether or not the card was successfully activated.
    */
   activateCard(playerID, cardID, diceSelection, cardSelection, energySelection, rewardSelection, cardToReplicate) {
     if (!this._workPhaseActionValid(playerID)) {
@@ -1016,7 +985,7 @@ export class GameState {
    * @param {int} energySelection - The number of energy selected by the player for this action.
    * @param {String} rewardSelection - One of 'Card', 'Energy', 'Metal', 'n' (dice val) to earn by activating the card.
    * @param {boolean} withReplicator - Whether the card is being activated through a Replicator.
-   * @returns {boolean|GameError} Whether or not the card was successfully activated.
+   * @returns {true|GameError} Whether or not the card was successfully activated.
    */
   _activate(playerID, card, diceSelection, cardSelection, energySelection, rewardSelection, withReplicator) {
     // This function should not worry about game state
