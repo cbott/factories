@@ -105,17 +105,6 @@ io.on('connection', (socket) => {
     broadcastGameState()
   })
 
-  // Update the marketplace to have 4 cards
-  socket.on('fill-marketplace', () => {
-    console.log('Filling marketplace')
-    if (gameState.fillMarketplace()) {
-      console.log('Marketplace filled successfully')
-      broadcastGameState()
-    } else {
-      console.log('No cards left to fill marketplace')
-    }
-  })
-
   // Pick a Blueprint card from the marketplace
   socket.on('pickup-from-marketplace', (cardID) => {
     console.log('Picking up from marketplace', cardID)

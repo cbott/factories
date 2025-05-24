@@ -107,11 +107,6 @@ export const gamestate = reactive({
     return this.state.players[this.playerID].metal
   },
 
-  // Fill marketplace with cards
-  fillMarketplace() {
-    this.socket.emit('fill-marketplace')
-  },
-
   // Request the server to switch between Market Phase and Work Phase
   requestChangePhase() {
     console.log('Requesting phase change')
