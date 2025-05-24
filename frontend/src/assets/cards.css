@@ -2,7 +2,14 @@
   margin: 5px;
   padding: 5px;
   border-radius: 4px;
-  width: 100px;
-  height: 150px;
+  width: 110px;
+  height: 160px;
   text-align: center;
+}
+
+.recipe {
+  width: 100%;
+  background-color: #e2eaec;
+  padding: 2px;
+  border-radius: 5px;
 }

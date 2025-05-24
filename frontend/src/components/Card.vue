@@ -3,10 +3,13 @@
   <div :class="{ disabled: isDisabled }" class="card blueprintcard" v-tooltip="card.recipe">
     <p class="name" :style="{ backgroundColor: color }">{{ card.name }}</p>
     🔩{{ card.cost_metal }}{{ card.name == 'Megalith' ? '*' : '' }} ⚡{{ card.cost_energy }}
+    <div class="recipe-container">
+      <p class="recipe">{{ card.short_recipe }}</p>
+    </div>
     <div class="icon-row">
+      <img class="tool-label" :src="getToolImage(card.tool)" :alt="card.tool" />
       <img class="icon" src="/prestige.png" />{{ card.prestige !== null ? card.prestige : '*' }}
     </div>
-    <img class="tool-label" :src="getToolImage(card.tool)" :alt="card.tool" />
   </div>
 </template>
 
@@ -71,7 +74,12 @@ export default {
 }
 
 .tool-label {
-  width: 25px;
+  width: 20px;
   text-align: center;
+  margin-right: 5px;
+}
+
+.recipe-container {
+  width: 90%;
 }
 </style>
