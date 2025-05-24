@@ -29,10 +29,11 @@ export class BlueprintCard {
    * @param {int} cost_metal - Metal cost to build the card.
    * @param {int} cost_energy - Energy cost to build the card.
    * @param {bool} activatable - Whether the card can be manually activated from the compound.
+   * @param {string} short_recipe - Abbreviated recipe to display on the card.
    * @param {string} recipe - Card recipe in plain text.
    * @param {int} copies - The number of copies of this card in the deck.
    */
-  constructor(id, name, tool, type, prestige, cost_metal, cost_energy, activatable, recipe, copies) {
+  constructor(id, name, tool, type, prestige, cost_metal, cost_energy, activatable, short_recipe, recipe, copies) {
     this.id = id
     this.name = name
     this.tool = tool
@@ -44,6 +45,7 @@ export class BlueprintCard {
     // Note: a card may not be activatable either because it is a monument type (no effect)
     // or because it is activated by another action such as acquiring goods (automatic effect)
     this.activatable = activatable
+    this.short_recipe = short_recipe
     this.recipe = recipe
     // Whether or not card was activated this round (applies to cards in compound only)
     this.alreadyActivated = false
@@ -100,6 +102,7 @@ function buildBlueprintDeckFromDefinitions(cardDefinitions) {
           cardType.cost_metal,
           cardType.cost_energy,
           cardType.activatable,
+          cardType.short_recipe,
           cardType.recipe,
           cardType.copies,
         ),

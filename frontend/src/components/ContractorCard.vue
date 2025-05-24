@@ -39,11 +39,4 @@ export default {
   border-radius: 5px;
   padding: 2px;
 }
-
-.recipe {
-  width: 100%;
-  background-color: #e2eaec;
-  padding: 2px;
-  border-radius: 5px;
-}
 </style>

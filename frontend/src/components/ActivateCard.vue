@@ -1,7 +1,7 @@
 <template>
-  <h2>Activate Card</h2>
-  <p>Card: {{ cardToActivate.name }}</p>
-  <p>Recipe: {{ recipe }}</p>
+  <h2>Activate "{{ cardToActivate.name }}"</h2>
+  <p>{{ shortRecipe }}</p>
+  <p>{{ recipe }}</p>
 
   <div v-if="requiresMarketplaceSelection" class="card-select-area">
     <p>Select a Blueprint card from the Marketplace</p>
@@ -96,6 +96,7 @@ export default {
     return {
       gamestate,
       recipe: '',
+      shortRecipe: '',
       requiresDiceSelectionNum: 0,
       requiresCardSelectionNum: 0,
       requiresEnergySelectionNum: 0,
@@ -109,6 +110,7 @@ export default {
       return
     }
     this.recipe = requirements.recipe
+    this.shortRecipe = requirements.shortRecipe
     this.requiresDiceSelectionNum = requirements.requiresDiceSelectionNum
     this.requiresCardSelectionNum = requirements.requiresCardSelectionNum
     this.requiresEnergySelectionNum = requirements.requiresEnergySelectionNum
@@ -225,6 +227,7 @@ export default {
      */
     getSelectionRequirements(card) {
       let recipe = 'No Recipe'
+      let shortRecipe = ''
       let requiresDiceSelectionNum = 0
       let requiresCardSelectionNum = 0
       let requiresEnergySelectionNum = 0
@@ -232,6 +235,7 @@ export default {
       let requiresMarketplaceSelection = false
 
       recipe = card.recipe
+      shortRecipe = card.short_recipe
       switch (card.name) {
         case 'Aluminum Factory':
           requiresDiceSelectionNum = 2
@@ -332,6 +336,7 @@ export default {
 
       return {
         recipe: recipe,
+        shortRecipe: shortRecipe,
         requiresDiceSelectionNum: requiresDiceSelectionNum,
         requiresCardSelectionNum: requiresCardSelectionNum,
         requiresEnergySelectionNum: requiresEnergySelectionNum,
