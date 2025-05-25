@@ -516,7 +516,9 @@ export class GameState {
         // We were already on the last round of the game, so we're done now
         return { end: true }
       }
-      return this._checkEndConditions()
+      let result = this._checkEndConditions()
+      result['newRound'] = true
+      return result
     }
 
     return {}

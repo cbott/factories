@@ -6,7 +6,7 @@ import { Server } from 'socket.io'
 
 // custom modules
 import * as gamelogic from './modules/gamelogic.js'
-import { rankPlayers } from './modules/helpers.js'
+import { rankPlayers, getEndTriggerString } from './modules/helpers.js'
 
 ////////// Game State Setup //////////
 let savefile = process.argv[2]
@@ -239,16 +239,14 @@ io.on('connection', (socket) => {
       if (result.end === true) {
         // Game has ended
         broadcastMessage(rankPlayers(gameState.players))
-      } else if (result.goods && result.buildings && (result.goods.length || result.buildings.length)) {
-        // End condition has been met
-        let message = 'Final Round!'
-        if (result.goods.length) {
-          message += ` These players hit the Goods trigger: ${result.goods.join(', ')}`
+        console.log(`End Of Round State: ${JSON.stringify(gameState.players)}`)
+      } else if (result.newRound === true) {
+        // This end-turn call transitioned the game from Work phase to the next Market phase
+        console.log(`End Of Round State: ${JSON.stringify(gameState.players)}`)
+        let message = getEndTriggerString(result)
+        if (message) {
+          broadcastMessage(message, 'warning')
         }
-        if (result.buildings.length) {
-          message += ` These players hit the Buildings trigger: ${result.buildings.join(', ')}`
-        }
-        broadcastMessage(message, 'warning')
       }
       broadcastGameState()
     }

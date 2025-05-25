@@ -1,4 +1,5 @@
 // General purpose helper functions
+import * as constants from './constants.js'
 
 /**
  * Checks whether N unique values are in an array
@@ -94,4 +95,29 @@ export function rankPlayers(players) {
   }
 
   return rankString
+}
+
+/**
+ * Get a human-readable string describing the end game trigger conditions
+ *
+ * @param {Object} endTriggers - Object with "goods" and "buildings" properties as arrays of player IDs
+ * @returns {string} A string describing the end game trigger conditions or empty string if none are met
+ */
+export function getEndTriggerString(endTriggers) {
+  let baseMessage = 'Final Round!'
+  let goodsMessage = ''
+  let buildingsMessage = ''
+
+  if (endTriggers.goods?.length) {
+    goodsMessage = `These players have ${constants.END_GAME_TRIGGER_GOODS} or more goods: ${endTriggers.goods.join(', ')}.`
+  }
+
+  if (endTriggers.buildings?.length) {
+    buildingsMessage = `These players have ${constants.END_GAME_TRIGGER_BUILDINGS} or more buildings in their compound: ${endTriggers.buildings.join(', ')}.`
+  }
+
+  if (goodsMessage || buildingsMessage) {
+    return `${baseMessage} ${goodsMessage} ${buildingsMessage}`
+  }
+  return ''
 }
