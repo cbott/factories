@@ -118,6 +118,11 @@ body {
  * See https://floating-vue.starpad.dev/guide/css
  */
 
+.v-popper--theme-tooltip {
+  max-width: 300px;
+  text-align: center;
+}
+
 .v-popper--theme-tooltip.v-popper__popper--hidden {
   visibility: hidden;
   opacity: 0;
