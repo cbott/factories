@@ -8,6 +8,7 @@
       autofocus
     />
     <button @click="submitUsername">Connect</button>
+    <div v-if="gamestate.connectionError">Connection failed. Retrying...</div>
   </div>
 
   <template v-else>
