@@ -20,6 +20,10 @@
         @click="selectCard(cardID)"
       />
     </div>
+    <p style="margin-top: 10px">
+      <BooleanIcon :value="result.cards.length >= gamestate.hand.size - 10" />
+      Total Selected: {{ result.cards.length }} / {{ gamestate.hand.size - 10 }} needed
+    </p>
   </div>
 
   <p>
