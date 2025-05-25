@@ -1,5 +1,8 @@
 <template>
   <h2>End Your Work Phase</h2>
+  <p v-if="hasUnusedDice" style="font-weight: bold">
+    <span style="color: gold">⚠</span> Some dice have not been used!
+  </p>
   <p>
     <BooleanIcon :value="gamestate.hand.size <= 10" />
     Discard down to 10 cards in hand ({{ gamestate.hand.size }} / 10)
@@ -84,6 +87,12 @@ export default {
      */
     resourcesSelected() {
       return this.result.energy + this.result.metal
+    },
+    hasUnusedDice() {
+      return (
+        gamestate.state.players[gamestate.playerID].dice.length > 0 ||
+        gamestate.state.players[gamestate.playerID].numDice > 0
+      )
     },
   },
   methods: {
