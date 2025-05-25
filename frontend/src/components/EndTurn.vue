@@ -1,10 +1,8 @@
 <template>
   <h2>End Your Work Phase</h2>
   <p>
-    <span v-if="gamestate.hand.size <= 10" class="check">&check;</span> Discard down to 10 cards in hand ({{
-      gamestate.hand.size
-    }}
-    / 10)
+    <BooleanIcon :value="gamestate.hand.size <= 10" />
+    Discard down to 10 cards in hand ({{ gamestate.hand.size }} / 10)
   </p>
   <div v-if="gamestate.hand.size > 10" class="card-select-area">
     <p>Select Cards To Discard</p>
@@ -22,10 +20,8 @@
   </div>
 
   <p>
-    <span v-if="totalResources <= 12" class="check">&check;</span> Discard down to 12 total resources ({{
-      totalResources
-    }}
-    / 12)
+    <BooleanIcon :value="totalResources <= 12" />
+    Discard down to 12 total resources ({{ totalResources }} / 12)
   </p>
   <div v-if="totalResources > 12" class="resource-select-area">
     <p>Select Resources To Discard</p>
@@ -42,13 +38,17 @@
       </select>
       <p>🔩</p>
     </div>
-    <p style="margin-top: 10px">Total Selected: {{ resourcesSelected }} / {{ totalResources - 12 }} needed</p>
+    <p style="margin-top: 10px">
+      <BooleanIcon :value="resourcesSelected >= totalResources - 12" />
+      Total Selected: {{ resourcesSelected }} / {{ totalResources - 12 }} needed
+    </p>
   </div>
 </template>
 
 <script>
 // Game state
 import { gamestate } from '../GameState.js'
+import BooleanIcon from './BooleanIcon.vue'
 import Card from './Card.vue'
 
 // Exports
@@ -60,9 +60,9 @@ export default {
     },
   },
   components: {
+    BooleanIcon,
     Card,
   },
-  mounted() {},
   data() {
     return {
       gamestate,
