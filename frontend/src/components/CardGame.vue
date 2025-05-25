@@ -1,6 +1,12 @@
 <template>
   <div v-if="!gamestate.initialized">
-    <input v-model="usernameInput" placeholder="Enter username" data-bwignore="true" />
+    <input
+      v-model="usernameInput"
+      placeholder="Enter username"
+      data-bwignore="true"
+      @keydown.enter="submitUsername"
+      autofocus
+    />
     <button @click="submitUsername">Connect</button>
   </div>
 
