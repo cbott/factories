@@ -6,24 +6,18 @@
 
   <template v-else>
     <div class="infobar">
-      <div style="display: flex">
+      <div class="infobar-element infobar-left" style="">
+        <p>Player ID: {{ gamestate.playerID }}</p>
+      </div>
+      <div class="infobar-element infobar-center">
         <p>
           {{ gamestate.state.workPhase ? 'Work' : 'Market' }} Phase
           {{ gamestate.state.finalRound ? '(Final Round)' : '' }}
         </p>
-        <div style="margin-left: 10px">
-          <button @click="gamestate.requestChangePhase" disabled>Change Phase (debug)</button>
-        </div>
-        <div style="margin-left: 10px">
-          <button @click="confirmEndTurn" :disabled="disableEndTurn">End Turn</button>
-        </div>
+        <button class="end-button" v-if="!disableEndTurn" @click="confirmEndTurn">End Turn</button>
       </div>
-
-      <div style="display: flex">
-        <p>Player ID: {{ gamestate.playerID }}</p>
-        <div style="margin-left: 10px">
-          <button @click="gamestate.quit">Quit</button>
-        </div>
+      <div class="infobar-element infobar-right">
+        <button @click="gamestate.quit">Quit Game</button>
       </div>
     </div>
 
@@ -141,6 +135,28 @@ export default {
   font-size: 1.5em;
   width: 100%;
   padding: 0px 10px 0px 10px;
+}
+
+.infobar-element {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.infobar-left {
+  justify-content: flex-start;
+}
+
+.infobar-center {
+  justify-content: center;
+}
+
+.infobar-right {
+  justify-content: flex-end;
+}
+
+.end-button {
+  margin-left: 10px;
 }
 
 .container-horiz {
