@@ -115,6 +115,7 @@ export default {
   methods: {
     submitUsername() {
       gamestate.openSocket(this.usernameInput)
+      localStorage.lastUsernameInput = this.usernameInput
     },
     confirmEndTurn() {
       this.modalResult = { cards: [], energy: 0, metal: 0 }
@@ -130,6 +131,9 @@ export default {
     closeMessage() {
       gamestate.messageQueue.shift()
     },
+  },
+  mounted() {
+    this.usernameInput = localStorage.lastUsernameInput || ''
   },
 }
 </script>
