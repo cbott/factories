@@ -17,6 +17,7 @@ export const gamestate = reactive({
   socket: null,
   playerID: 'uninitialized',
   initialized: false,
+  connectionError: false,
   state: {
     marketplace: {
       blueprints: [],
@@ -71,6 +72,14 @@ export const gamestate = reactive({
     this.socket.on('error', (message) => {
       console.log('Error Message:', message)
       this.messageQueue.push({ type: 'error', message })
+    })
+
+    this.socket.on('connect', () => {
+      this.connectionError = false
+    })
+
+    this.socket.on('connect_error', (e) => {
+      this.connectionError = true
     })
 
     this.socket.on('disconnect', () => {

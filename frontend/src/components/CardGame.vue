@@ -1,7 +1,14 @@
 <template>
   <div v-if="!gamestate.initialized">
-    <input v-model="usernameInput" placeholder="Enter username" data-bwignore="true" />
+    <input
+      v-model="usernameInput"
+      placeholder="Enter username"
+      data-bwignore="true"
+      @keydown.enter="submitUsername"
+      autofocus
+    />
     <button @click="submitUsername">Connect</button>
+    <div v-if="gamestate.connectionError">Connection failed. Retrying...</div>
   </div>
 
   <template v-else>
@@ -109,6 +116,7 @@ export default {
   methods: {
     submitUsername() {
       gamestate.openSocket(this.usernameInput)
+      localStorage.lastUsernameInput = this.usernameInput
     },
     confirmEndTurn() {
       this.modalResult = { cards: [], energy: 0, metal: 0 }
@@ -124,6 +132,9 @@ export default {
     closeMessage() {
       gamestate.messageQueue.shift()
     },
+  },
+  mounted() {
+    this.usernameInput = localStorage.lastUsernameInput || ''
   },
 }
 </script>
