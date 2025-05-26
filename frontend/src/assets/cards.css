@@ -5,7 +5,26 @@
   width: 110px;
   height: 160px;
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
   cursor: pointer;
+}
+
+.card.blueprintcard {
+  background-color: #aec9e0;
+  padding-left: 0px;
+  padding-right: 0px;
+}
+
+.card.contractorcard {
+  background-color: #ffd042;
+}
+
+.card.disabled {
+  background-color: gray;
+  cursor: not-allowed;
 }
 
 .recipe {

@@ -54,20 +54,6 @@ export default {
 </script>
 
 <style scoped>
-.blueprintcard {
-  background: #aec9e0;
-  padding-left: 0px;
-  padding-right: 0px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.disabled {
-  background: gray;
-}
-
 .name {
   width: 100%;
   color: white;

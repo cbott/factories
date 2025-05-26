@@ -19,14 +19,6 @@ export default {
 </script>
 
 <style scoped>
-.contractorcard {
-  background: #ffd042;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: center;
-}
-
 .name {
   width: 100%;
   background-color: #d6e2e8;
