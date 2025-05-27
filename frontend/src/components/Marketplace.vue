@@ -169,7 +169,6 @@ export default {
 .marketplace {
   border-color: green;
   min-height: 200px;
-  position: relative;
 }
 
 .marketplace-header {
@@ -209,16 +208,5 @@ export default {
 .tool-label {
   width: 40px;
   text-align: center;
-}
-
-.marketplace-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.2); /* Semi-transparent gray */
-  z-index: 1; /* Ensure it appears above the content but below tooltips and modal window */
-  pointer-events: none; /* Prevent interaction with the overlay */
 }
 </style>
