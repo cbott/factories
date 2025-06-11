@@ -1,16 +1,26 @@
 .card {
   margin: 5px;
-  padding: 5px;
   border-radius: 4px;
   width: 110px;
   height: 160px;
   text-align: center;
   cursor: pointer;
+  background-size: cover;
+  background-repeat: no-repeat;
 }
 
 .recipe {
   width: 100%;
-  background-color: #e2eaec;
   padding: 2px;
+}
+
+.recipe-container {
+  width: 90%;
+  opacity: 0.9;
+}
+
+.card-box {
+  background-color: #d6e2e8;
+  border: 1.5px solid black;
   border-radius: 5px;
 }

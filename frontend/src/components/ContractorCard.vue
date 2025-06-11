@@ -1,9 +1,13 @@
 <!-- Component representing a single Contractor card -->
 <template>
-  <div class="card contractorcard" v-tooltip="card.recipe">
+  <div class="card contractorcard" v-tooltip="card.recipe" :style="{ backgroundImage: backgroundImagePath }">
     <p class="name">{{ card.name }}</p>
-    <p class="recipe">{{ card.short_recipe }}</p>
-    <p class="cost-label" style="display: inline-block">⚡{{ card.cost_energy }}</p>
+    <div class="recipe-container card-box">
+      <p class="recipe">{{ card.short_recipe }}</p>
+    </div>
+    <div class="cost-label">
+      <p style="font-weight: bold">⚡{{ card.cost_energy }}</p>
+    </div>
   </div>
 </template>
 
@@ -15,12 +19,17 @@ export default {
       required: true,
     },
   },
+  computed: {
+    backgroundImagePath() {
+      let imageName = this.card.name.toLowerCase().replace(/\s+/g, '_')
+      return `url(/${imageName}.png)`
+    },
+  },
 }
 </script>
 
 <style scoped>
 .contractorcard {
-  background: #ffd042;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -29,14 +38,17 @@ export default {
 
 .name {
   width: 100%;
-  background-color: #d6e2e8;
-  border-radius: 5px;
+  color: white;
+  font-weight: bold;
 }
 
 .cost-label {
-  background-color: #282a32;
-  color: white;
+  width: 100%;
+  text-align: left;
+  color: black;
+  font-weight: bold;
   border-radius: 5px;
-  padding: 2px;
+  padding-left: 5px;
+  padding-bottom: 1px;
 }
 </style>

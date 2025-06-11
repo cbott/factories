@@ -1,14 +1,21 @@
 <!-- Component representing a single Blueprint card -->
 <template>
-  <div :class="{ disabled: isDisabled }" class="card blueprintcard" v-tooltip="card.recipe">
+  <div
+    :class="{ disabled: isDisabled }"
+    class="card blueprintcard"
+    v-tooltip="card.recipe"
+    :style="{ backgroundImage: `url(/${this.card.type}.png)` }"
+  >
     <p class="name" :style="{ backgroundColor: color }">{{ card.name }}</p>
-    🔩{{ card.cost_metal }}{{ card.name == 'Megalith' ? '*' : '' }} ⚡{{ card.cost_energy }}
-    <div class="recipe-container">
+    <div class="recipe-container card-box">
       <p class="recipe">{{ card.short_recipe }}</p>
     </div>
-    <div class="icon-row">
-      <img class="tool-label" :src="getToolImage(card.tool)" :alt="card.tool" />
-      <img class="icon" src="/prestige.png" />{{ card.prestige !== null ? card.prestige : '*' }}
+    <div class="icon-row icon-text">
+      <img class="icon spacing" :src="getToolImage(card.tool)" :alt="card.tool" />
+      <img class="icon" src="/prestige.png" />
+      <p class="spacing">{{ card.prestige !== null ? card.prestige : '*' }}</p>
+      <p>🔩{{ card.cost_metal }}{{ card.name == 'Megalith' ? '*' : '' }}</p>
+      <p>⚡{{ card.cost_energy }}</p>
     </div>
   </div>
 </template>
@@ -55,9 +62,8 @@ export default {
 
 <style scoped>
 .blueprintcard {
-  background: #aec9e0;
-  padding-left: 0px;
-  padding-right: 0px;
+  padding-top: 5px;
+  padding-bottom: 5px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -65,7 +71,11 @@ export default {
 }
 
 .disabled {
-  background: gray;
+  opacity: 0.5;
+}
+
+.cost {
+  background-color: white;
 }
 
 .name {
@@ -73,13 +83,7 @@ export default {
   color: white;
 }
 
-.tool-label {
-  width: 20px;
-  text-align: center;
-  margin-right: 5px;
-}
-
-.recipe-container {
-  width: 90%;
+.spacing {
+  margin-right: 3px;
 }
 </style>
