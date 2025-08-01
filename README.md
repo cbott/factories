@@ -15,6 +15,10 @@ Run game server from backend/ with
 
 > npm start [savefile.json]
 
+Example:
+
+> NODE_ENV=production PORT=3000 npm start saves/my_game.json
+
 Serve UI from frontend/ with
 
 > npm run dev
