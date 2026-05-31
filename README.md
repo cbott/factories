@@ -6,6 +6,10 @@ For a much better game than this, check out _Fantastic Factories_
 
 ![Factories Game Screenshot](docs/factories.png 'Screenshot of Factories Game')
 
+## Running the game
+
+The most common commands are contained in the project `justfile`. `just build` and `just run` should allow you to load the game at `localhost:8080`.
+
 ## Development
 
 This project utilizes Vue.js for frontend rendering

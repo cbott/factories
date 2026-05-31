@@ -27,6 +27,9 @@ coverage
 *.sln
 *.sw?
 
+# Project-specific
 *.tsbuildinfo
 *.pdf
 backend/saves/*
+venv/
+token
