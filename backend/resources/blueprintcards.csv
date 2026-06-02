@@ -12,7 +12,7 @@ Foundry,gear,utility,1,2,1,2,TRUE,[X] + ⚡X ➜ 🔩X,
 Fulfillment Center,hammer,production,1,2,1,2,TRUE,[4] + ⚡2 ➜ 📦 + 🔩,
 Golem,hammer,special,1,4,0,2,TRUE,⚡X ➜ [X]*,Gain an extra [?] with a value of X this turn
 Gymnasium,shovel,training,0,1,0,3,TRUE,⚡ ➜ [+1]*,Increase the value of an unplaced [?] by 1
-Harvester,hammer,utility,1,1,2,2,TRUE,[X]=[X] ➜ 🔩4 OR [X]=[X] ➜ ⚡7,
+Harvester,hammer,utility,1,1,2,2,TRUE,[X]=[X] ➜ 🔩4 OR ⚡7,
 Incinerator,shovel,utility,1,2,1,2,TRUE,🟦 + 🔩 ➜ ⚡6,
 Laboratory,wrench,special,1,1,4,2,FALSE,Draw a 🟦 when gaining 📦,
 Manufactory,wrench,production,1,2,3,2,TRUE,[X]=[X] ➜ 📦 + 🔩2 OR 🟦2 OR ⚡3,

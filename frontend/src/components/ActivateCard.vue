@@ -59,7 +59,7 @@
     </div>
   </div>
 
-  <div v-if="requiresRewardSelection" class="resource-select-area">
+  <div v-if="rewardOptions.length" class="resource-select-area">
     <p>Select Reward</p>
     <div class="selection-area">
       <div v-for="n in rewardOptions" :key="n">
@@ -100,7 +100,7 @@ export default {
       requiresDiceSelectionNum: 0,
       requiresCardSelectionNum: 0,
       requiresEnergySelectionNum: 0,
-      requiresRewardSelection: false,
+      rewardOptions: [],
       requiresMarketplaceSelection: false,
     }
   },
@@ -114,22 +114,10 @@ export default {
     this.requiresDiceSelectionNum = requirements.requiresDiceSelectionNum
     this.requiresCardSelectionNum = requirements.requiresCardSelectionNum
     this.requiresEnergySelectionNum = requirements.requiresEnergySelectionNum
-    this.requiresRewardSelection = requirements.requiresRewardSelection
+    this.rewardOptions = requirements.rewardOptions
     this.requiresMarketplaceSelection = requirements.requiresMarketplaceSelection
 
     this.checkSelections()
-  },
-  computed: {
-    rewardOptions() {
-      if (this.cardToActivate.name === 'Harvester') {
-        return ['Metal', 'Energy']
-      } else if (this.cardToActivate.name === 'Manufactory') {
-        return ['Card', 'Metal', 'Energy']
-      } else if (this.cardToActivate.name === 'Mega Factory') {
-        return ['1', '2', '3', '4', '5', '6']
-      }
-      return []
-    },
   },
   methods: {
     isSelectedMarketplace(cardID) {
@@ -142,6 +130,25 @@ export default {
       return this.result.cards.includes(parseInt(cardID, 10))
     },
     /**
+     * This method is used to implement the following logic for the Black Market card:
+     * discard a blueprint to gain resources (metal + energy) matching the build cost of the card you discarded.
+     * The max you can gain is 4 resources. If the card you are discarding costs more than 4 resources, you may
+     * choose which 4 resources you gain.
+     *
+     * The UI implements this choice by allowing the player to select the energy count and inferring the metal count.
+     *
+     * @param {int} cardID - The ID of a card in the player's hand.
+     * @returns {int} - energy cost of the card if the total cost is greater than 4, otherwise 0.
+     */
+    maxEnergyToSelect(cardID) {
+      let chosenCard = gamestate.hand.get(cardID)
+      if (chosenCard.cost_energy + chosenCard.cost_metal > 4) {
+        return chosenCard.cost_energy
+      } else {
+        return 0
+      }
+    },
+    /**
      * Selects a Blueprint card from the Marketplace to be activated by the Replicator
      */
     selectMarketplace(cardID) {
@@ -151,7 +158,7 @@ export default {
         this.requiresDiceSelectionNum = 0
         this.requiresCardSelectionNum = 0
         this.requiresEnergySelectionNum = 0
-        this.requiresRewardSelection = false
+        this.rewardOptions = []
       } else {
         let marketplaceCard = gamestate.state.marketplace.blueprints.find((c) => c.id === cardID)
         if (!marketplaceCard.activatable || marketplaceCard.name === 'Replicator') {
@@ -162,7 +169,7 @@ export default {
         this.requiresDiceSelectionNum = requirements.requiresDiceSelectionNum
         this.requiresCardSelectionNum = requirements.requiresCardSelectionNum
         this.requiresEnergySelectionNum = requirements.requiresEnergySelectionNum
-        this.requiresRewardSelection = requirements.requiresRewardSelection
+        this.rewardOptions = requirements.rewardOptions
       }
 
       this.checkSelections()
@@ -195,12 +202,15 @@ export default {
       } else if (this.requiresCardSelectionNum === 1) {
         // If only one card is required, replace the current selection
         this.result.cards = [parseInt(cardID, 10)]
+        // Black Market card is activated directly - check selected card for resource count
         if (this.cardToActivate.name === 'Black Market') {
-          // Black Market requires energy selection if the card selected has a cost of 4 or more
-          if (gamestate.hand.get(cardID).cost_energy + gamestate.hand.get(cardID).cost_metal > 4) {
-            this.requiresEnergySelectionNum = gamestate.hand.get(cardID).cost_energy
-          } else {
-            this.requiresEnergySelectionNum = 0
+          this.requiresEnergySelectionNum = this.maxEnergyToSelect(cardID)
+        }
+        // Black Market in marketplace is activated via Replicator - check selected card for resource count
+        if (this.cardToActivate.name === 'Replicator') {
+          let marketplaceCard = gamestate.state.marketplace.blueprints.find((c) => c.id === this.result.replicate)
+          if (marketplaceCard.name === 'Black Market') {
+            this.requiresEnergySelectionNum = this.maxEnergyToSelect(cardID)
           }
         }
       } else {
@@ -217,7 +227,7 @@ export default {
       let okDice = this.result.dice.length === this.requiresDiceSelectionNum
       let okCards = this.result.cards.length === this.requiresCardSelectionNum
       let okEnergy = this.result.energy !== 0 || this.requiresEnergySelectionNum === 0
-      let okReward = this.result.reward !== null || !this.requiresRewardSelection
+      let okReward = this.result.reward !== null || !this.rewardOptions.length
       let okReplicate = this.result.replicate !== null || !this.requiresMarketplaceSelection
 
       this.result.ok = okDice && okCards && okEnergy && okReward && okReplicate
@@ -231,7 +241,7 @@ export default {
       let requiresDiceSelectionNum = 0
       let requiresCardSelectionNum = 0
       let requiresEnergySelectionNum = 0
-      let requiresRewardSelection = false
+      let rewardOptions = []
       let requiresMarketplaceSelection = false
 
       recipe = card.recipe
@@ -277,7 +287,7 @@ export default {
           break
         case 'Harvester':
           requiresDiceSelectionNum = 2
-          requiresRewardSelection = true
+          rewardOptions = ['Metal', 'Energy']
           break
         case 'Incinerator':
           requiresCardSelectionNum = 1
@@ -286,11 +296,11 @@ export default {
           break
         case 'Manufactory':
           requiresDiceSelectionNum = 2
-          requiresRewardSelection = true
+          rewardOptions = ['Card', 'Metal', 'Energy']
           break
         case 'Mega Factory':
           requiresDiceSelectionNum = 3
-          requiresRewardSelection = true
+          rewardOptions = ['1', '2', '3', '4', '5', '6']
           break
         case 'Megalith':
           break
@@ -340,7 +350,7 @@ export default {
         requiresDiceSelectionNum: requiresDiceSelectionNum,
         requiresCardSelectionNum: requiresCardSelectionNum,
         requiresEnergySelectionNum: requiresEnergySelectionNum,
-        requiresRewardSelection: requiresRewardSelection,
+        rewardOptions: rewardOptions,
         requiresMarketplaceSelection: requiresMarketplaceSelection,
       }
     },

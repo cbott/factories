@@ -188,8 +188,6 @@ export function buildDeck(cardDefinitionFile, cardType) {
     columns: true,
   })
 
-  // throw new Error(`Failed to parse CSV file: ${err}`)
-
   let deck = buildFunc(cardDefinitions)
   console.log('Created deck of', deck.length, 'cards from file', cardDefinitionFile)
   return deck
