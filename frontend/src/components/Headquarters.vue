@@ -7,7 +7,7 @@
       v-for="floorname in ['research', 'generate', 'mine']"
       :class="{
         floor: true,
-        'valid-div-hover': isValidDieTarget(floorname) === true,
+        'valid-div': isValidDieTarget(floorname) === true,
         'invalid-div-hover': isValidDieTarget(floorname) === false,
       }"
       @click="placeDie(floorname)"

@@ -46,7 +46,6 @@ Potential improvements that are under consideration
 - When activating cards, the frontend should indicate which dice are valid to select (gray out invalid choices)
 - Add a "help" button that pulls up the rulebook
 - Add a server-side logging framework
-- When clicking a die it should highlight valid placement options
 
 ## Rejected Ideas
 

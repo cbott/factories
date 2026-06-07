@@ -74,6 +74,7 @@ button {
 .valid-div,
 .valid-div-hover:hover {
   box-shadow: 0 0 5px rgba(0, 255, 0, 0.8);
+  cursor: pointer;
 }
 
 .invalid-div-hover:hover {
