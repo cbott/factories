@@ -41,7 +41,6 @@ Build `dist` folder from frontend/ with
 
 Potential improvements that are under consideration
 
-- Show the number of cards in opponents' hands
 - Keep track of player statistics throughout the game and present these (such as in a graph) at the end of the game
 - Change dice to have dots rather than numbers
 - When activating cards, the frontend should indicate which dice are valid to select (gray out invalid choices)

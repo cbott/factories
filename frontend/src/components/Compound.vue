@@ -4,6 +4,7 @@
     <div class="score">
       <p>🔩x{{ metal }}</p>
       <p>⚡x{{ energy }}</p>
+      <p v-if="!isMainPlayer">🟦x{{ handCount }}</p>
       <div class="icon-row"><img class="icon" src="/prestige.png" />x{{ prestige }}</div>
       <p>📦x{{ goods }}</p>
     </div>
@@ -56,6 +57,12 @@ export default {
         return 0
       }
       return gamestate.state.players[this.playerID].energy
+    },
+    handCount() {
+      if (gamestate.state.players == null) {
+        return 0
+      }
+      return Object.keys(gamestate.state.players[this.playerID].hand || {}).length
     },
     metal() {
       if (gamestate.state.players == null) {
