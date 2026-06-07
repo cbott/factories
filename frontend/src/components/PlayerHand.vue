@@ -1,10 +1,16 @@
 <!-- PlayerHand.vue -->
 <template>
   <div class="area hand">
-    <p>Your Hand</p>
+    <div class="hand-header">
+      <p>Your Hand</p>
+      <button class="sort-toggle" type="button" @click="toggleSort">
+        <span :class="{ active: sortMode === 'alpha' }">Alpha</span>
+        / <span :class="{ active: sortMode === 'tool' }">Tool</span>
+      </button>
+    </div>
     <div class="card-area">
       <Card
-        v-for="[cardID, card] in gamestate.hand"
+        v-for="[cardID, card] in sortedHand"
         :key="cardID"
         :card="card"
         :isDisabled="activeCardTool !== '' && activeCardTool !== card.tool"
@@ -31,13 +37,43 @@ export default {
       }
       return ''
     },
+    sortedHand() {
+      const entries = Array.from(gamestate.hand.entries())
+      if (this.sortMode === 'tool') {
+        return entries.sort(([_, a], [__, b]) => {
+          const toolA = (a.tool || '').toString().toLowerCase()
+          const toolB = (b.tool || '').toString().toLowerCase()
+          if (toolA < toolB) return -1
+          if (toolA > toolB) return 1
+          const nameA = (a.name || '').toString().toLowerCase()
+          const nameB = (b.name || '').toString().toLowerCase()
+          if (nameA < nameB) return -1
+          if (nameA > nameB) return 1
+          return 0
+        })
+      }
+      return entries.sort(([_, a], [__, b]) => {
+        const nameA = (a.name || '').toString().toLowerCase()
+        const nameB = (b.name || '').toString().toLowerCase()
+        if (nameA < nameB) return -1
+        if (nameA > nameB) return 1
+        return 0
+      })
+    },
   },
   data() {
     return {
       gamestate,
+      sortMode: 'alpha',
     }
   },
   methods: {
+    /**
+     * Toggle the hand sort mode between alphabetical and tool grouping.
+     */
+    toggleSort() {
+      this.sortMode = this.sortMode === 'alpha' ? 'tool' : 'alpha'
+    },
     /**
      * Handle card clicks in the player's hand by either playing the card or waiting for a second card selection
      *
@@ -82,5 +118,32 @@ export default {
 .hand {
   border-color: blue;
   min-height: 200px;
+}
+
+.hand-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sort-toggle {
+  border: none;
+  color: gray;
+  cursor: pointer;
+  font-size: 0.75rem;
+}
+
+.sort-toggle span {
+  line-height: 1;
+}
+
+.sort-toggle:hover {
+  background: transparent;
+}
+
+.sort-toggle .active {
+  color: black;
+  font-weight: 700;
+  -webkit-text-stroke: 0.5px lightgreen;
 }
 </style>
