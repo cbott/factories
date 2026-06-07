@@ -6,8 +6,8 @@ help:
 
 # Run game server on port 8080
 [working-directory: 'backend']
-run savefile=`date +"saves/gamestate-%F.json"`:
-    NODE_ENV=production PORT=8080 npm start {{savefile}} | tee $(date +"saves/server-%F.log")
+run savefile=`date +"saves/gamestate-%F-%H%M%S.json"`:
+    NODE_ENV=production PORT=8080 npm start {{savefile}} | tee $(date +"saves/server-%F-%H%M%S.log")
 
 # Build game frontend for production run
 [working-directory: 'frontend']

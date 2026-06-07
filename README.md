@@ -39,12 +39,20 @@ Build `dist` folder from frontend/ with
 
 ## Remaining Work
 
-Unscoped (possible future work)
+Potential improvements that are under consideration
 
-- Add an "Undo" button
-- Work on "security" type features such as ensuring that players cannot request actions on behalf of others
+- Show the number of cards in opponents' hands
 - Keep track of player statistics throughout the game and present these (such as in a graph) at the end of the game
-- Add a "help" button that pulls up the rulebook
 - Change dice to have dots rather than numbers
 - When activating cards, the frontend should indicate which dice are valid to select (gray out invalid choices)
+- Add a "help" button that pulls up the rulebook
 - Add a server-side logging framework
+- Allow players to sort cards in their hand by tool instead of alphabetically
+- When clicking a die it should highlight valid placement options
+
+## Rejected Ideas
+
+These features are not planned for implementation
+
+- Add an "Undo" button: certain actions provide strategic value (i.e. see next card in deck, trick opponent about strategy, etc.) which would be problematic to allow undo for. Implementing this in a way that is comprehensive and intuitive does not seem feasible.
+- Work on "security" type features such as ensuring that players cannot request actions on behalf of others: the intent of this project is not to create a production-ready system, major overhauls to protect from malicious users are not in scope.

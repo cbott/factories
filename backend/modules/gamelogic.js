@@ -78,7 +78,7 @@ export class GameState {
   /**
    * Returns the public state of the game to be sent to clients
    *
-   * @returns {Object} The public state of the game.
+   * @returns {Object} - The public state of the game.
    */
   get publicState() {
     return {
@@ -761,8 +761,8 @@ export class GameState {
    */
   chooseDice(playerID, diceSelection) {
     // The rules specify that this should be done "at the start of the next work phase"
-    // We aren't strictly enforcing that, mainly just ensuring it is done before dice are rolled
-    // though with robot/golem there are still some work-arounds to that
+    // but we are not enforcing that rule here. The only case where that makes a strategic difference
+    // is when using a Robot, where the resulting roll could influence the player's choice.
     if (!this._workPhaseActionValid(playerID)) {
       return new GameError('Dice can only be selected during the Work phase')
     }
@@ -779,7 +779,7 @@ export class GameState {
       return new GameError(`Invalid die values selected: ${diceSelection}`)
     }
 
-    this.players[playerID].dice = diceSelection
+    this.players[playerID].dice = this.players[playerID].dice.concat(diceSelection)
     this.players[playerID].numDice -= diceSelection.length
     this.players[playerID].selectableDice = false
     return true
@@ -817,7 +817,7 @@ export class GameState {
    * @param {string} playerID - The ID of the player.
    * @param {string} cardType - 'blueprint' or 'contractor' to determine which type of cards to refresh
    * @param {string} resource - 'metal' or 'energy' to determine which resource to spend.
-   * @returns {boolean} True if the marketplace was refreshed successfully, false otherwise.
+   * @returns {boolean} - True if the marketplace was refreshed successfully, false otherwise.
    */
   refreshMarketplace(playerID, cardType, resource) {
     if (!this._marketPhaseActionValid(playerID)) {
@@ -928,7 +928,7 @@ export class GameState {
    * @param {int} energySelection - The number of energy selected by the player for this action.
    * @param {String} rewardSelection - One of 'Card', 'Energy', 'Metal', 'n' (dice val) to earn by activating the card.
    * @param {int} cardToReplicate - If activating a Replicator, the ID of a Blueprint card in the marketplace.
-   * @returns {true|GameError} Whether or not the card was successfully activated.
+   * @returns {true|GameError} - Whether or not the card was successfully activated.
    */
   activateCard(playerID, cardID, diceSelection, cardSelection, energySelection, rewardSelection, cardToReplicate) {
     if (!this._workPhaseActionValid(playerID)) {
@@ -991,7 +991,7 @@ export class GameState {
    * @param {int} energySelection - The number of energy selected by the player for this action.
    * @param {String} rewardSelection - One of 'Card', 'Energy', 'Metal', 'n' (dice val) to earn by activating the card.
    * @param {boolean} withReplicator - Whether the card is being activated through a Replicator.
-   * @returns {true|GameError} Whether or not the card was successfully activated.
+   * @returns {true|GameError} - Whether or not the card was successfully activated.
    */
   _activate(playerID, card, diceSelection, cardSelection, energySelection, rewardSelection, withReplicator) {
     // This function should not worry about game state
